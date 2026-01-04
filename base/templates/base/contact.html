@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<br><br><br><br>
+
+<div class="row text-center">
+    <div class="col-md-11">
+        <p class="h5">PesticideDB</p>
+        <p>Asan-si, South Korea</p>
+        <p>contact@pesticidedb.org</p>
+        
+        <div class="mt-4">
+            <a href="mailto:contact@pesticidedb.org" class="btn btn-primary">
+                ✉️ Email Us
+            </a>
+            <a href="{% url 'submit_your_data' %}" class="btn btn-outline-primary ml-2">
+                📝 Submit Data
+            </a>
+        </div>
+    </div>
+</div>
+
+<br><br><br><br><br><br><br><br>
+{% endblock %}

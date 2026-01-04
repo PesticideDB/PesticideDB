@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Statistics - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Database Statistics</h1>
+    
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-4 text-primary">{{ total_pesticides }}</h1>
+                    <h5>Total Pesticides</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
+                    <h5>Microorganisms</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
+                    <h5>Proteins</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add more statistics sections as needed -->
+</div>
+{% endblock %}

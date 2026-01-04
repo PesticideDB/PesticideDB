@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+{% block title %}Microorganisms - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Microorganisms Database</h1>
+    
+    <div class="alert alert-info">
+        <p>Total microorganisms in database: <strong>{{ total_count }}</strong></p>
+    </div>
+    
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Microorganism</th>
+                <th>Phylum</th>
+                <th>Family</th>
+                <th>Pesticides Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for microorganism in microorganisms %}
+            <tr>
+                <td>{{ microorganism.microorganism }}</td>
+                <td>{{ microorganism.phylum|default:"-" }}</td>
+                <td>{{ microorganism.family|default:"-" }}</td>
+                <td>{{ microorganism.pesticide_count }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">No microorganisms found in the database.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
