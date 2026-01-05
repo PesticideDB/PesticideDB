@@ -29,14 +29,32 @@ class Pesticide(models.Model):
     created = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):                                                                 
-        return self.pesticide
+        """Return a more informative string representation"""
+        parts = []
+        
+        # Always include pesticide name
+        parts.append(self.pesticide)
+        
+        # Include microorganism if available
+        if self.microorganism:
+            parts.append(f"→ {self.microorganism}")
+        
+        # Include category if available
+        if self.category:
+            parts.append(f"({self.category})")
+        
+        # Include year if available
+        if self.publication_year:
+            parts.append(f"[{self.publication_year}]")
+        
+        return " ".join(parts)
     
 class NoEvidencePesticide(models.Model):
     pesticide = models.CharField(max_length=200)
     evidence_of_biodegradation = models.CharField(max_length=255, default='No evidence')
 
     def __str__(self):
-        return self.pesticide
+        return f"{self.pesticide} - {self.evidence_of_biodegradation}"
 
 # Model for data submissions
 class DataSubmission(models.Model):

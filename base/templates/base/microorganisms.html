@@ -3,36 +3,251 @@
 {% block title %}Microorganisms - PesticideDB{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4">Microorganisms Database</h1>
-    
-    <div class="alert alert-info">
-        <p>Total microorganisms in database: <strong>{{ total_count }}</strong></p>
+<br><br>
+
+<center>
+    <div class="col-5 align-self-center">
+        <div class="container-sm bg-secondary text-white rounded shadow-lg">
+            <br>
+            <form method="GET" action="{% url 'microorganisms' %}">
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Microorganism</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="microorganism_field" name="microorganism">
+                            <option value="">--- Select Microorganism ---</option>
+                            {% for microorganism in microorganisms_list %}
+                            <option value="{{ microorganism }}" 
+                                    {% if selected_microorganism == microorganism %}selected{% endif %}>
+                                {{ microorganism }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Tax ID</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="taxid_field" name="taxid">
+                            <option value="">--- Select Tax ID ---</option>
+                            {% for tax_id in tax_ids %}
+                            <option value="{{ tax_id }}" 
+                                    {% if selected_taxid == tax_id %}selected{% endif %}>
+                                {{ tax_id }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Pesticide</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="pesticide_field" name="pesticide">
+                            <option value="">--- Select Pesticide ---</option>
+                            {% for pesticide in pesticides_list %}
+                            <option value="{{ pesticide }}" 
+                                    {% if selected_pesticide == pesticide %}selected{% endif %}>
+                                {{ pesticide }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Evidence</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="evidence_field" name="evidence">
+                            <option value="">--- Select Evidence ---</option>
+                            {% for evidence in evidence_list %}
+                            <option value="{{ evidence }}" 
+                                    {% if selected_evidence == evidence %}selected{% endif %}>
+                                {{ evidence }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Gene</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="gene_field" name="gene">
+                            <option value="">--- Select Gene ---</option>
+                            {% for gene in gene_list %}
+                            <option value="{{ gene }}" 
+                                    {% if selected_gene == gene %}selected{% endif %}>
+                                {{ gene }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Protein</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="protein_field" name="protein">
+                            <option value="">--- Select Protein ---</option>
+                            {% for protein in protein_list %}
+                            <option value="{{ protein }}" 
+                                    {% if selected_protein == protein %}selected{% endif %}>
+                                {{ protein }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Isolation environment</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="environment_field" name="environment">
+                            <option value="">--- Select Environment ---</option>
+                            {% for environment in environment_list %}
+                            <option value="{{ environment }}" 
+                                    {% if selected_environment == environment %}selected{% endif %}>
+                                {{ environment }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="row p-1">
+                    <div class="col-3 align-self-center">Isolation location</div>
+                    <div class="col-9 align-self-center">
+                        <select class="form-control" id="location_field" name="location">
+                            <option value="">--- Select Location ---</option>
+                            {% for location in location_list %}
+                            <option value="{{ location }}" 
+                                    {% if selected_location == location %}selected{% endif %}>
+                                {{ location }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <br>
+                <div class="row p-1">
+                    <div class="col-1 align-self-center"></div>
+                    <div class="col-11 align-self-center">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                        <a href="{% url 'microorganisms' %}" class="btn btn-secondary">
+                            <i class="fas fa-redo"></i> Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
-    
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Microorganism</th>
-                <th>Phylum</th>
-                <th>Family</th>
-                <th>Pesticides Count</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for microorganism in microorganisms %}
-            <tr>
-                <td>{{ microorganism.microorganism }}</td>
-                <td>{{ microorganism.phylum|default:"-" }}</td>
-                <td>{{ microorganism.family|default:"-" }}</td>
-                <td>{{ microorganism.pesticide_count }}</td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4" class="text-center">No microorganisms found in the database.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+</center>
+
+<br><br><br>
+
+<div class="row justify-content-md-center">
+    <div class="col-sm-11" align="center">
+        {% if is_search or results %}
+        <div class="alert alert-info mb-3">
+            {% if is_search %}
+                Found <strong>{{ total_count }}</strong> result(s) matching your criteria
+            {% else %}
+                Showing <strong>{{ total_count }}</strong> records (first 100). Use filters to search specific records.
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <table class="table table-hover text-center table-bordered">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col" class="align-middle">Microorganism</th>
+                    <th scope="col" class="align-middle">Tax ID</th>
+                    <th scope="col" class="align-middle">Pesticide</th>
+                    <th scope="col" class="align-middle">Evidence</th>
+                    <th scope="col" class="align-middle">Gene</th>
+                    <th scope="col" class="align-middle">Protein</th>
+                    <th scope="col" class="align-middle">Isolation environment</th>
+                    <th scope="col" class="align-middle">Isolation location</th>
+                    <th scope="col" class="align-middle">Reference</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if results %}
+                    {% for result in results %}
+                    <tr>
+                        <td>{{ result.microorganism|default:"-" }}</td>
+                        <td>{{ result.tax_id|default:"-" }}</td>
+                        <td>{{ result.pesticide|default:"-" }}</td>
+                        <td>{{ result.evidence_by_microbe|default:"-" }}</td>
+                        <td>{{ result.gene|default:"-" }}</td>
+                        <td>{{ result.enzyme|default:"-" }}</td>
+                        <td>{{ result.isolation_environment|default:"-" }}</td>
+                        <td>{{ result.isolation_location|default:"-" }}</td>
+                        <td>
+                            {% if result.reference %}
+                                {% if "http" in result.reference or "doi.org" in result.reference or "doi:" in result.reference %}
+                                    <a href="{% if 'http' in result.reference %}{{ result.reference }}{% else %}https://doi.org/{{ result.reference|cut:'doi:'|cut:'DOI:'|cut:' ' }}{% endif %}" 
+                                       target="_blank" 
+                                       title="{{ result.reference }}">
+                                        <i class="fas fa-external-link-alt"></i> Link
+                                    </a>
+                                {% else %}
+                                    <span title="{{ result.reference }}">{{ result.reference|truncatechars:30 }}</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            {% if is_search %}
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> No results found matching your criteria.
+                                </div>
+                            {% else %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i> Use the search form above to find microorganisms.
+                                </div>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+        
+        {% if results and total_count > 10 %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                <!-- Add pagination here if needed -->
+                <li class="page-item disabled">
+                    <span class="page-link">Showing all {{ total_count }} results</span>
+                </li>
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
 </div>
+
+<br><br><br>
+
+<style>
+    .table th {
+        background-color: #343a40;
+        color: white;
+    }
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 123, 255, 0.1);
+    }
+    select.form-control {
+        cursor: pointer;
+    }
+</style>
+
 {% endblock %}
