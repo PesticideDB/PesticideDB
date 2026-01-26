@@ -3,7 +3,7 @@
 
 {% block content %}
 <!-- Image Slider -->
-<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="4000">
     <ol class="carousel-indicators">
         <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
         <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
@@ -23,7 +23,7 @@
             <img src="{% static 'images/background02.jpeg' %}" class="d-block w-100" alt="Annotation Tools">
             <div class="carousel-caption">
                 <h3>Annotate Your Sequences</h3>
-                <p>Check out all options to annotate your data under the menu item "Tools".</p>
+                <p>Explore the available tools to annotate your data under the “Tools” menu.</p>
             </div>
         </div>
         <!-- Slide 3 -->
@@ -31,7 +31,7 @@
             <img src="{% static 'images/background03.jpeg' %}" class="d-block w-100" alt="Database Statistics">
             <div class="carousel-caption">
                 <h3>Database Statistics</h3>
-                <p>After the last update, the database has {{ microorganisms_count }} species of microorganisms and {{ proteins_count }} proteins.</p>
+                <p>Latest update: {{ microorganisms_count }} microbial species and {{ proteins_count }} proteins.</p>
             </div>
         </div>
     </div>
@@ -59,8 +59,16 @@
             </thead>
             <tbody>
                 <tr>
-                    <td class="align-middle">Pesticides</td>
-                    <td class="align-middle">{{ pesticide_count }}</td>
+                    <td class="align-middle">Pesticides (Total)</td>
+                    <td class="align-middle">{{ total_pesticides }}</td>
+                </tr>
+                <tr>
+                    <td class="align-middle">Pesticides (With evidence)</td>
+                    <td class="align-middle">{{ pesticides_with_evidence }}</td>
+                </tr>
+                <tr>
+                    <td class="align-middle">Pesticides (No evidence)</td>
+                    <td class="align-middle">{{ pesticides_no_evidence }}</td>
                 </tr>
                 <tr>
                     <td class="align-middle">Microorganisms</td>
@@ -74,14 +82,22 @@
                 </tr>
                 <tr>
                     <td class="align-middle">Last update</td>
-                    <td class="align-middle">23/08/2025</td>
+                    <td class="align-middle">01/22/2026</td>
                 </tr>
             </tbody>
         </table>
     </div>
     <div class="col-sm-6">
         <p class="h2 text-center">About PesticideDB</p>
-        <p>The Pesticide Biodegradation Database (PesticideDB) is a curated online platform related to the microbial biodegradation of pesticides. It is an initiative to centralize pesticide degradation data, supporting sustainable agriculture and environmental health. Check the paper at: <a href="https://doi.org/10.1186/s40793-024-00575-4">doi.org/10.1186/s40793-024-00575-4</a>.</p>
+        <p>The Pesticide Biodegradation Database (PesticideDB) is a curated online platform related to the microbial biodegradation of pesticides. It is an initiative to centralize pesticide degradation data, supporting sustainable agriculture and environmental health. Check the paper at: <a href="https://doi.org/10.1186/s40793-024-00575-4">doi.org/10...</a>.</p> 
+        <p>PesticideDB organizes pesticide information into two complementary categories.</p>
+        <p><strong>Pesticides (with evidence)</strong> refer to unique pesticide compounds for which at least one peer-reviewed study reports experimental microbial biodegradation, mineralization, transformation, or enzyme-mediated degradation. Each pesticide in this category may be associated with multiple microorganisms, enzymes, genes, experimental conditions, and literature records.</p>
+        <p>
+        <strong>Pesticides (no evidence)</strong> represent pesticide compounds for which no experimentally validated microbial biodegradation evidence was identified during our comprehensive literature curation process. Inclusion of this category does not imply resistance to biodegradation, but rather highlights current knowledge gaps and helps prioritize future experimental investigation.
+        </p>
+        <p>
+        <strong>Pesticides (total)</strong> indicates the total number of unique pesticide compounds represented in PesticideDB, calculated as the union of pesticides with experimental evidence and those without reported evidence. This approach avoids double counting and provides a transparent overview of both established knowledge and unexplored areas in pesticide biodegradation research.
+        </p>
         <p>Notice: Our database compiles all peer-reviewed literature we identified that reports microbial degradation of pesticides. Numerous candidate pesticide-degrading organisms and enzymes have been described, and we present this information to encourage further exploration of the global diversity of such microbes and enzymes. Although the database includes many enzymes linked to pesticide breakdown, most remain poorly characterized, and their expression does not necessarily equate to actual degradation activity. We therefore emphasize the need for additional studies to conclusively verify the microbial degradation of these pesticides.</p>
     </div>
 </div>

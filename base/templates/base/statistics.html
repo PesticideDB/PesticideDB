@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Statistics - PesticideDB{% endblock %}
 
@@ -7,32 +8,146 @@
     <h1 class="mb-4">Database Statistics</h1>
     
     <div class="row">
-        <div class="col-md-4 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h1 class="display-4 text-primary">{{ total_pesticides }}</h1>
-                    <h5>Total Pesticides</h5>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
-                    <h5>Microorganisms</h5>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card text-center">
-                <div class="card-body">
-                    <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
-                    <h5>Proteins</h5>
-                </div>
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_pesticides }}</h1>
+                <h5>Total Pesticides</h5>
+                 <small class="text-muted">Unique pesticides (with + no evidence)</small>
             </div>
         </div>
     </div>
-    
-    <!-- Add more statistics sections as needed -->
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ pesticides_with_evidence }}</h1>
+                <h5>Pesticides with Evidence</h5>
+                <small class="text-muted">Unique pesticides in evidence table</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ pesticides_no_evidence }}</h1>
+                <h5>Pesticides with No Evidence</h5>
+                <small class="text-muted">Unique pesticides lacking experimental data</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
+                <h5>Microorganisms</h5>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
+                <h5>Proteins</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Global microbial distribution for pesticide-degrading microorganism species </strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/map.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      The size of each circle indicates the number of pesticide-degrading microorganisms isolated from a given country. All isolates reported from the same country are grouped into a single circle positioned at the country’s center. The two largest circles correspond to China and India, which account for 30.36% and 15.35% of the total reported microorganisms, respectively. Countries without red circles indicate regions where no published studies on pesticide-degrading isolates were found.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Isolation Environments</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/isolation_env.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      This analysis summarizes the environments from which pesticide-degrading microorganisms were isolated. A total of 565 scientific publications reported 797 species with pesticide-degrading capabilities. The category ‘Others’ includes isolates for which the source environment was not clearly specified, accounting for 65 strains.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Trends in pesticide-degrading microbes and publications
+</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/no_of_publication.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Trends in pesticide-degrading microbes and publications">
+    <p class="text-muted mt-2 mb-0">
+      This analysis summarizes the number of publications published each year that reported pesticide-degrading microorganisms, as well as the cumulative number of putative pesticide-degrading species identified from 1966 to December 2025. When a microorganism already known to degrade pesticides was later shown to degrade an additional pesticide, this finding was counted as a new publication but was not included as a newly identified pesticide-degrading species.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Techniques utilized to evaluate pesticide biodegradation across all compiled publications</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/techniques_used.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Bar plot showing the numbers of the most commonly used techniques for measuring biodegradation across compiled publications. Others includes a range of less frequently applied molecular, genetic, and biochemical approaches (e.g., gene knockout, DNase footprinting).
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Relative abundance of taxa reported as putative pesticide degraders</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/domain_phylum.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) domain and (Right) phylum.
+  </div>
+
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/class_order.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) class and (Right) order.
+  </div>
+
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/family_genus.jpeg' %}"
+         class="img-fluid border rounded"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) family and (Right) genus.
+  </div>
 </div>
 {% endblock %}

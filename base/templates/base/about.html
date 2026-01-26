@@ -3,7 +3,7 @@
 
 {% block content %}
 <!-- Image Slider -->
-<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel">
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="4000">
     <ol class="carousel-indicators">
         <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
         <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
@@ -46,7 +46,7 @@
 
 <div class="row justify-content-md-center">
     <div class="col-sm-3" align="center">
-        <img src="{% static 'images/logo.png' %}" class="img-thumbnail" alt="PesticideDB Logo">
+        <img src="{% static 'images/logo.png' %}" class="img-fluid" alt="PesticideDB Logo">
     </div>
     <div class="col-sm-6">
         <p class="h2 text-center">About PesticideDB</p>
@@ -54,7 +54,7 @@
         <p>The database is updated every six months to keep up with new publications and add more pesticides.</p>
         
         <p>If you have any information about microorganisms and proteins that we could use to improve the database, please submit a request to add, remove, or modify. You can also leave any comments in this form and we will get back to you.</p>
-        <p>If you used our database in your research, please cite: DOI: <a href="https://msystems.asm.org/content/6/1/e01112-20" target="_blank" rel="noopener noreferrer">10.1128/mSystems.01112-20.</a></p>
+        <p>If you used our database in your research, please cite: DOI: <a href="https://msystems.asm.org/content/6/1/e01112-20" target="_blank" rel="noopener noreferrer">10...</a></p>
         
         <div class="text-center mt-4">
             <a href="{% url 'submit_your_data' %}" class="btn btn-primary mr-2">Submit Your Data</a>

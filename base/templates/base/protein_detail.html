@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+
+{% block title %}
+  Protein {{ p.pesticidedb_protein_id|default:p.pbdb_protein_id }} | PesticideDB
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container">
+
+  {# ================= HEADER ================= #}
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      {% with display_id=p.pesticidedb_protein_id|default:p.pbdb_protein_id %}
+        <h3 class="mb-1">
+          PesticideDB Protein ID:
+          <span class="text-primary">{{ display_id|default:"-" }}</span>
+        </h3>
+      {% endwith %}
+
+      <p class="text-muted mb-0">
+        {{ p.reported_protein_name|default:"Reported protein not specified" }}
+      </p>
+    </div>
+  </div>
+
+  {# ================= BASIC METADATA ================= #}
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <table class="table table-sm table-bordered">
+        <tr>
+          <th class="bg-light">Microorganism</th>
+          <td>{{ p.microorganism|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Pesticide</th>
+          <td>{{ p.pesticide|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Year</th>
+          <td>{{ p.year|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Gene name</th>
+          <td>{{ p.gene_name|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">NCBI protein accession</th>
+          <td>
+            {% if p.ncbi_protein_accession %}
+              <a target="_blank"
+                 href="https://www.ncbi.nlm.nih.gov/protein/{{ p.ncbi_protein_accession }}">
+                {{ p.ncbi_protein_accession }}
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      <table class="table table-sm table-bordered">
+        <tr>
+          <th class="bg-light">Reference (DOI)</th>
+          <td>
+            {% if p.doi %}
+              {{ p.doi }}
+              <a target="_blank"
+                 href="https://scholar.google.com/scholar?q={{ p.doi|urlencode }}">
+                (Google Scholar)
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th class="bg-light">Enzyme class</th>
+          <td>{{ p.enzyme_class|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Evidence type</th>
+          <td>{{ p.evidence_type|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">UniProt accession</th>
+          <td>
+            {% if p.uniprot_accession %}
+              <a target="_blank"
+                 href="https://www.uniprot.org/uniprot/{{ p.uniprot_accession }}">
+                {{ p.uniprot_accession }}
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  {# ================= PROTEIN STRUCTURE ================= #}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+      <strong>Protein Structure</strong>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        {# Structure Image #}
+        <div class="col-md-6 text-center">
+          {% if structure_image_url %}
+            <img src="{{ structure_image_url }}"
+                 class="img-fluid border rounded"
+                 alt="Protein Structure">
+          {% else %}
+            <div class="border p-4 text-muted">
+              Protein structure image not available
+            </div>
+          {% endif %}
+        </div>
+
+        {# Structure Info Table #}
+        <div class="col-md-6">
+          <table class="table table-sm table-bordered">
+            <tr>
+              <th class="bg-light">Prediction software</th>
+              <td>{{ prediction_software|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">File format</th>
+              <td>{{ file_format|default:"PDB" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Download structure</th>
+              <td>
+                {% if pdb_download_url %}
+                  <a class="btn btn-sm btn-outline-primary" href="{{ pdb_download_url }}">
+                    Download PDB
+                  </a>
+                {% else %}
+                  Not available
+                {% endif %}
+              </td>
+            </tr>
+          </table>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+ {# ================= FASTA SEQUENCE ================= #}
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-secondary text-white">
+    <strong>FASTA Sequence</strong>
+  </div>
+  <div class="card-body">
+
+    {% with display_id=p.pesticidedb_protein_id|default:p.pbdb_protein_id %}
+      {% if p.fasta_sequence %}
+        <pre class="bg-light p-3" style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+>{{ display_id }}
+{{ p.fasta_sequence }}
+        </pre>
+
+        <a class="btn btn-sm btn-success"
+           href="{% url 'protein_fasta_download' display_id %}">
+          Download FASTA
+        </a>
+
+      {% else %}
+        <p class="text-muted mb-2">FASTA sequence not available.</p>
+
+        {# ✅ NEW: Fetch from NCBI button #}
+        {% if p.ncbi_protein_accession %}
+          <a class="btn btn-sm btn-primary"
+             href="{% url 'fetch_ncbi_fasta' display_id %}">
+            Fetch FASTA from NCBI
+          </a>
+          <small class="form-text text-muted mt-2">
+            This will download the sequence from NCBI and save it to PesticideDB.
+          </small>
+        {% else %}
+          <small class="text-muted">
+            No NCBI protein accession available to fetch FASTA.
+          </small>
+        {% endif %}
+
+      {% endif %}
+    {% endwith %}
+
+  </div>
+</div>
+
+
+  <a class="btn btn-secondary" href="{% url 'proteins' %}">
+    ← Back to Proteins
+  </a>
+
+</div>
+<br><br>
+{% endblock %}

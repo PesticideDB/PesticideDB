@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+env/
+
+# Database
+db.sqlite3
+
+# macOS junk
+.DS_Store
+
+# Excel data (optional – keeps repo clean)
+*.xlsx
