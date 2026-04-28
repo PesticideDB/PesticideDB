@@ -31,12 +31,8 @@ def home(request):
         .count()
     )
 
-    proteins_count = (
-        Pesticide.objects
-        .exclude(enzyme='')
-        .exclude(enzyme__isnull=True)
-        .count()
-    )
+    proteins_count = ProteinRecord.objects.count()
+
 
     context = {
         "total_pesticides": counts["total"],
@@ -515,12 +511,7 @@ def statistics(request):
         .count()
     )
 
-    total_proteins = (
-        Pesticide.objects
-        .exclude(enzyme='')
-        .exclude(enzyme__isnull=True)
-        .count()
-    )
+    total_proteins = ProteinRecord.objects.count()
 
     publications_by_year = (
         Pesticide.objects
