@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+
+{% block title %}PesticideDB - Annotate Gene{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="container bg-secondary text-white rounded shadow-lg">
+
+        <!-- Upload -->
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Upload a file</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="fasta_file" name="fasta_file" required type="file">
+                <br>
+                <p>
+                    Please upload a FASTA file containing protein sequences or nucleotide sequences. DNA sequences will be translated into proteins using Prodigal before annotation. Short DNA fragments may not produce results.
+                    File names should contain only letters and numbers (A–Z, 0–9). Avoid spaces and special characters. This tool searches your sequence against PesticideDB reference proteins using DIAMOND and confirms enzyme-family assignment using HMMER.
+                </p>
+            </div>
+        </div>
+
+        <!-- Search type -->
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Search type</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="search_type" name="search_type">
+                    <option value="diamond_hmmer">DIAMOND + HMMER</option>
+                    <option value="diamond_only">DIAMOND only</option>
+                </select>
+                <br>
+                <p>
+                    DIAMOND identifies the closest known protein match. HMMER detects the broader enzyme-family profile.
+                </p>
+            </div>
+        </div>
+
+        <!-- E-value -->
+        <div class="row p-3">
+            <div class="col-2 align-self-center">
+                <p>E-value 1e-x</p>
+            </div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="5">
+                <br>
+                <p>
+                    Expected number of chance matches in a random model. For example, 5 means 1e-5.
+                    Suggested values: 3 = loose, 5 = medium, 20 = strict.
+                </p>
+            </div>
+        </div>
+
+        <!-- Percent identity -->
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Percent identity</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="pident" max="100" min="0" name="pident" required type="number" value="30">
+                <p>
+                    Minimum DIAMOND percent identity. Suggested values: 30 = medium, 70 = strict.
+                </p>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="row p-4 text-center">
+            <div class="col-12">
+
+                <button type="submit" class="btn btn-primary px-4">
+                    Run annotation
+                </button>
+
+                <br><br>
+
+                <p class="mt-2" style="font-size: 14px;">
+                    <strong>Please wait!!</strong> Results will appear after processing.
+                </p>
+
+                <button type="reset" class="btn btn-link text-white" style="font-weight: 500;">
+                    Reset
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<br><br><br>
+
+{% if error %}
+<div class="container">
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+    </div>
+</div>
+{% endif %}
+
+{% if results %}
+<div class="container">
+    <div class="alert alert-info text-center">
+        Found <strong>{{ results|length }}</strong> annotation result(s).
+    </div>
+
+    {% for r in results %}
+    <div class="container bg-light rounded shadow-lg mb-4 p-4">
+
+        <h4 class="text-center">Annotation result for {{ r.query }}</h4>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Database annotation</h5>
+
+                <p><strong>PesticideDB Protein ID:</strong>
+                    {% if r.pesticidedb_protein_id %}
+                        <a href="{% url 'protein_detail' r.pesticidedb_protein_id %}">
+                            {{ r.pesticidedb_protein_id }}
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+
+                <p><strong>NCBI Protein Accession:</strong> {{ r.ncbi_protein_accession|default:"-" }}</p>
+                <p><strong>Reported Protein:</strong> {{ r.reported_protein_name|default:"-" }}</p>
+                <p><strong>Gene Name:</strong> {{ r.gene_name|default:"-" }}</p>
+                <p><strong>Enzyme Class:</strong> {{ r.enzyme_class|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h5>Biodegradation information</h5>
+
+                <p><strong>Pesticide:</strong> {{ r.pesticide|default:"-" }}</p>
+                <p><strong>Microorganism:</strong> {{ r.microorganism|default:"-" }}</p>
+                <p><strong>Evidence Type:</strong> {{ r.evidence_type|default:"-" }}</p>
+                <p><strong>Year:</strong> {{ r.year|default:"-" }}</p>
+
+                <p><strong>DOI:</strong>
+                    {% if r.doi %}
+                        {{ r.doi }}
+                        <a target="_blank" href="https://scholar.google.com/scholar?q={{ r.doi|urlencode }}">
+                            (Google Scholar)
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<br><br><br>
+
+{% endblock %}

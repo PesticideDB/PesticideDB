@@ -1,0 +1,2 @@
+query,ncbi_protein_accession,identity,evalue_x,bitscore,pesticidedb_protein_id,pesticide,microorganism,enzyme_class,reported_protein_name,gene_name,evidence_type,year,doi,collection_category,family_size,family_confidence,hmmer_family,evalue_y
+DQ480725.1_1,ABE98170.1,100.0,1.3599999999999998e-258,693,PBDBP000026,Lindane,Sphingobium sp. BHC-A,Oxidoreductase,Reductive dechlorinase,linD,Purified (Activity),2006,10.1111/j.1462-2920.2007.01350.x,CURATED,9,MEDIUM,dehalogenase_aligned,1e-76

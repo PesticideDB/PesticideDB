@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}PesticideDB - Annotate Genome{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="container bg-secondary text-white rounded shadow-lg">
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Upload a file</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="fasta_file" name="fasta_file" required type="file">
+                <br>
+                <p>
+                    Please upload a FASTA file with genome, contig, scaffold, or predicted protein sequences.
+                    Nucleotide genome files will be translated into proteins before annotation.
+                    This tool searches genome proteins against PesticideDB reference proteins using DIAMOND
+                    and optionally confirms enzyme-family matches using HMMER.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">BLAST type</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="blast_type" name="blast_type">
+                    <option value="blastp">BLASTP / protein FASTA</option>
+                    <option value="blastx">BLASTX / nucleotide FASTA</option>
+                </select>
+                <br>
+                <p>
+                    Use BLASTP if your file contains protein sequences.
+                    Use BLASTX if your file contains nucleotide genome or contig sequences.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Organism type</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="organism_type" name="organism_type">
+                    <option value="no_signalp">No signal peptide prediction</option>
+                    <option value="gram_positive">Gram-positive bacteria</option>
+                    <option value="gram_negative">Gram-negative bacteria</option>
+                    <option value="eukarya">Eukarya</option>
+                </select>
+                <br>
+                <p>
+                    This option can be used later for signal peptide prediction.
+                    If you do not use SignalP now, keep “No signal peptide prediction”.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">
+                <p>E-value 1e-x</p>
+            </div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="6">
+                <br>
+                <p>
+                    Expected number of chance matches in a random model.
+                    For example, 6 means 1e-6.
+                    Suggested values: 3 = loose, 6 = medium, 20 = strict.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Percent identity</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="pident" max="100" min="0" name="pident" required type="number" value="30">
+                <p>
+                    Minimum percent identity of the alignments.
+                    Suggested values: 10 = loose, 30 = medium, 70 = strict.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4 text-center">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary px-4">
+                    Submit
+                </button>
+
+                <br><br>
+
+                <p class="mt-2" style="font-size: 14px;">
+                    <strong>Please wait!!</strong> Genome annotation may take some time.
+                </p>
+
+                <button type="reset" class="btn btn-link text-white" style="font-weight: 500;">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<br><br><br>
+
+{% if error %}
+<div class="container">
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

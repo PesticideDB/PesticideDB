@@ -6,7 +6,6 @@ class Pesticide(models.Model):
     """
     Represents biodegradation evidence records.
     IMPORTANT: This table is record-level, so duplicates by pesticide name are allowed.
-    (e.g., DDT can appear many times with different microbes/papers)
     """
 
     pesticide = models.CharField(max_length=200, db_index=True)
@@ -14,15 +13,10 @@ class Pesticide(models.Model):
     microorganism = models.CharField(max_length=200, blank=True, null=True)
     gene = models.CharField(max_length=200, blank=True, null=True)
 
-    # Enzyme family/class (broad) from your Excel "Enzyme" column
     enzyme = models.CharField(max_length=200, blank=True, null=True)
-
-    # Specific enzyme name reported in the paper (your Excel "Enzyme_name_reported")
     enzyme_name_reported = models.CharField(max_length=255, blank=True, null=True)
 
     evidence_by_microbe = models.TextField(blank=True, null=True)
-
-    # Keep this field if you want (optional): enzyme-level evidence text
     evidence_of_enzyme = models.TextField(blank=True, null=True)
 
     isolation_environment = models.CharField(max_length=255, blank=True, null=True)
@@ -38,7 +32,6 @@ class Pesticide(models.Model):
 
     class Meta:
         ordering = ["pesticide", "microorganism"]
-        # ✅ NO unique constraint here (duplicates are allowed)
 
     def __str__(self):
         parts = [self.pesticide]
@@ -51,8 +44,7 @@ class Pesticide(models.Model):
 
 class NoEvidencePesticide(models.Model):
     """
-    Pesticides searched in literature for which NO biodegradation evidence was found.
-    This is list-level, so duplicates are NOT useful.
+    Pesticides with no biodegradation evidence.
     """
 
     pesticide = models.CharField(max_length=200, db_index=True)
@@ -66,7 +58,6 @@ class NoEvidencePesticide(models.Model):
 
     class Meta:
         ordering = ["pesticide"]
-        # ✅ Keep unique constraint removed
 
     def __str__(self):
         return self.pesticide
@@ -74,7 +65,7 @@ class NoEvidencePesticide(models.Model):
 
 class DataSubmission(models.Model):
     """
-    User-submitted biodegradation data (curated later).
+    User-submitted biodegradation data.
     """
 
     pesticide = models.CharField(max_length=200, db_index=True)
@@ -97,14 +88,11 @@ class DataSubmission(models.Model):
 
 
 # =========================
-# ✅ NEW: Protein section (MVP)
+# Protein Section (MVP)
 # =========================
-
 class ProteinRecord(models.Model):
     """
-    Protein module (MVP):
-    - One row = one paper-context record (duplicates allowed)
-    - Preserves import order via Meta ordering on id
+    Protein module (MVP)
     """
 
     pesticide = models.CharField(max_length=255, blank=True, null=True)
@@ -114,10 +102,14 @@ class ProteinRecord(models.Model):
     enzyme_class = models.CharField(max_length=255, blank=True, null=True)
     reported_protein_name = models.CharField(max_length=255, blank=True, null=True)
 
-    # ✅ NEW (display / future stable ID you want to use)
-    pesticidedb_protein_id = models.CharField(max_length=50, blank=True, null=True, db_index=True)
+    pesticidedb_protein_id = models.CharField(
+        max_length=50,
+        unique=True,
+        blank=True,
+        null=True,
+        db_index=True
+    )
 
-    # ✅ Keep existing field (DO NOT remove - avoids breaking existing data/pages)
     pbdb_protein_id = models.CharField(max_length=50, blank=True, null=True, db_index=True)
 
     gene_name = models.CharField(max_length=255, blank=True, null=True)
@@ -127,18 +119,80 @@ class ProteinRecord(models.Model):
     ncbi_protein_accession = models.CharField(max_length=255, blank=True, null=True)
     uniprot_accession = models.CharField(max_length=255, blank=True, null=True)
 
-    # ✅ NEW (for FASTA download + later structure prediction)
     fasta_sequence = models.TextField(blank=True, null=True)
-
     sequence_available = models.CharField(max_length=50, blank=True, null=True)
 
     created = models.DateTimeField(auto_now_add=True)
     updated = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["id"]  # ✅ keeps the same order as inserted/imported
+        ordering = ["id"]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if not self.pesticidedb_protein_id:
+            self.pesticidedb_protein_id = f"PBDBP{self.id:06d}"
+            super().save(update_fields=["pesticidedb_protein_id"])
 
     def __str__(self):
-        # show pesticidedb_protein_id if present, otherwise pbdb_protein_id
         label = self.pesticidedb_protein_id or self.pbdb_protein_id or "PROT"
         return f"{label} | {self.reported_protein_name or ''}"
+
+
+class AnnotationResult(models.Model):
+    """
+    Stores results from DIAMOND + HMMER annotation pipeline
+    """
+
+    query = models.CharField(max_length=100)
+
+    ncbi_protein_accession = models.CharField(max_length=50)
+    pesticidedb_protein_id = models.CharField(max_length=50)
+
+    pesticide = models.CharField(max_length=255, blank=True, null=True)
+    microorganism = models.CharField(max_length=255, blank=True, null=True)
+
+    enzyme_class = models.CharField(max_length=100, blank=True, null=True)
+    reported_protein_name = models.CharField(max_length=255, blank=True, null=True)
+    gene_name = models.CharField(max_length=100, blank=True, null=True)
+
+    family_size = models.IntegerField(blank=True, null=True)
+    family_confidence = models.CharField(max_length=20, blank=True, null=True)
+
+    hmmer_family = models.CharField(max_length=100, blank=True, null=True)
+
+    identity = models.FloatField(blank=True, null=True)
+    evalue = models.FloatField(blank=True, null=True)
+    bitscore = models.FloatField(blank=True, null=True)
+
+    created = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created"]
+
+    def __str__(self):
+        return f"{self.query} → {self.pesticidedb_protein_id}"
+
+
+# separate model for tracking annotation jobs
+class AnnotationJob(models.Model):
+    job_id = models.CharField(max_length=30, unique=True)
+    status = models.CharField(max_length=20, default="running")
+    message = models.TextField(blank=True, null=True)
+    result_file = models.CharField(max_length=255, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.job_id
+    
+#for annotategenome pipeline
+class GenomeAnnotationJob(models.Model):
+    job_id = models.CharField(max_length=30, unique=True)
+    status = models.CharField(max_length=20, default="running")
+    message = models.TextField(blank=True, null=True)
+    result_file = models.CharField(max_length=255, blank=True, null=True)
+    created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.job_id

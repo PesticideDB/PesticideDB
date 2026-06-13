@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}Annotate Gene - Results{% endblock %}
+
+{% block content %}
+<br><br><br>
+
+<div class="container">
+
+    <div class="container bg-secondary text-white rounded shadow-lg p-4">
+        <h3>Annotate Gene Result</h3>
+        <p>
+            Job number: <strong>{{ job.job_id }}</strong>
+        </p>
+        <p>
+            Status: <strong>{{ job.status }}</strong>
+        </p>
+    </div>
+
+    <br>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    {% if nohit %}
+        <div class="alert alert-warning text-center shadow-sm">
+            <h4>No hit found</h4>
+            <p>
+                {{ message }}
+            </p>
+        </div>
+    {% endif %}
+
+    {% if results %}
+
+        <div class="alert alert-success text-center shadow-sm">
+            <h4>Your job completed successfully</h4>
+            <p>
+                Found <strong>{{ results|length }}</strong> annotation result(s).
+            </p>
+
+            <a href="{% url 'annotategene_download' job.job_id %}" class="btn btn-primary">
+                Download annotation results
+            </a>
+        </div>
+
+        <br>
+
+        {% if pesticide_hits %}
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4>Hits per Pesticide</h4>
+            <table class="table table-hover table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Pesticide</th>
+                        <th>Number of Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pesticide_hits %}
+                    <tr>
+                        <td>{{ p.pesticide|default:"-" }}</td>
+                        <td>{{ p.hit_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if hmmer_hits %}
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4>HMMER Family Summary</h4>
+            <table class="table table-hover table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>HMMER Family</th>
+                        <th>Number of Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in hmmer_hits %}
+                    <tr>
+                        <td>{{ h.hmmer_family|default:"-" }}</td>
+                        <td>{{ h.hit_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4>Detailed Annotation Results</h4>
+
+            {% for r in results %}
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-dark text-white">
+                    <strong>Query:</strong> {{ r.query }}
+                </div>
+
+                <div class="card-body">
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Database Annotation</h5>
+
+                            <p><strong>PesticideDB Protein ID:</strong>
+                                {% if r.pesticidedb_protein_id %}
+                                    <a href="{% url 'protein_detail' r.pesticidedb_protein_id %}">
+                                        {{ r.pesticidedb_protein_id }}
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+
+                            <p><strong>NCBI Protein Accession:</strong> {{ r.ncbi_protein_accession|default:"-" }}</p>
+                            <p><strong>Reported Protein:</strong> {{ r.reported_protein_name|default:"-" }}</p>
+                            <p><strong>Gene Name:</strong> {{ r.gene_name|default:"-" }}</p>
+                            <p><strong>Enzyme Class:</strong> {{ r.enzyme_class|default:"-" }}</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5>Biodegradation Information</h5>
+
+                            <p><strong>Pesticide:</strong> {{ r.pesticide|default:"-" }}</p>
+                            <p><strong>Microorganism:</strong> {{ r.microorganism|default:"-" }}</p>
+                            <p><strong>Evidence Type:</strong> {{ r.evidence_type|default:"-" }}</p>
+                            <p><strong>Year:</strong> {{ r.year|default:"-" }}</p>
+
+                            <p><strong>DOI:</strong>
+                                {% if r.doi %}
+                                    {{ r.doi }}
+                                    <a target="_blank"
+                                       href="https://scholar.google.com/scholar?q={{ r.doi|urlencode }}">
+                                        (Google Scholar)
+                                    </a>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>DIAMOND Similarity Result</h5>
+                            <p><strong>Identity:</strong> {{ r.identity|default:"-" }}%</p>
+                            <p><strong>DIAMOND E-value:</strong> {{ r.diamond_evalue|default:"-" }}</p>
+                            <p><strong>Bit score:</strong> {{ r.bitscore|default:"-" }}</p>
+                        </div>
+
+                        <div class="col-md-6">
+                            <h5>HMMER Family Result</h5>
+                            <p><strong>HMMER Family:</strong> {{ r.hmmer_family|default:"-" }}</p>
+                            <p><strong>Family Size:</strong> {{ r.family_size|default:"-" }}</p>
+                            <p><strong>HMMER E-value:</strong> {{ r.hmmer_evalue|default:"-" }}</p>
+
+                            <p><strong>Family Confidence:</strong>
+                                {% if r.family_confidence == "HIGH" %}
+                                    <span class="badge badge-success">HIGH</span>
+                                {% elif r.family_confidence == "MEDIUM" %}
+                                    <span class="badge badge-primary">MEDIUM</span>
+                                {% elif r.family_confidence == "LOW" %}
+                                    <span class="badge badge-warning">LOW</span>
+                                {% elif r.family_confidence == "VERY LOW" %}
+                                    <span class="badge badge-danger">VERY LOW</span>
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-secondary mt-3">
+                        <strong>Interpretation:</strong>
+                        DIAMOND reports the closest protein-level match, while HMMER reports the broader enzyme-family match.
+                        Family confidence is based on how many reference proteins are currently available for that enzyme class in PesticideDB.
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+    {% endif %}
+
+</div>
+
+<br><br><br>
+{% endblock %}

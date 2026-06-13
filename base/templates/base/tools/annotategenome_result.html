@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Annotate Genome - Results{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<div class="container">
+
+    <div class="container bg-secondary text-white rounded shadow-lg p-4 text-center">
+        <h3>Annotate Genome Result</h3>
+        <p>
+            Job number: <strong>{{ job.job_id }}</strong>
+        </p>
+        <p>
+            Status: <strong>{{ job.status }}</strong>
+        </p>
+    </div>
+
+    <br>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    {% if nohit %}
+        <div class="alert alert-warning text-center shadow-sm">
+            <h4>No hit found</h4>
+            <p>{{ message }}</p>
+        </div>
+    {% endif %}
+
+    {% if results %}
+
+        <div class="alert alert-success text-center shadow-sm">
+            <h4>Your job completed successfully</h4>
+            <p>
+                Found <strong>{{ results|length }}</strong> genome annotation hit(s).
+            </p>
+
+            <a href="{% url 'annotategenome_download' job.job_id %}" class="btn btn-primary">
+                Download annotation results
+            </a>
+        </div>
+
+        <br>
+
+        {% if pesticide_hits %}
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">Table 1: Hits per Pesticide</h4>
+
+            <table class="table table-hover table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Pesticide</th>
+                        <th>Number of Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pesticide_hits %}
+                    <tr>
+                        <td>{{ p.pesticide|default:"-" }}</td>
+                        <td>{{ p.hit_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">
+                Table 2: Details of Each Specific Hit
+            </h4>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered text-center">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Query Sequence</th>
+                            <th>PesticideDB Protein ID</th>
+                            <th>NCBI Protein Accession</th>
+                            <th>Reported Protein</th>
+                            <th>Percent Identity</th>
+                            <th>Alignment Length</th>
+                            <th>E-value</th>
+                            <th>Bit Score</th>
+                            <th>Enzyme Class</th>
+                            <th>Gene Name</th>
+                            <th>Microorganism</th>
+                            <th>Pesticide</th>
+                            <th>Evidence Type</th>
+                            <th>Year</th>
+                            <th>DOI</th>
+                            <th>Secreted</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for r in results %}
+                    <tr>
+                        <td>{{ r.query|default:"-" }}</td>
+
+                        <td>
+                            {% if r.pesticidedb_protein_id and r.pesticidedb_protein_id != "-" %}
+                                <a href="{% url 'protein_detail' r.protein_detail_id %}">
+                                    {{ r.pesticidedb_protein_id }}
+                                </a>
+                            {% elif r.pbdb_protein_id and r.pbdb_protein_id != "-" %}
+                                <a href="{% url 'protein_detail' r.pbdb_protein_id %}">
+                                    {{ r.pbdb_protein_id }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td>{{ r.ncbi_protein_accession|default:"-" }}</td>
+                        <td>{{ r.reported_protein_name|default:"-" }}</td>
+                        <td>{{ r.identity|default:"-" }}</td>
+                        <td>{{ r.alignment_length|default:"-" }}</td>
+                        <td>{{ r.diamond_evalue|default:"-" }}</td>
+                        <td>{{ r.bitscore|default:"-" }}</td>
+                        <td>{{ r.enzyme_class|default:"-" }}</td>
+                        <td>{{ r.gene_name|default:"-" }}</td>
+                        <td>{{ r.microorganism|default:"-" }}</td>
+                        <td>{{ r.pesticide|default:"-" }}</td>
+                        <td>{{ r.evidence_type|default:"-" }}</td>
+                        <td>{{ r.year|default:"-" }}</td>
+                        <td>{{ r.doi|default:"-" }}</td>
+                        <td>{{ r.secreted|default:"NA" }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<br><br><br>
+
+{% endblock %}

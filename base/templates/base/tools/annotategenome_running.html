@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block title %}Annotate Genome - Running{% endblock %}
+
+{% block content %}
+
+<div class="container text-center" style="margin-top: 80px;">
+
+    <h2 class="mb-4">Annotate Genome</h2>
+
+    <div class="card shadow p-4" style="max-width: 650px; margin: auto;">
+
+        <h4 class="text-primary mb-3">
+            Your job is currently running
+        </h4>
+
+        <p>
+            Your job number is:
+            <strong>{{ job.job_id }}</strong>
+        </p>
+
+        <div class="spinner-border text-primary mt-3 mb-3" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+
+        <p class="text-muted">
+            This page will automatically refresh every 10 seconds.
+        </p>
+
+        <hr>
+
+        <p>
+            Please do not close this page while processing.
+        </p>
+
+    </div>
+
+</div>
+
+<script>
+    setTimeout(function() {
+        window.location.reload();
+    }, 10000);
+</script>
+
+{% endblock %}
