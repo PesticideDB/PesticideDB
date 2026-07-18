@@ -1,10 +1,19 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}PesticideDB - Annotate Gene{% endblock %}
 
 {% block content %}
 
 <br><br><br>
+
+<div class="container">
+    <div class="alert alert-warning">
+        <strong>Annotation disclaimer:</strong>
+        This tool reports candidate pesticide-related proteins based on DIAMOND/HMMER similarity.
+        Results should be validated with curated evidence or experiments before being interpreted as confirmed degradation activity.
+    </div>
+</div>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -19,7 +28,19 @@
                 <br>
                 <p>
                     Please upload a FASTA file containing protein sequences or nucleotide sequences. DNA sequences will be translated into proteins using Prodigal before annotation. Short DNA fragments may not produce results.
-                    File names should contain only letters and numbers (A–Z, 0–9). Avoid spaces and special characters. This tool searches your sequence against PesticideDB reference proteins using DIAMOND and confirms enzyme-family assignment using HMMER.
+                    File names should contain only letters and numbers (A-Z, 0-9). Avoid spaces and special characters. This tool searches your sequence against validated PesticideDB reference proteins using DIAMOND. Protein queries also receive HMMER enzyme-family support; nucleotide gene queries are translated directly with DIAMOND BLASTX.
+                </p>
+                <p class="mb-0">
+                    <strong>Interpretation:</strong> Results are candidate functional annotations based on sequence similarity and family profiles. They should not be treated as experimentally confirmed pesticide degradation unless the matched database record has supporting evidence.
+                </p>
+                <p class="mt-2 mb-0">
+                    <strong>Example:</strong>
+                    Test with <em>tfdB</em> / 2,4-dichlorophenol hydroxylase from
+                    <em>Cupriavidus pinatubonensis</em> JMP134, a cited PesticideDB protein record
+                    (<code>PDBP0047</code>, NCBI <code>AAR31035.1</code>).
+                    <a class="text-white font-weight-bold" href="{% static 'base/examples/annotate_gene_tfdB_AAR31035.fasta' %}" download>
+                        Download example FASTA
+                    </a>
                 </p>
             </div>
         </div>
@@ -34,33 +55,44 @@
                 </select>
                 <br>
                 <p>
-                    DIAMOND identifies the closest known protein match. HMMER detects the broader enzyme-family profile.
+                    DIAMOND identifies and ranks all validated protein matches that pass your thresholds. HMMER detects the broader enzyme-family profile.
+                    Choose DIAMOND only when HMMER is unavailable on your server or when you need a faster preliminary search.
                 </p>
             </div>
         </div>
 
-        <!-- E-value -->
+        <!-- Review E-value -->
         <div class="row p-3">
             <div class="col-2 align-self-center">
-                <p>E-value 1e-x</p>
+                <p>Review E-value 1e-x</p>
             </div>
             <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
-                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="5">
+                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="3">
                 <br>
                 <p>
-                    Expected number of chance matches in a random model. For example, 5 means 1e-5.
-                    Suggested values: 3 = loose, 5 = medium, 20 = strict.
+                    This value does not hide results. It marks which reported alignments meet your preferred review criterion.
+                    For example, 3 means 1e-3. Suggested values: 3 = broad review, 5 = medium, 20 = strict.
                 </p>
             </div>
         </div>
 
         <!-- Percent identity -->
         <div class="row p-3">
-            <div class="col-2 align-self-center">Percent identity</div>
+            <div class="col-2 align-self-center">Review identity</div>
             <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
-                <input id="pident" max="100" min="0" name="pident" required type="number" value="30">
+                <input id="pident" max="100" min="0" name="pident" required type="number" value="25">
                 <p>
-                    Minimum DIAMOND percent identity. Suggested values: 30 = medium, 70 = strict.
+                    Used to mark results for review, not to remove them. Default 25% is broad discovery.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Review query coverage</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="query_coverage" max="100" min="0" name="query_coverage" required type="number" value="30">
+                <p>
+                    Used to mark results for review, not to remove them. Default 30% keeps partial candidates visible; 60-80% is a stricter full-length criterion.
                 </p>
             </div>
         </div>

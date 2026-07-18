@@ -146,7 +146,7 @@
 <div class="row justify-content-md-center">
     <div class="col-sm-11" align="center">
 
-        <!-- ✅ NEW: show no-evidence message (if searched pesticide has no evidence) -->
+        <!-- Show no-evidence message if searched pesticide has no evidence. -->
         {% if no_evidence_message %}
         <div class="alert alert-warning mb-3">
             <i class="fas fa-exclamation-triangle"></i>
@@ -170,9 +170,13 @@
                     <th scope="col" class="align-middle">Microorganism</th>
                     <th scope="col" class="align-middle">Pesticide</th>
                     <th scope="col" class="align-middle">Evidence</th>
+                    <th scope="col" class="align-middle">Evidence level</th>
+                    <th scope="col" class="align-middle">Assay type</th>
                     <th scope="col" class="align-middle">Gene</th>
                     <th scope="col" class="align-middle">Protein</th>
                     <th scope="col" class="align-middle">Enzyme name (reported)</th>
+                    <th scope="col" class="align-middle">Degradation</th>
+                    <th scope="col" class="align-middle">Metabolite/product</th>
                     <th scope="col" class="align-middle">Isolation environment</th>
                     <th scope="col" class="align-middle">Isolation location</th>
                     <th scope="col" class="align-middle">Reference</th>
@@ -185,9 +189,22 @@
                         <td>{{ result.microorganism|default:"-" }}</td>
                         <td>{{ result.pesticide|default:"-" }}</td>
                         <td>{{ result.evidence_by_microbe|default:"-" }}</td>
+                        <td>{{ result.evidence_level|default:"-" }}</td>
+                        <td>{{ result.assay_type|default:"-" }}</td>
                         <td>{{ result.gene|default:"-" }}</td>
                         <td>{{ result.enzyme|default:"-" }}</td>
                         <td>{{ result.enzyme_name_reported|default:"-" }}</td>
+                        <td>
+                            {% if result.degradation_percent or result.degradation_time_days %}
+                                {{ result.degradation_percent|default:"-" }}
+                                {% if result.degradation_time_days %}
+                                    over {{ result.degradation_time_days }}
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ result.metabolite_or_product|default:"-" }}</td>
                         <td>{{ result.isolation_environment|default:"-" }}</td>
                         <td>{{ result.isolation_location|default:"-" }}</td>
                         <td class="text-nowrap">
@@ -210,7 +227,7 @@
                     {% endfor %}
                 {% else %}
                     <tr>
-                        <td colspan="9" class="text-center py-4">
+                        <td colspan="13" class="text-center py-4">
                             {% if is_search %}
                                 {% if no_evidence_message %}
                                     <div class="alert alert-warning mb-0">

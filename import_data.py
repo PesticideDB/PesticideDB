@@ -38,7 +38,7 @@ def import_pesticide_data():
     - Keeps duplicates (DDT can appear many times)
     - Clears table before import
     """
-    excel_path = os.path.join(BASE_DIR, "pesticide_data.xlsx")
+    excel_path = os.path.join(BASE_DIR, "data_files", "core", "pesticide_data.xlsx")
 
     if not os.path.exists(excel_path):
         raise FileNotFoundError(f"❌ File not found: {excel_path}")
@@ -47,7 +47,7 @@ def import_pesticide_data():
     df.columns = [c.strip() for c in df.columns]
 
     if "Pesticide" not in df.columns:
-        raise ValueError("❌ 'Pesticide' column missing in pesticide_data.xlsx")
+        raise ValueError("❌ 'Pesticide' column missing in data_files/core/pesticide_data.xlsx")
 
     # Clean pesticide column
     df["Pesticide"] = df["Pesticide"].astype(str).str.strip()
@@ -112,7 +112,7 @@ def import_no_evidence_data():
     Import pesticides with NO experimental evidence.
     - One row per pesticide (deduplicated)
     """
-    excel_path = os.path.join(BASE_DIR, "no_evidence_pesticide.xlsx")
+    excel_path = os.path.join(BASE_DIR, "data_files", "core", "no_evidence_pesticide.xlsx")
 
     if not os.path.exists(excel_path):
         raise FileNotFoundError(f"❌ File not found: {excel_path}")
@@ -127,7 +127,7 @@ def import_no_evidence_data():
                 df.rename(columns={c: "Pesticide"}, inplace=True)
 
     if "Pesticide" not in df.columns:
-        raise ValueError("❌ 'Pesticide' column missing in no_evidence_pesticide.xlsx")
+        raise ValueError("❌ 'Pesticide' column missing in data_files/core/no_evidence_pesticide.xlsx")
 
     df["Pesticide"] = df["Pesticide"].astype(str).str.strip()
     df = df[df["Pesticide"] != ""]

@@ -22,7 +22,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ pesticides_with_evidence }}</h1>
-                <h5>Pesticides with Evidence</h5>
+                <h5>Pesticides with Biodegradation Evidence</h5>
                 <small class="text-muted">Unique pesticides in evidence table</small>
             </div>
         </div>
@@ -32,7 +32,7 @@
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ pesticides_no_evidence }}</h1>
-                <h5>Pesticides with No Evidence</h5>
+                <h5>Pesticides with No Biodegradation Evidence</h5>
                 <small class="text-muted">Unique pesticides lacking experimental data</small>
             </div>
         </div>
@@ -40,7 +40,39 @@
 </div>
 
 <div class="row">
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
+                <h5>Total Proteins</h5>
+                <small class="text-muted">Curated + supplemented Protein records</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ curated_protein_count }}</h1>
+                <h5>Curated Proteins</h5>
+                <small class="text-muted">Original experimentally supported Protein records</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ supplemented_protein_count }}</h1>
+                <h5>Supplemented Proteins</h5>
+                <small class="text-muted">Validated purified or recombinant protein records</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
@@ -49,13 +81,31 @@
         </div>
     </div>
 
-    <div class="col-md-6 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
-                <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
-                <h5>Proteins</h5>
+                <h1 class="display-4 text-primary">{{ structure_count }}</h1>
+                <h5>Protein Structures</h5>
+                <small class="text-muted">Local predicted PDB models</small>
             </div>
         </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ reference_count }}</h1>
+                <h5>References</h5>
+                <small class="text-muted">Curated DOI/reference entries</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <strong>Release:</strong> PesticideDB v{{ database_version }}, {{ release_date }}.
+        Last updated {{ last_update_date }}. Counts on this page reflect the current local database.
     </div>
 </div>
 

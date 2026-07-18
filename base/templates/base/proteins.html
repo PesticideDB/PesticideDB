@@ -89,6 +89,43 @@
           </div>
         </div>
 
+        <!-- Collection category -->
+        <div class="row p-1">
+          <div class="col-3 align-self-center">Collection</div>
+          <div class="col-9 align-self-center">
+            <select class="form-control" id="collection_category_field" name="collection_category">
+              <option value="">--- Select Collection ---</option>
+              {% for c in collection_category_list %}
+                <option value="{{ c }}" {% if selected_collection_category == c %}selected{% endif %}>{{ c }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- UniProt availability -->
+        <div class="row p-1">
+          <div class="col-3 align-self-center">UniProt</div>
+          <div class="col-9 align-self-center">
+            <select class="form-control" id="uniprot_available_field" name="uniprot_available">
+              <option value="">--- Any UniProt Status ---</option>
+              <option value="available" {% if selected_uniprot_available == "available" %}selected{% endif %}>Available</option>
+              <option value="not_available" {% if selected_uniprot_available == "not_available" %}selected{% endif %}>Not available</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Structure availability -->
+        <div class="row p-1">
+          <div class="col-3 align-self-center">3D structure</div>
+          <div class="col-9 align-self-center">
+            <select class="form-control" id="structure_available_field" name="structure_available">
+              <option value="">--- Any Structure Status ---</option>
+              <option value="available" {% if selected_structure_available == "available" %}selected{% endif %}>Available</option>
+              <option value="not_available" {% if selected_structure_available == "not_available" %}selected{% endif %}>Not available</option>
+            </select>
+          </div>
+        </div>
+
         <br>
         <div class="row p-1">
           <div class="col-1 align-self-center"></div>
@@ -137,9 +174,12 @@
           <th class="align-middle">Pesticide</th>
           <th class="align-middle">Microorganism</th>
           <th class="align-middle">Evidence type</th>
+          <th class="align-middle">Collection</th>
           <th class="align-middle">Enzyme class</th>
           <th class="align-middle">Protein (reported)</th>
           <th class="align-middle">PesticideDB Protein ID</th>
+          <th class="align-middle">UniProt Accession</th>
+          <th class="align-middle">3D Structure</th>
           <th class="align-middle">Gene name</th>
           <th class="align-middle">Year</th>
           <th class="align-middle">DOI</th>
@@ -153,8 +193,17 @@
             <td>{{ r.pesticide|default:"-" }}</td>
             <td>{{ r.microorganism|default:"-" }}</td>
             <td>{{ r.evidence_type|default:"-" }}</td>
+            <td>{{ r.collection_category|default:"-" }}</td>
             <td>{{ r.enzyme_class|default:"-" }}</td>
-            <td>{{ r.reported_protein_name|default:"-" }}</td>
+            <td>
+              {% if r.uniprot_accession %}
+                <a target="_blank" href="https://www.uniprot.org/uniprotkb/{{ r.uniprot_accession }}/entry">
+                  {{ r.reported_protein_name|default:r.uniprot_accession }}
+                </a>
+              {% else %}
+                {{ r.reported_protein_name|default:"-" }}
+              {% endif %}
+            </td>
 
             <!-- ✅ Robust Protein ID display + link -->
             <td class="text-nowrap">
@@ -168,6 +217,24 @@
                 </a>
               {% else %}
                 -
+              {% endif %}
+            </td>
+
+            <td class="text-nowrap">
+              {% if r.uniprot_accession %}
+                <a target="_blank" href="https://www.uniprot.org/uniprotkb/{{ r.uniprot_accession }}/entry">
+                  {{ r.uniprot_accession }}
+                </a>
+              {% else %}
+                -
+              {% endif %}
+            </td>
+
+            <td>
+              {% if r.has_structure %}
+                <span class="badge badge-success">Available</span>
+              {% else %}
+                <span class="badge badge-secondary">Not available</span>
               {% endif %}
             </td>
 
@@ -190,7 +257,7 @@
           {% endfor %}
         {% else %}
           <tr>
-            <td colspan="9" class="text-center py-4">
+            <td colspan="12" class="text-center py-4">
               {% if is_search %}
                 <div class="alert alert-warning mb-0">
                   <i class="fas fa-exclamation-triangle"></i>

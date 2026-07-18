@@ -10,6 +10,11 @@
                     <h5 class="mb-0">Submit your biodegradation evidence</h5>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-info">
+                        Submitted records are stored in a curator review queue first. After superuser review,
+                        approved sections can be imported into the microorganism/evidence records, protein
+                        records, or pathway curation queue.
+                    </div>
                     <form method="POST" action="{% url 'submit_your_data' %}">
                         {% csrf_token %}
                         
@@ -90,6 +95,7 @@
                             <th scope="col">Pesticide</th>
                             <th scope="col">Microorganism</th>
                             <th scope="col">Protein</th>
+                            <th scope="col">Review status</th>
                             <th scope="col">Submitted</th>
                         </tr>
                     </thead>
@@ -99,6 +105,7 @@
                             <td>{{ submission.pesticide }}</td>
                             <td>{{ submission.microorganism_name }}</td>
                             <td>{{ submission.protein|default:"-" }}</td>
+                            <td>{{ submission.get_review_status_display }}</td>
                             <td>{{ submission.submitted_at|date:"Y-m-d" }}</td>
                         </tr>
                         {% endfor %}

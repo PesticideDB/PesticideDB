@@ -1,45 +1,51 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
-from django.db.models.functions import Lower
 from django.http import HttpResponse, FileResponse, Http404
 from django.conf import settings
+from django.views.decorators.http import require_POST
 
+import csv
+import json
 import os
+import re
 import threading
-import shutil
 import random
-
-import uuid
-import pandas as pd
-from django.shortcuts import render, redirect, get_object_or_404
-from django.http import FileResponse, Http404
-from django.conf import settings
-from .models import  Pesticide, NoEvidencePesticide, DataSubmission, ProteinRecord, AnnotationJob, GenomeAnnotationJob, ProteinRecord
+import subprocess
 
 import requests
 import xml.etree.ElementTree as ET
 
+from .annotation_utils import (
+    annotate_diamond_hits,
+    detect_fasta_sequence_type,
+    read_annotation_results,
+    write_best_match_results,
+)
 from .forms import DataSubmissionForm
-from base.utils import pesticide_counts
-
-from django.contrib import messages
-from .models import GenomeAnnotationJob, ProteinRecord
+from .models import (
+    AnnotationJob,
+    Compound,
+    DataSubmission,
+    DegradationPathway,
+    DegradationPathwayStep,
+    GenomeAnnotationJob,
+    NoEvidencePesticide,
+    PathwayEvidence,
+    Pesticide,
+    ProteinRecord,
+)
+from base.utils import (
+    canonical_pesticide_names,
+    clean_pesticide_name,
+    curated_pathway_pesticide_names,
+    database_summary,
+    microorganism_count,
+    pesticide_counts,
+)
 
 def home(request):
     counts = pesticide_counts()
-
-    microorganisms_count = (
-        Pesticide.objects
-        .exclude(pesticide='')
-        .exclude(pesticide__isnull=True)
-        .exclude(microorganism='')
-        .exclude(microorganism__isnull=True)
-        .exclude(microorganism__iexact='not specified')
-        .annotate(p=Lower('pesticide'), m=Lower('microorganism'))
-        .values('p', 'm')
-        .distinct()
-        .count()
-    )
+    summary = database_summary()
 
     proteins_count = ProteinRecord.objects.count()
 
@@ -48,9 +54,10 @@ def home(request):
         "pesticides_with_evidence": counts["with_evidence"],
         "pesticides_no_evidence": counts["no_evidence"],
         "pesticide_count": counts["total"],
-        "microorganisms_count": microorganisms_count,
+        "microorganisms_count": microorganism_count(),
         "proteins_count": proteins_count,
         "protein_version": "1.0",
+        **summary,
     }
     return render(request, "base/home.html", context)
 
@@ -58,25 +65,12 @@ def home(request):
 def about(request):
     counts = pesticide_counts()
 
-    microorganisms_count = (
-        Pesticide.objects
-        .exclude(pesticide='')
-        .exclude(pesticide__isnull=True)
-        .exclude(microorganism='')
-        .exclude(microorganism__isnull=True)
-        .exclude(microorganism__iexact='not specified')
-        .annotate(p=Lower('pesticide'), m=Lower('microorganism'))
-        .values('p', 'm')
-        .distinct()
-        .count()
-    )
-
     context = {
         "total_pesticides": counts["total"],
         "pesticides_with_evidence": counts["with_evidence"],
         "pesticides_no_evidence": counts["no_evidence"],
         "pesticide_count": counts["total"],
-        "microorganisms_count": microorganisms_count,
+        "microorganisms_count": microorganism_count(),
     }
     return render(request, "base/about.html", context)
 
@@ -85,7 +79,140 @@ def contact(request):
     return render(request, "base/contact.html")
 
 
-# ✅ ONLY THIS FUNCTION CHANGED: microorganisms()
+def help(request):
+    return render(request, "base/help.html", database_summary())
+
+
+def citation_download(request):
+    counts = pesticide_counts()
+    summary = database_summary()
+    context = {
+        "total_pesticides": counts["total"],
+        "pesticides_with_evidence": counts["with_evidence"],
+        "pesticides_no_evidence": counts["no_evidence"],
+        "microorganisms_count": microorganism_count(),
+        "proteins_count": ProteinRecord.objects.count(),
+        **summary,
+    }
+    return render(request, "base/citation_download.html", context)
+
+
+def download_proteins_csv(request):
+    fields = [
+        "pesticidedb_protein_id",
+        "reported_protein_name",
+        "pesticide",
+        "microorganism",
+        "evidence_type",
+        "collection_category",
+        "enzyme_class",
+        "gene_name",
+        "ncbi_protein_accession",
+        "uniprot_accession",
+        "year",
+        "doi",
+    ]
+    return queryset_csv_response(
+        ProteinRecord.objects.all().order_by("pesticidedb_protein_id"),
+        fields,
+        "pesticidedb_proteins.csv",
+    )
+
+
+def download_pesticides_csv(request):
+    fields = [
+        "pesticide",
+        "microorganism",
+        "gene",
+        "enzyme",
+        "evidence_by_microbe",
+        "evidence_of_enzyme",
+        "evidence_level",
+        "assay_type",
+        "isolation_environment",
+        "isolation_location",
+        "degradation_time_days",
+        "degradation_percent",
+        "metabolite_or_product",
+        "publication_year",
+        "doi",
+        "pmid",
+        "reference",
+    ]
+    return queryset_csv_response(
+        Pesticide.objects.all().order_by("pesticide", "microorganism"),
+        fields,
+        "pesticidedb_biodegradation_records.csv",
+    )
+
+
+def download_no_evidence_csv(request):
+    fields = ["pesticide", "evidence_of_biodegradation"]
+    return queryset_csv_response(
+        NoEvidencePesticide.objects.all().order_by("pesticide"),
+        fields,
+        "pesticidedb_no_evidence_pesticides.csv",
+    )
+
+
+def download_pathway_evidence_csv(request):
+    fields = [
+        "pesticide",
+        "title",
+        "microorganism",
+        "completeness",
+        "summary",
+        "doi",
+        "reference",
+    ]
+    return queryset_csv_response(
+        DegradationPathway.objects.all().order_by("pesticide", "title"),
+        fields,
+        "pesticidedb_pathway_evidence_records.csv",
+    )
+
+
+def download_annotation_asset(request, asset_name):
+    pathway_data_dir = settings.BASE_DIR / "data_files" / "pathway"
+    allowed_assets = {
+        "protein-master": settings.PBDB_ANNOTATION_DIR / "data" / "PBDB_master_with_ids.xlsx",
+        "reference-fasta": settings.PBDB_ANNOTATION_DIR / "data" / "pbdb_validated_reference_proteins.faa",
+        "validated-supplemental-proteins": (
+            settings.BASE_DIR
+            / "curation_outputs"
+            / "supplemented_validated_protein_evidence_15.xlsx"
+        ),
+        "discovery-candidates": (
+            settings.BASE_DIR
+            / "curation_outputs"
+            / "supplemented_discovery_candidates_179.xlsx"
+        ),
+        "structure-report": settings.MEDIA_ROOT / "protein_structures" / "metadata" / "alphafold_download_report.csv",
+        "pathway-evidence-master": pathway_data_dir / "PesticideDB_Pathway_Evidence_Master.xlsx",
+        "pathway-evidence-master-csv": pathway_data_dir / "PesticideDB_Pathway_Evidence_Master.csv",
+        "stepwise-pathway-master": pathway_data_dir / "PesticideDB_Stepwise_Pathway_Master.xlsx",
+        "stepwise-pathway-master-csv": pathway_data_dir / "PesticideDB_Stepwise_Pathway_Master.csv",
+        "compound-smiles-structure-inventory": pathway_data_dir / "PesticideDB_Compound_SMILES_Structure_Inventory.csv",
+        "compound-smiles-smi": pathway_data_dir / "PesticideDB_Compound_SMILES.smi",
+        "missing-stepwise-pathway-information": pathway_data_dir / "PesticideDB_Missing_Stepwise_Pathway_Information.xlsx",
+        "pathway-doi-redownload-manifest": pathway_data_dir / "PesticideDB_Pathway_DOI_Redownload_Manifest.csv",
+    }
+    path = allowed_assets.get(asset_name)
+    if not path or not path.exists():
+        raise Http404("Download file not found.")
+    return FileResponse(open(path, "rb"), as_attachment=True, filename=path.name)
+
+
+def queryset_csv_response(queryset, fields, filename):
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    writer = csv.writer(response)
+    writer.writerow(fields)
+    for obj in queryset:
+        writer.writerow([getattr(obj, field, "") or "" for field in fields])
+    return response
+
+
 def microorganisms(request):
     results = []
     is_search = False
@@ -140,7 +267,6 @@ def microorganisms(request):
             results = queryset.order_by('microorganism', 'pesticide')[:100]
             is_search = False
 
-    # ✅ NEW: dropdown values for microorganisms.html
     base_qs = Pesticide.objects.all()
 
     microorganisms_list = (
@@ -150,11 +276,7 @@ def microorganisms(request):
         .distinct().order_by("microorganism")
     )
 
-    pesticides_list = (
-        base_qs.values_list("pesticide", flat=True)
-        .exclude(pesticide__isnull=True).exclude(pesticide="")
-        .distinct().order_by("pesticide")
-    )
+    pesticides_list = canonical_pesticide_names()
 
     evidence_list = (
         base_qs.values_list("evidence_by_microbe", flat=True)
@@ -192,7 +314,6 @@ def microorganisms(request):
         'total_count': results.count() if hasattr(results, 'count') else len(results),
         'no_evidence_message': no_evidence_message,
 
-        # ✅ send dropdown options
         'microorganisms_list': microorganisms_list,
         'pesticides_list': pesticides_list,
         'evidence_list': evidence_list,
@@ -201,7 +322,6 @@ def microorganisms(request):
         'environment_list': environment_list,
         'location_list': location_list,
 
-        # ✅ keep selected values (so it stays selected after search)
         'selected_microorganism': microorganism,
         'selected_pesticide': pesticide,
         'selected_evidence': evidence,
@@ -213,7 +333,7 @@ def microorganisms(request):
     return render(request, 'base/microorganisms.html', context)
 
 
-# ================= PROTEINS LIST (UNCHANGED) =================
+# ================= PROTEINS LIST =================
 
 def proteins(request):
     """
@@ -231,6 +351,9 @@ def proteins(request):
     selected_pesticide = request.GET.get("pesticide", "").strip()
     selected_enzyme_class = request.GET.get("enzyme_class", "").strip()
     selected_evidence_type = request.GET.get("evidence_type", "").strip()
+    selected_collection_category = request.GET.get("collection_category", "").strip()
+    selected_uniprot_available = request.GET.get("uniprot_available", "").strip()
+    selected_structure_available = request.GET.get("structure_available", "").strip()
 
     qs = base_qs
 
@@ -247,7 +370,7 @@ def proteins(request):
         qs = qs.filter(microorganism=selected_microorganism)
 
     if selected_pesticide:
-        qs = qs.filter(pesticide=selected_pesticide)
+        qs = qs.filter(pesticide__iexact=selected_pesticide)
 
     if selected_enzyme_class:
         qs = qs.filter(enzyme_class=selected_enzyme_class)
@@ -255,13 +378,41 @@ def proteins(request):
     if selected_evidence_type:
         qs = qs.filter(evidence_type=selected_evidence_type)
 
+    if selected_collection_category:
+        qs = qs.filter(collection_category=selected_collection_category)
+
+    if selected_uniprot_available == "available":
+        qs = qs.exclude(uniprot_accession__isnull=True).exclude(uniprot_accession="")
+    elif selected_uniprot_available == "not_available":
+        qs = qs.filter(Q(uniprot_accession__isnull=True) | Q(uniprot_accession=""))
+
+    if selected_structure_available:
+        structure_ids = []
+        structure_dir = settings.MEDIA_ROOT / "protein_structures" / "pdb"
+        for protein in qs.only("id", "pesticidedb_protein_id", "pbdb_protein_id"):
+            display_id = protein.pesticidedb_protein_id or protein.pbdb_protein_id
+            has_structure = bool(display_id and (structure_dir / f"{display_id}.pdb").exists())
+            if (selected_structure_available == "available" and has_structure) or (
+                selected_structure_available == "not_available" and not has_structure
+            ):
+                structure_ids.append(protein.id)
+        qs = qs.filter(id__in=structure_ids)
+
     is_search = any([
         selected_protein, selected_protein_id, selected_microorganism,
-        selected_pesticide, selected_enzyme_class, selected_evidence_type
+        selected_pesticide, selected_enzyme_class, selected_evidence_type,
+        selected_collection_category, selected_uniprot_available,
+        selected_structure_available
     ])
 
     total_count = qs.count()
-    results = qs[:100]
+    results = list(qs[:100])
+    for protein in results:
+        display_id = protein.pesticidedb_protein_id or protein.pbdb_protein_id
+        protein.has_structure = bool(
+            display_id
+            and (settings.MEDIA_ROOT / "protein_structures" / "pdb" / f"{display_id}.pdb").exists()
+        )
 
     proteins_list = (
         qs.values_list("reported_protein_name", flat=True)
@@ -277,13 +428,7 @@ def proteins(request):
           .exclude(pesticidedb_protein_id__iexact="nan")
           .values_list("pesticidedb_protein_id", flat=True)
     )
-    ids_b = (
-        qs.exclude(pbdb_protein_id__isnull=True)
-          .exclude(pbdb_protein_id="")
-          .exclude(pbdb_protein_id__iexact="nan")
-          .values_list("pbdb_protein_id", flat=True)
-    )
-    protein_ids_list = sorted(set(list(ids_a) + list(ids_b)))
+    protein_ids_list = sorted(set(ids_a))
 
     microorganisms_list = (
         qs.values_list("microorganism", flat=True)
@@ -293,13 +438,7 @@ def proteins(request):
         .order_by("microorganism")
     )
 
-    pesticides_list = (
-        qs.values_list("pesticide", flat=True)
-        .exclude(pesticide__isnull=True)
-        .exclude(pesticide="")
-        .distinct()
-        .order_by("pesticide")
-    )
+    pesticides_list = canonical_pesticide_names()
 
     enzyme_class_list = (
         qs.values_list("enzyme_class", flat=True)
@@ -317,6 +456,14 @@ def proteins(request):
         .order_by("evidence_type")
     )
 
+    collection_category_list = (
+        qs.values_list("collection_category", flat=True)
+        .exclude(collection_category__isnull=True)
+        .exclude(collection_category="")
+        .distinct()
+        .order_by("collection_category")
+    )
+
     context = {
         "results": results,
         "total_count": total_count,
@@ -328,6 +475,7 @@ def proteins(request):
         "pesticides_list": pesticides_list,
         "enzyme_class_list": enzyme_class_list,
         "evidence_type_list": evidence_type_list,
+        "collection_category_list": collection_category_list,
 
         "selected_protein": selected_protein,
         "selected_protein_id": selected_protein_id,
@@ -335,6 +483,9 @@ def proteins(request):
         "selected_pesticide": selected_pesticide,
         "selected_enzyme_class": selected_enzyme_class,
         "selected_evidence_type": selected_evidence_type,
+        "selected_collection_category": selected_collection_category,
+        "selected_uniprot_available": selected_uniprot_available,
+        "selected_structure_available": selected_structure_available,
     }
 
     return render(request, "base/proteins.html", context)
@@ -351,24 +502,132 @@ def protein_detail(request, pesticidedb_protein_id):
 
     display_id = p.pesticidedb_protein_id or p.pbdb_protein_id or pesticidedb_protein_id
 
-    img_rel = f"protein_structures/images/{display_id}.png"
     pdb_rel = f"protein_structures/pdb/{display_id}.pdb"
 
-    img_abs = os.path.join(settings.MEDIA_ROOT, img_rel)
     pdb_abs = os.path.join(settings.MEDIA_ROOT, pdb_rel)
 
-    structure_image_url = settings.MEDIA_URL + img_rel if os.path.exists(img_abs) else None
+    structure_image_url = None
+    for image_ext in ("png", "svg"):
+        img_rel = f"protein_structures/images/{display_id}.{image_ext}"
+        img_abs = os.path.join(settings.MEDIA_ROOT, img_rel)
+        if os.path.exists(img_abs):
+            structure_image_url = settings.MEDIA_URL + img_rel
+            break
+
     pdb_download_url = settings.MEDIA_URL + pdb_rel if os.path.exists(pdb_abs) else None
+    uniprot_accession = (p.uniprot_accession or "").strip()
+    uniprot_url = (
+        f"https://www.uniprot.org/uniprotkb/{uniprot_accession}/entry"
+        if uniprot_accession else None
+    )
+    structure_summary = parse_pdb_structure_summary(pdb_abs) if os.path.exists(pdb_abs) else {}
+    structure_source = alphafold_structure_source(display_id)
+    if structure_summary and structure_source:
+        structure_summary.update(structure_source)
+    if structure_summary and p.microorganism:
+        structure_summary["organism"] = p.microorganism
 
     context = {
         "p": p,
         "structure_image_url": structure_image_url,
         "pdb_download_url": pdb_download_url,
-        "prediction_software": "ColabFold (AlphaFold2-based)",
+        "uniprot_url": uniprot_url,
+        "structure_summary": structure_summary,
+        "prediction_software": structure_summary.get("method", "-") if pdb_download_url else "-",
         "file_format": "PDB",
     }
 
     return render(request, "base/protein_detail.html", context)
+
+
+def parse_pdb_structure_summary(pdb_path):
+    summary = {
+        "method": "AlphaFold2 monomer prediction",
+        "model_source": "AlphaFold Protein Structure Database",
+        "database_model_version": "-",
+        "source_url": "",
+        "resolution": "Not applicable",
+        "chain": "-",
+        "organism": "-",
+        "tax_id": "-",
+        "molecule": "-",
+        "atom_count": 0,
+        "residue_count": 0,
+        "mean_plddt": None,
+        "confidence_label": "-",
+    }
+    residues = set()
+    ca_confidences = []
+
+    with open(pdb_path, "r", errors="ignore") as handle:
+        for line in handle:
+            if line.startswith("COMPND") and "MOLECULE:" in line:
+                summary["molecule"] = clean_pdb_header_value(line.split("MOLECULE:", 1)[1])
+            elif line.startswith("COMPND") and "CHAIN:" in line:
+                summary["chain"] = clean_pdb_header_value(line.split("CHAIN:", 1)[1])
+            elif line.startswith("SOURCE") and "ORGANISM_SCIENTIFIC:" in line:
+                summary["organism"] = clean_pdb_header_value(
+                    line.split("ORGANISM_SCIENTIFIC:", 1)[1]
+                )
+            elif line.startswith("SOURCE") and "ORGANISM_TAXID:" in line:
+                summary["tax_id"] = clean_pdb_header_value(line.split("ORGANISM_TAXID:", 1)[1])
+            elif line.startswith("ATOM"):
+                summary["atom_count"] += 1
+                chain_id = line[21].strip()
+                residue_number = line[22:26].strip()
+                insertion_code = line[26].strip()
+                if residue_number:
+                    residues.add((chain_id, residue_number, insertion_code))
+                if line[12:16].strip() == "CA":
+                    try:
+                        ca_confidences.append(float(line[60:66].strip()))
+                    except ValueError:
+                        pass
+
+    summary["residue_count"] = len(residues)
+    if ca_confidences:
+        mean_plddt = sum(ca_confidences) / len(ca_confidences)
+        summary["mean_plddt"] = round(mean_plddt, 1)
+        if mean_plddt >= 90:
+            summary["confidence_label"] = "Very high"
+        elif mean_plddt >= 70:
+            summary["confidence_label"] = "Confident"
+        elif mean_plddt >= 50:
+            summary["confidence_label"] = "Low"
+        else:
+            summary["confidence_label"] = "Very low"
+    return summary
+
+
+def alphafold_structure_source(display_id):
+    report_path = (
+        settings.MEDIA_ROOT
+        / "protein_structures"
+        / "metadata"
+        / "alphafold_download_report.csv"
+    )
+    if not report_path.exists():
+        return {}
+
+    with report_path.open(newline="", encoding="utf-8") as handle:
+        for row in csv.DictReader(handle):
+            if row.get("pesticidedb_protein_id") != display_id:
+                continue
+            source_url = row.get("source_url", "")
+            version_match = re.search(r"model_v(\d+)", source_url)
+            return {
+                "model_source": "AlphaFold Protein Structure Database",
+                "database_model_version": (
+                    f"AFDB model v{version_match.group(1)}"
+                    if version_match else "Current AFDB API model"
+                ),
+                "source_url": source_url,
+            }
+    return {}
+
+
+def clean_pdb_header_value(value):
+    return value.replace(";", "").strip().title() or "-"
 
 
 def _efetch_fasta(db, acc, timeout=20):
@@ -399,6 +658,7 @@ def _elink(dbfrom, dbto, uid, timeout=20):
     return ids[0].text if ids else None
 
 
+@require_POST
 def fetch_ncbi_fasta(request, pesticidedb_protein_id):
     """
     Handles BOTH protein and nucleotide accessions.
@@ -508,19 +768,7 @@ def submit_your_data(request):
 
 def statistics(request):
     counts = pesticide_counts()
-
-    total_microorganisms = (
-        Pesticide.objects
-        .exclude(pesticide='')
-        .exclude(pesticide__isnull=True)
-        .exclude(microorganism='')
-        .exclude(microorganism__isnull=True)
-        .exclude(microorganism__iexact='not specified')
-        .annotate(p=Lower('pesticide'), m=Lower('microorganism'))
-        .values('p', 'm')
-        .distinct()
-        .count()
-    )
+    summary = database_summary()
 
     total_proteins = ProteinRecord.objects.count()
 
@@ -537,8 +785,9 @@ def statistics(request):
         "pesticides_with_evidence": counts["with_evidence"],
         "pesticides_no_evidence": counts["no_evidence"],
         "pesticide_count": counts["total"],
-        "total_microorganisms": total_microorganisms,
+        "total_microorganisms": microorganism_count(),
         "total_proteins": total_proteins,
+        **summary,
         "publications_by_year": publications_by_year,
     })
 
@@ -549,28 +798,119 @@ def classification(request):
 
 # ================= ANNOTATE GENE JOB SYSTEM =================
 
-def _annotation_pipeline_worker(job_id, uploaded_query):
-    """
-    Background worker for Annotate Gene.
-    Local-development version using threading.
-    Later this can be moved to Celery + Redis.
-    """
-    import subprocess
+def _safe_int(value, default, minimum=0, maximum=100):
+    try:
+        parsed = int(value)
+    except (TypeError, ValueError):
+        return default
 
-    pipeline_dir = "/Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation"
+    return min(max(parsed, minimum), maximum)
 
-    predicted_proteins = os.path.join(pipeline_dir, "data", f"{job_id}_predicted_proteins.faa")
-    diamond_result = os.path.join(pipeline_dir, "results", "diamond_results.tsv")
-    hmmer_result = os.path.join(pipeline_dir, "results", "hmmer_results.tbl")
-    hmmer_domains = os.path.join(pipeline_dir, "results", "hmmer_domains.tbl")
-    final_result = os.path.join(pipeline_dir, "results", "final_annotation_with_hmmer.csv")
 
-    diamond_db = os.path.join(pipeline_dir, "diamond_db", "pbdb_diamond")
-    hmmer_db = os.path.join(pipeline_dir, "hmmer_db", "pbdb_profiles.hmm")
+def _new_job_id(prefix, model):
+    job_id = f"{prefix}{random.randint(1000000, 9999999)}"
+    while model.objects.filter(job_id=job_id).exists():
+        job_id = f"{prefix}{random.randint(1000000, 9999999)}"
+    return job_id
 
-    job_output_dir = os.path.join(settings.MEDIA_ROOT, "annotation_jobs", job_id)
-    os.makedirs(job_output_dir, exist_ok=True)
-    downloadable_result = os.path.join(job_output_dir, f"{job_id}_annotation_results.csv")
+
+def _run_command(command, cwd=None):
+    try:
+        return subprocess.run(command, cwd=cwd, capture_output=True, text=True)
+    except FileNotFoundError as exc:
+        missing = command[0]
+        raise RuntimeError(
+            f"Required command '{missing}' was not found. Install {missing} and make sure it is available on PATH."
+        ) from exc
+
+
+def _run_diamond_search(command, result_path):
+    if result_path.exists():
+        result_path.unlink()
+
+    run = _run_command(command)
+    has_hits = result_path.exists() and result_path.stat().st_size > 0
+    return run, has_hits
+
+
+def _diamond_no_hit_message(
+    diamond_mode,
+    diamond_db,
+    query_path,
+    output_dir,
+    identity_threshold,
+    evalue_threshold,
+    coverage_threshold,
+):
+    diagnostic_path = output_dir / "diamond_permissive_diagnostic.tsv"
+    diagnostic = _run_command([
+        "diamond", diamond_mode,
+        "-d", str(diamond_db),
+        "-q", str(query_path),
+        "-o", str(diagnostic_path),
+        "--outfmt", "6",
+        "qseqid", "sseqid", "pident", "length", "evalue", "bitscore",
+        "qcovhsp", "scovhsp", "ppos",
+        "--evalue", "10",
+        "--id", "0",
+        "--query-cover", "0",
+        "--max-target-seqs", "1",
+        "--very-sensitive",
+        "--threads", "4",
+    ])
+    if diagnostic.returncode == 0 and diagnostic_path.exists():
+        first_line = next(
+            (line for line in diagnostic_path.read_text(errors="ignore").splitlines() if line),
+            "",
+        )
+        fields = first_line.split("\t")
+        if len(fields) >= 8:
+            return (
+                "A weak similarity was detected, but it did not satisfy the selected "
+                f"thresholds: identity >= {identity_threshold}%, E-value <= "
+                f"{evalue_threshold}, and query coverage >= {coverage_threshold}%. "
+                f"The strongest permissive match was {fields[1]} with {fields[2]}% "
+                f"identity, E-value {fields[4]}, query coverage {fields[6]}%, and "
+                f"subject coverage {fields[7]}%. Lower the thresholds only for "
+                "exploratory analysis and review the match manually."
+            )
+
+    return (
+        "No detectable similarity to the validated PesticideDB reference proteins was "
+        "found, even with a permissive diagnostic search. Confirm that the FASTA "
+        "contains the expected sequence type and that the reference protein has an "
+        "available sequence in the validated annotation database."
+    )
+
+
+def _master_metadata_path(pipeline_dir):
+    master_with_ids = pipeline_dir / "data" / "PBDB_master_with_ids.xlsx"
+    if master_with_ids.exists():
+        return master_with_ids
+    return pipeline_dir / "data" / "PBDB_master.xlsx"
+
+
+def _annotation_pipeline_worker(job_id, uploaded_query, options):
+    """Background worker for Annotate Gene."""
+    pipeline_dir = settings.PBDB_ANNOTATION_DIR
+    job_output_dir = settings.MEDIA_ROOT / "annotation_jobs" / job_id
+    job_output_dir.mkdir(parents=True, exist_ok=True)
+
+    predicted_proteins = job_output_dir / f"{job_id}_predicted_proteins.faa"
+    diamond_result = job_output_dir / "diamond_results.tsv"
+    hmmer_result = job_output_dir / "hmmer_results.tbl"
+    hmmer_domains = job_output_dir / "hmmer_domains.tbl"
+    downloadable_result = job_output_dir / f"{job_id}_annotation_results.csv"
+    all_matches_result = job_output_dir / f"{job_id}_all_validated_matches.csv"
+
+    diamond_db = pipeline_dir / "diamond_db" / "pbdb_validated"
+    hmmer_db = pipeline_dir / "hmmer_db" / "pbdb_validated_profiles.hmm"
+    master_metadata = _master_metadata_path(pipeline_dir)
+    reference_fasta = pipeline_dir / "data" / "pbdb_validated_reference_proteins.faa"
+    search_type = options.get("search_type", "diamond_hmmer")
+    evalue = f"1e-{options.get('evalue_exp', 3)}"
+    pident = str(options.get("pident", 25))
+    query_coverage = str(options.get("query_coverage", 30))
 
     try:
         job = AnnotationJob.objects.get(job_id=job_id)
@@ -578,69 +918,35 @@ def _annotation_pipeline_worker(job_id, uploaded_query):
         job.message = "Annotation job is running."
         job.save(update_fields=["status", "message"])
 
-        # Detect DNA or protein input
-        with open(uploaded_query, "r") as f:
-            text = f.read()
-
-        sequence_only = "".join(
-            line.strip()
-            for line in text.splitlines()
-            if not line.startswith(">")
-        )
-
-        if not sequence_only:
+        sequence_type = detect_fasta_sequence_type(uploaded_query)
+        if sequence_type == "empty":
             job.status = "failed"
             job.message = "Uploaded FASTA file has no sequence data."
             job.save(update_fields=["status", "message"])
             return
 
-        letters = [c.upper() for c in sequence_only if c.isalpha()]
-        total_letters = len(letters)
+        diamond_mode = "blastp"
+        query_for_tools = uploaded_query
+        query_for_hmmer = uploaded_query
+        if sequence_type == "dna":
+            diamond_mode = "blastx"
+            query_for_hmmer = None
 
-        dna_count = sum(1 for c in letters if c in "ATGCN")
-        dna_ratio = dna_count / total_letters if total_letters else 0
-
-        # If 90% or more letters are DNA letters, treat as genome/contig DNA
-        # Otherwise treat as protein FASTA and skip Prodigal
-        is_dna = dna_ratio >= 0.90
-
-        print("DNA ratio:", dna_ratio)
-        print("Input detected as:", "DNA/genome" if is_dna else "protein")
-
-        # If DNA, run Prodigal first
-        if is_dna:
-            prodigal_run = subprocess.run([
-                "prodigal",
-                "-i", uploaded_query,
-                "-a", predicted_proteins,
-                "-p", "meta",
-                "-q"
-            ], capture_output=True, text=True)
-
-            if prodigal_run.returncode != 0:
-                job.status = "failed"
-                job.message = prodigal_run.stderr or "Prodigal failed."
-                job.save(update_fields=["status", "message"])
-                return
-
-            query_for_tools = predicted_proteins
-        else:
-            query_for_tools = uploaded_query
-
-        # Run DIAMOND
-        diamond_run = subprocess.run([
-            "diamond", "blastp",
-            "-d", diamond_db,
+        diamond_run = _run_command([
+            "diamond", diamond_mode,
+            "-d", str(diamond_db),
             "-q", query_for_tools,
-            "-o", diamond_result,
+            "-o", str(diamond_result),
             "--outfmt", "6",
             "qseqid", "sseqid", "pident", "length", "evalue", "bitscore",
-            "--evalue", "1e-5",
-            "--id", "50",
-            "--query-cover", "70",
-            "--max-target-seqs", "3",
+            "qcovhsp", "scovhsp", "ppos",
+            "--evalue", "10",
+            "--id", "0",
+            "--query-cover", "0",
+            "--max-target-seqs", "500",
+            "--very-sensitive",
             "--threads", "4"
-        ], capture_output=True, text=True)
+        ])
 
         if diamond_run.returncode != 0:
             job.status = "failed"
@@ -648,76 +954,60 @@ def _annotation_pipeline_worker(job_id, uploaded_query):
             job.save(update_fields=["status", "message"])
             return
 
-        # No DIAMOND hit
-        if (not os.path.exists(diamond_result)) or os.path.getsize(diamond_result) == 0:
-            job.status = "No Hit"
+        if (not diamond_result.exists()) or diamond_result.stat().st_size == 0:
+            job.status = "no_hit"
+            job.message = _diamond_no_hit_message(
+                diamond_mode,
+                diamond_db,
+                query_for_tools,
+                job_output_dir,
+                pident,
+                evalue,
+                query_coverage,
+            )
+            job.save(update_fields=["status", "message"])
+            return
+
+        hmmer_path = None
+        if search_type == "diamond_hmmer" and query_for_hmmer:
+            hmmer_run = _run_command([
+                "hmmscan",
+                "--tblout", str(hmmer_result),
+                "--domtblout", str(hmmer_domains),
+                str(hmmer_db),
+                query_for_hmmer
+            ])
+
+            if hmmer_run.returncode != 0:
+                job.status = "failed"
+                job.message = hmmer_run.stderr or "HMMER failed."
+                job.save(update_fields=["status", "message"])
+                return
+
+            hmmer_path = hmmer_result
+
+        result_count = annotate_diamond_hits(
+            diamond_result,
+            all_matches_result,
+            hmmer_tbl_path=hmmer_path,
+            master_metadata_path=master_metadata,
+            reference_fasta_path=reference_fasta,
+            query_fasta_path=query_for_hmmer or query_for_tools,
+            review_identity=float(pident),
+            review_evalue=float(evalue),
+            review_query_coverage=float(query_coverage),
+        )
+        if result_count == 0:
+            job.status = "no_hit"
             job.message = "Your job completed successfully, however your sequences did not match any proteins in the database."
             job.save(update_fields=["status", "message"])
             return
 
-        # Run HMMER
-        hmmer_run = subprocess.run([
-            "hmmscan",
-            "--tblout", hmmer_result,
-            "--domtblout", hmmer_domains,
-            hmmer_db,
-            query_for_tools
-        ], capture_output=True, text=True)
-
-        if hmmer_run.returncode != 0:
-            job.status = "failed"
-            job.message = hmmer_run.stderr or "HMMER failed."
-            job.save(update_fields=["status", "message"])
-            return
-
-        # Run annotation scripts
-        annotation_run = subprocess.run(
-            ["python", "scripts/annotate_diamond.py"],
-            cwd=pipeline_dir,
-            capture_output=True,
-            text=True
-        )
-
-        if annotation_run.returncode != 0:
-            job.status = "failed"
-            job.message = annotation_run.stderr or "annotate_diamond.py failed."
-            job.save(update_fields=["status", "message"])
-            return
-
-        merge_run = subprocess.run(
-            ["python", "scripts/merge_diamond_hmmer.py"],
-            cwd=pipeline_dir,
-            capture_output=True,
-            text=True
-        )
-
-        if merge_run.returncode != 0:
-            job.status = "failed"
-            job.message = merge_run.stderr or "merge_diamond_hmmer.py failed."
-            job.save(update_fields=["status", "message"])
-            return
-
-        if (not os.path.exists(final_result)) or os.path.getsize(final_result) == 0:
-            job.status = "No Hit"
-            job.message = "Your job completed successfully, however no final annotation result was generated."
-            job.save(update_fields=["status", "message"])
-            return
-
-        # Copy result to MEDIA_ROOT so it is downloadable from the web interface
-        shutil.copy(final_result, downloadable_result)
-
-        # Confirm CSV has data rows
-        df = pd.read_csv(downloadable_result)
-        if df.empty:
-            job.status = "No Hit"
-            job.message = "Your job completed successfully, however your sequences did not match any proteins in the database."
-            job.result_file = downloadable_result
-            job.save(update_fields=["status", "message", "result_file"])
-            return
+        write_best_match_results(all_matches_result, downloadable_result)
 
         job.status = "done"
         job.message = "Your job completed successfully."
-        job.result_file = downloadable_result
+        job.result_file = str(downloadable_result)
         job.save(update_fields=["status", "message", "result_file"])
 
     except Exception as e:
@@ -735,45 +1025,49 @@ def annotategene(request):
     Upload page for Annotate Gene.
     Creates a job and redirects to running/status page.
     """
-    pipeline_dir = "/Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation"
-
     if request.method == "POST":
         fasta_file = request.FILES.get("fasta_file")
+        if not fasta_file:
+            return render(request, "base/tools/annotategene.html", {
+                "error": "Please upload a FASTA file."
+            })
 
-        if fasta_file:
-            os.makedirs(os.path.join(pipeline_dir, "data"), exist_ok=True)
-            os.makedirs(os.path.join(pipeline_dir, "results"), exist_ok=True)
+        job_id = _new_job_id("MS", AnnotationJob)
+        job_output_dir = settings.MEDIA_ROOT / "annotation_jobs" / job_id
+        job_output_dir.mkdir(parents=True, exist_ok=True)
 
-            job_id = f"MS{random.randint(1000000, 9999999)}"
-            while AnnotationJob.objects.filter(job_id=job_id).exists():
-                job_id = f"MS{random.randint(1000000, 9999999)}"
+        uploaded_query = job_output_dir / f"{job_id}_query.fasta"
+        with open(uploaded_query, "wb+") as destination:
+            for chunk in fasta_file.chunks():
+                destination.write(chunk)
 
-            uploaded_query = os.path.join(pipeline_dir, "data", f"{job_id}_query.fasta")
+        AnnotationJob.objects.create(
+            job_id=job_id,
+            status="running",
+            message="Annotation job is running."
+        )
 
-            with open(uploaded_query, "wb+") as destination:
-                for chunk in fasta_file.chunks():
-                    destination.write(chunk)
+        options = {
+            "search_type": request.POST.get("search_type", "diamond_hmmer"),
+            "evalue_exp": _safe_int(request.POST.get("evalue"), 3, 0, 100),
+            "pident": _safe_int(request.POST.get("pident"), 25, 0, 100),
+            "query_coverage": _safe_int(
+                request.POST.get("query_coverage"), 30, 0, 100
+            ),
+        }
 
-            AnnotationJob.objects.create(
-                job_id=job_id,
-                status="running",
-                message="Annotation job is running."
-            )
+        thread = threading.Thread(
+            target=_annotation_pipeline_worker,
+            args=(job_id, str(uploaded_query), options),
+            daemon=True
+        )
+        thread.start()
 
-            thread = threading.Thread(
-                target=_annotation_pipeline_worker,
-                args=(job_id, uploaded_query),
-                daemon=True
-            )
-            thread.start()
-
-            return redirect("annotategene_status", job_id=job_id)
+        return redirect("annotategene_status", job_id=job_id)
 
     return render(request, "base/tools/annotategene.html")
 
 def annotategene_status(request, job_id):
-    import pandas as pd
-
     job = get_object_or_404(AnnotationJob, job_id=job_id)
 
     if job.status == "running":
@@ -786,57 +1080,44 @@ def annotategene_status(request, job_id):
             "job": job,
             "error": job.message,
             "results": [],
-            "No Hit": False,
+            "nohit": False,
         })
 
-    if job.status == "No Hit":
+    if job.status in {"no_hit", "No Hit"}:
         return render(request, "base/tools/annotategene_result.html", {
             "job": job,
             "results": [],
-            "No Hit": True,
+            "nohit": True,
             "message": job.message,
         })
 
     results = []
     pesticide_hits = []
     hmmer_hits = []
+    all_matches_available = (
+        settings.MEDIA_ROOT
+        / "annotation_jobs"
+        / job_id
+        / f"{job_id}_all_validated_matches.csv"
+    ).exists()
 
     if job.status == "done" and job.result_file and os.path.exists(job.result_file):
-        df = pd.read_csv(job.result_file)
+        df = read_annotation_results(job.result_file)
+        best_df = df
+        results = best_df.to_dict(orient="records")
+        _attach_pathway_links(results)
 
-        if "diamond_evalue" in df.columns:
-            df["diamond_evalue"] = df["diamond_evalue"].apply(lambda x: f"{float(x):.2e}" if str(x) != "nan" else "-")
-
-        if "hmmer_evalue" in df.columns:
-            df["hmmer_evalue"] = df["hmmer_evalue"].apply(lambda x: f"{float(x):.2e}" if str(x) != "nan" else "-")
-
-        df = pd.read_csv(job.result_file)
-
-        # Format DIAMOND evalue
-        if "diamond_evalue" in df.columns:
-            df["diamond_evalue"] = df["diamond_evalue"].apply(
-                lambda x: f"{float(x):.2e}" if pd.notnull(x) else "-"
-            )
-
-        # Format HMMER evalue
-        if "hmmer_evalue" in df.columns:
-            df["hmmer_evalue"] = df["hmmer_evalue"].apply(
-                lambda x: f"{float(x):.2e}" if pd.notnull(x) else "-"
-            )
-
-        results = df.to_dict(orient="records")
-
-        if "pesticide" in df.columns:
+        if "pesticide" in best_df.columns:
             pesticide_hits = (
-                df.groupby("pesticide")
+                best_df.groupby("pesticide")
                 .size()
                 .reset_index(name="hit_count")
                 .to_dict(orient="records")
             )
 
-        if "hmmer_family" in df.columns:
+        if "hmmer_family" in best_df.columns:
             hmmer_hits = (
-                df.groupby("hmmer_family")
+                best_df.groupby("hmmer_family")
                 .size()
                 .reset_index(name="hit_count")
                 .to_dict(orient="records")
@@ -847,77 +1128,8 @@ def annotategene_status(request, job_id):
         "results": results,
         "pesticide_hits": pesticide_hits,
         "hmmer_hits": hmmer_hits,
-        "No Hit": False,
-    })
-
-
-def annotategene_download(request, job_id):
-    job = get_object_or_404(AnnotationJob, job_id=job_id)
-
-    if not job.result_file or not os.path.exists(job.result_file):
-        raise Http404("Result file not found.")
-
-    return FileResponse(
-        open(job.result_file, "rb"),
-        as_attachment=True,
-        filename=f"{job_id}_annotation_results.csv"
-    )
-
-    import pandas as pd
-
-    job = get_object_or_404(AnnotationJob, job_id=job_id)
-
-    if job.status == "running":
-        return render(request, "base/tools/annotategene_running.html", {
-            "job": job,
-        })
-
-    if job.status == "failed":
-        return render(request, "base/tools/annotategene_result.html", {
-            "job": job,
-            "error": job.message,
-            "results": [],
-            "No Hit": False,
-        })
-
-    if job.status == "No Hit":
-        return render(request, "base/tools/annotategene_result.html", {
-            "job": job,
-            "results": [],
-            "No Hit": True,
-            "message": job.message,
-        })
-
-    results = []
-    pesticide_hits = []
-    hmmer_hits = []
-
-    if job.status == "done" and job.result_file and os.path.exists(job.result_file):
-        df = pd.read_csv(job.result_file)
-        results = df.to_dict(orient="records")
-
-        if "pesticide" in df.columns:
-            pesticide_hits = (
-                df.groupby("pesticide")
-                .size()
-                .reset_index(name="hit_count")
-                .to_dict(orient="records")
-            )
-
-        if "hmmer_family" in df.columns:
-            hmmer_hits = (
-                df.groupby("hmmer_family")
-                .size()
-                .reset_index(name="hit_count")
-                .to_dict(orient="records")
-            )
-
-    return render(request, "base/tools/annotategene_result.html", {
-        "job": job,
-        "results": results,
-        "pesticide_hits": pesticide_hits,
-        "hmmer_hits": hmmer_hits,
-        "No Hit": False,
+        "all_matches_available": all_matches_available,
+        "nohit": False,
     })
 
 
@@ -936,35 +1148,45 @@ def annotategene_download(request, job_id):
         filename=f"{job_id}_annotation_results.csv"
     )
 
+
+def annotategene_all_matches_download(request, job_id):
+    job = get_object_or_404(AnnotationJob, job_id=job_id)
+    all_matches_path = (
+        settings.MEDIA_ROOT
+        / "annotation_jobs"
+        / job_id
+        / f"{job_id}_all_validated_matches.csv"
+    )
+    if not all_matches_path.exists():
+        raise Http404("All-matches result file not found.")
+    return FileResponse(
+        open(all_matches_path, "rb"),
+        as_attachment=True,
+        filename=all_matches_path.name,
+    )
+
 # ================= ANNOTATE GENOME JOB SYSTEM =================
-# Temporary development version: creates clean test result + downloadable Excel
+def _genome_annotation_pipeline_worker(job_id, uploaded_query, options):
+    pipeline_dir = settings.PBDB_ANNOTATION_DIR
+    job_output_dir = settings.MEDIA_ROOT / "genome_jobs" / job_id
+    job_output_dir.mkdir(parents=True, exist_ok=True)
 
-#connecting to genome annotation pipeline (temporary version for development)
-def _genome_annotation_pipeline_worker(job_id, uploaded_query):
-    import subprocess
-    import pandas as pd
+    predicted_proteins = job_output_dir / f"{job_id}_predicted_proteins.faa"
+    diamond_result = job_output_dir / "genome_diamond_results.tsv"
+    hmmer_result = job_output_dir / "genome_hmmer_results.tbl"
+    hmmer_domains = job_output_dir / "genome_hmmer_domains.tbl"
+    downloadable_result = job_output_dir / f"{job_id}_genome_annotation_results.csv"
+    all_matches_result = job_output_dir / f"{job_id}_all_validated_matches.csv"
 
-    pipeline_dir = "/Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation"
-
-    predicted_proteins = os.path.join(
-        pipeline_dir, "data", f"{job_id}_predicted_proteins.faa"
-    )
-
-    diamond_result = os.path.join(
-        pipeline_dir, "results", f"{job_id}_genome_diamond_results.tsv"
-    )
-
-    diamond_db = os.path.join(
-        pipeline_dir, "diamond_db", "pbdb_diamond"
-    )
-
-    job_output_dir = os.path.join(settings.MEDIA_ROOT, "genome_jobs", job_id)
-    os.makedirs(job_output_dir, exist_ok=True)
-
-    downloadable_result = os.path.join(
-        job_output_dir,
-        f"{job_id}_genome_annotation_results.csv"
-    )
+    diamond_db = pipeline_dir / "diamond_db" / "pbdb_validated"
+    hmmer_db = pipeline_dir / "hmmer_db" / "pbdb_validated_profiles.hmm"
+    master_metadata = _master_metadata_path(pipeline_dir)
+    reference_fasta = pipeline_dir / "data" / "pbdb_validated_reference_proteins.faa"
+    blast_type = options.get("blast_type", "auto")
+    search_type = options.get("search_type", "diamond_hmmer")
+    evalue = f"1e-{options.get('evalue_exp', 3)}"
+    pident = str(options.get("pident", 25))
+    query_coverage = str(options.get("query_coverage", 30))
 
     try:
         job = GenomeAnnotationJob.objects.get(job_id=job_id)
@@ -972,57 +1194,77 @@ def _genome_annotation_pipeline_worker(job_id, uploaded_query):
         job.message = "Genome annotation is running."
         job.save(update_fields=["status", "message"])
 
-        # Detect DNA or protein FASTA
-        with open(uploaded_query, "r", errors="ignore") as f:
-            text = f.read()
-
-        sequence_only = "".join(
-            line.strip()
-            for line in text.splitlines()
-            if not line.startswith(">")
-        )
-
-        if not sequence_only:
+        sequence_type = detect_fasta_sequence_type(uploaded_query)
+        if sequence_type == "empty":
             job.status = "failed"
             job.message = "Uploaded FASTA file has no sequence data."
             job.save(update_fields=["status", "message"])
             return
 
-        dna_letters = set("ATGCNatgcn")
-        is_dna = all(c in dna_letters for c in sequence_only if c.isalpha())
+        diamond_mode = "blastp"
+        query_for_diamond = uploaded_query
+        query_for_hmmer = uploaded_query
+        used_blastx_fallback = False
 
-        if is_dna:
-            prodigal_run = subprocess.run([
+        if sequence_type == "dna" and blast_type == "blastx":
+            diamond_mode = "blastx"
+            query_for_hmmer = None
+        elif sequence_type == "dna":
+            prodigal_run = _run_command([
                 "prodigal",
                 "-i", uploaded_query,
-                "-a", predicted_proteins,
+                "-a", str(predicted_proteins),
                 "-p", "meta",
                 "-q"
-            ], capture_output=True, text=True)
+            ])
 
             if prodigal_run.returncode != 0:
-                job.status = "failed"
-                job.message = prodigal_run.stderr or "Prodigal failed."
-                job.save(update_fields=["status", "message"])
-                return
+                if blast_type == "auto":
+                    diamond_mode = "blastx"
+                    query_for_diamond = uploaded_query
+                    query_for_hmmer = None
+                    used_blastx_fallback = True
+                else:
+                    job.status = "failed"
+                    job.message = prodigal_run.stderr or "Prodigal failed."
+                    job.save(update_fields=["status", "message"])
+                    return
+            elif not predicted_proteins.exists() or predicted_proteins.stat().st_size == 0:
+                if blast_type == "auto":
+                    diamond_mode = "blastx"
+                    query_for_diamond = uploaded_query
+                    query_for_hmmer = None
+                    used_blastx_fallback = True
+                else:
+                    job.status = "no_hit"
+                    job.message = "Prodigal did not predict any proteins from the uploaded nucleotide FASTA."
+                    job.save(update_fields=["status", "message"])
+                    return
+            else:
+                query_for_diamond = str(predicted_proteins)
+                query_for_hmmer = str(predicted_proteins)
+        elif blast_type == "blastx":
+            job.status = "failed"
+            job.message = "BLASTX requires nucleotide FASTA input. Use BLASTP for protein FASTA."
+            job.save(update_fields=["status", "message"])
+            return
 
-            query_for_diamond = predicted_proteins
-        else:
-            query_for_diamond = uploaded_query
-
-        # Run DIAMOND
-        diamond_run = subprocess.run([
-            "diamond", "blastp",
-            "-d", diamond_db,
+        diamond_command = [
+            "diamond", diamond_mode,
+            "-d", str(diamond_db),
             "-q", query_for_diamond,
-            "-o", diamond_result,
+            "-o", str(diamond_result),
             "--outfmt", "6",
             "qseqid", "sseqid", "pident", "length", "evalue", "bitscore",
-            "--evalue", "1e-6",
-            "--query-cover", "60",
-            "--max-target-seqs", "3",
+            "qcovhsp", "scovhsp", "ppos",
+            "--evalue", "10",
+            "--id", "0",
+            "--query-cover", "0",
+            "--max-target-seqs", "500",
+            "--very-sensitive",
             "--threads", "6"
-        ], capture_output=True, text=True)
+        ]
+        diamond_run, diamond_has_hits = _run_diamond_search(diamond_command, diamond_result)
 
         if diamond_run.returncode != 0:
             job.status = "failed"
@@ -1030,116 +1272,97 @@ def _genome_annotation_pipeline_worker(job_id, uploaded_query):
             job.save(update_fields=["status", "message"])
             return
 
-        if not os.path.exists(diamond_result) or os.path.getsize(diamond_result) == 0:
-            job.status = "No Hit"
-            job.message = "No genome annotation hits were found."
-            job.save(update_fields=["status", "message"])
-            return
-
-        diamond_df = pd.read_csv(
-            diamond_result,
-            sep="\t",
-            header=None,
-            names=[
-                "query",
-                "diamond_hit_id",
-                "identity",
-                "alignment_length",
-                "diamond_evalue",
-                "bitscore",
+        if (
+            not diamond_has_hits
+            and sequence_type == "dna"
+            and blast_type == "auto"
+            and not used_blastx_fallback
+        ):
+            diamond_mode = "blastx"
+            query_for_diamond = uploaded_query
+            query_for_hmmer = None
+            used_blastx_fallback = True
+            diamond_command = [
+                "diamond", "blastx",
+                "-d", str(diamond_db),
+                "-q", query_for_diamond,
+                "-o", str(diamond_result),
+                "--outfmt", "6",
+                "qseqid", "sseqid", "pident", "length", "evalue", "bitscore",
+                "qcovhsp", "scovhsp", "ppos",
+                "--evalue", "10",
+                "--id", "0",
+                "--query-cover", "0",
+                "--max-target-seqs", "500",
+                "--very-sensitive",
+                "--threads", "6"
             ]
-        )
-        
-        # Keeping best hit per query
-        diamond_df["bitscore"] = pd.to_numeric(diamond_df["bitscore"], errors="coerce").fillna(0)
+            diamond_run, diamond_has_hits = _run_diamond_search(diamond_command, diamond_result)
 
-        diamond_df = (
-            diamond_df
-            .sort_values("bitscore", ascending=False)
-            .drop_duplicates(subset=["query"])
-        )
+            if diamond_run.returncode != 0:
+                job.status = "failed"
+                job.message = diamond_run.stderr or "DIAMOND BLASTX fallback failed."
+                job.save(update_fields=["status", "message"])
+                return
 
-        final_rows = []
-
-        # Load all ProteinRecord accessions one time
-        protein_lookup = {}
-
-        for p in ProteinRecord.objects.all():
-            acc = (p.ncbi_protein_accession or "").strip()
-
-            if acc:
-                protein_lookup[acc.lower()] = p
-                protein_lookup[acc.split(".")[0].lower()] = p
-
-        for _, row in diamond_df.iterrows():
-            protein = None
-
-            raw_hit = str(row["diamond_hit_id"]).strip()
-
-            # Clean DIAMOND hit ID
-            clean_hit = raw_hit
-
-            for prefix in ["sp|", "tr|", "ref|", "gb|", "emb|", "dbj|"]:
-                if clean_hit.startswith(prefix):
-                    clean_hit = clean_hit.replace(prefix, "")
-
-            clean_hit = clean_hit.split("|")[0].strip()
-            clean_hit_no_version = clean_hit.split(".")[0]
-
-            protein = (
-                protein_lookup.get(clean_hit.lower()) or
-                protein_lookup.get(clean_hit_no_version.lower())
+        if not diamond_has_hits:
+            job.status = "no_hit"
+            job.message = _diamond_no_hit_message(
+                diamond_mode,
+                diamond_db,
+                query_for_diamond,
+                job_output_dir,
+                pident,
+                evalue,
+                query_coverage,
             )
-
-            if not protein:
-                print("NO MATCH:", raw_hit)
-                continue
-
-            # Extract data
-            pesticidedb_id = protein.pesticidedb_protein_id or protein.pbdb_protein_id or "-"
-            ncbi_accession = protein.ncbi_protein_accession or "-"
-            reported_protein = protein.reported_protein_name or "-"
-            gene_name = protein.gene_name or "-"
-            enzyme_class = protein.enzyme_class or "-"
-            microorganism = protein.microorganism or "-"
-            pesticide = protein.pesticide or "-"
-            evidence_type = protein.evidence_type or "-"
-            year = protein.year or "-"
-            doi = protein.doi or "-"
-
-            final_rows.append({
-                "query": row["query"],
-                "pesticidedb_protein_id": raw_hit,
-                "protein_detail_id": protein.pesticidedb_protein_id or protein.pbdb_protein_id or "-",
-                "ncbi_protein_accession": ncbi_accession,
-                "reported_protein_name": reported_protein,
-                "identity": round(float(row["identity"]), 2),
-                "alignment_length": row["alignment_length"],
-                "diamond_evalue": f"{float(row['diamond_evalue']):.2e}",
-                "bitscore": round(float(row["bitscore"]), 2),
-                "enzyme_class": enzyme_class,
-                "gene_name": gene_name,
-                "microorganism": microorganism,
-                "pesticide": pesticide,
-                "evidence_type": evidence_type,
-                "year": year,
-                "doi": doi,
-                "secreted": "NA",
-            })
-
-        result_df = pd.DataFrame(final_rows)
-        
-        if result_df.empty:
-            job.status = "No Hit"
-            job.message = "No mapped genome annotation hits were found."
             job.save(update_fields=["status", "message"])
             return
 
-        result_df.to_csv(downloadable_result, index=False)
+        hmmer_path = None
+        if search_type == "diamond_hmmer" and query_for_hmmer:
+            hmmer_run = _run_command([
+                "hmmscan",
+                "--tblout", str(hmmer_result),
+                "--domtblout", str(hmmer_domains),
+                str(hmmer_db),
+                query_for_hmmer,
+            ])
+
+            if hmmer_run.returncode != 0:
+                job.status = "failed"
+                job.message = hmmer_run.stderr or "HMMER failed."
+                job.save(update_fields=["status", "message"])
+                return
+
+            hmmer_path = hmmer_result
+
+        result_count = annotate_diamond_hits(
+            diamond_result,
+            all_matches_result,
+            hmmer_tbl_path=hmmer_path,
+            master_metadata_path=master_metadata,
+            reference_fasta_path=reference_fasta,
+            query_fasta_path=query_for_hmmer or query_for_diamond,
+            review_identity=float(pident),
+            review_evalue=float(evalue),
+            review_query_coverage=float(query_coverage),
+        )
+        if result_count == 0:
+            job.status = "no_hit"
+            fallback_note = " after BLASTX fallback" if used_blastx_fallback else ""
+            job.message = (
+                f"DIAMOND found alignments{fallback_note}, but none could be mapped to PesticideDB metadata. "
+                "Check that the PesticideDB master metadata and reference FASTA match the DIAMOND database."
+            )
+            job.save(update_fields=["status", "message"])
+            return
+
+        write_best_match_results(all_matches_result, downloadable_result)
 
         job.status = "done"
         job.message = "Genome annotation completed successfully."
-        job.result_file = downloadable_result
+        job.result_file = str(downloadable_result)
         job.save(update_fields=["status", "message", "result_file"])
 
     except Exception as e:
@@ -1148,95 +1371,47 @@ def _genome_annotation_pipeline_worker(job_id, uploaded_query):
         job.message = str(e)
         job.save(update_fields=["status", "message"])
 
-#main connect genome
 def annotategenome(request):
     if request.method == "POST":
         fasta_file = request.FILES.get("fasta_file")
+        if not fasta_file:
+            return render(request, "base/tools/annotategenome.html", {
+                "error": "Please upload a FASTA file."
+            })
 
-        # Job number style: SM1234567
-        job_id = f"SM{random.randint(1000000, 9999999)}"
-        while GenomeAnnotationJob.objects.filter(job_id=job_id).exists():
-            job_id = f"SM{random.randint(1000000, 9999999)}"
+        job_id = _new_job_id("SM", GenomeAnnotationJob)
 
-        job = GenomeAnnotationJob.objects.create(
+        GenomeAnnotationJob.objects.create(
             job_id=job_id,
             status="running",
             message="Genome annotation job is running."
         )
         
-        job_dir = os.path.join(settings.MEDIA_ROOT, "genome_jobs", job_id)
-        os.makedirs(job_dir, exist_ok=True)
+        job_dir = settings.MEDIA_ROOT / "genome_jobs" / job_id
+        job_dir.mkdir(parents=True, exist_ok=True)
 
-        uploaded_query = os.path.join(job_dir, f"{job_id}_query.fasta")
+        uploaded_query = job_dir / f"{job_id}_query.fasta"
 
         with open(uploaded_query, "wb+") as f:
             for chunk in fasta_file.chunks():
                 f.write(chunk)
 
+        options = {
+            "blast_type": request.POST.get("blast_type", "auto"),
+            "search_type": request.POST.get("search_type", "diamond_hmmer"),
+            "evalue_exp": _safe_int(request.POST.get("evalue"), 5, 0, 100),
+            "pident": _safe_int(request.POST.get("pident"), 35, 0, 100),
+            "query_coverage": _safe_int(
+                request.POST.get("query_coverage"), 30, 0, 100
+            ),
+        }
+
         thread = threading.Thread(
             target=_genome_annotation_pipeline_worker,
-            args=(job_id, uploaded_query),
+            args=(job_id, str(uploaded_query), options),
             daemon=True
         )
         thread.start()
-
-        return redirect("annotategenome_running", job_id=job_id)
-    
-        # Get query name from uploaded FASTA header
-        query_name = job_id
-        with open(uploaded_query, "r", errors="ignore") as f:
-            for line in f:
-                if line.startswith(">"):
-                    query_name = line.replace(">", "").strip().split()[0]
-                    break
-
-        # Get one REAL protein from your ProteinRecord database
-        first_protein = (
-            ProteinRecord.objects
-            .exclude(pesticidedb_protein_id__isnull=True)
-            .exclude(pesticidedb_protein_id="")
-            .first()
-        )
-
-        if first_protein:
-            real_pid = first_protein.pesticidedb_protein_id or first_protein.pbdb_protein_id or "-"
-            real_ncbi = first_protein.ncbi_protein_accession or "-"
-            real_enzyme = first_protein.enzyme_class or "-"
-            real_gene = first_protein.gene_name or "-"
-            real_microorganism = first_protein.microorganism or "-"
-            real_pesticide = first_protein.pesticide or "-"
-        else:
-            real_pid = "-"
-            real_ncbi = "-"
-            real_enzyme = "-"
-            real_gene = "-"
-            real_microorganism = "-"
-            real_pesticide = "-"
-
-        # TEMPORARY clean test result
-        results = [
-            {
-                "query": query_name,
-                "pesticidedb_protein_id": real_pid,
-                "ncbi_protein_accession": real_ncbi,
-                "identity": 45.6,
-                "diamond_evalue": "1.00e-50",
-                "bitscore": 200,
-                "enzyme_class": real_enzyme,
-                "gene_name": real_gene,
-                "microorganism": real_microorganism,
-                "pesticide": real_pesticide,
-                "secreted": "NA",
-            }
-        ]
-
-        df = pd.DataFrame(results)
-        df.to_excel(result_path, index=False)
-
-        job.status = "done"
-        job.message = "Genome annotation completed."
-        job.result_file = result_path
-        job.save()
 
         return redirect("annotategenome_running", job_id=job_id)
 
@@ -1246,7 +1421,7 @@ def annotategenome(request):
 def annotategenome_running(request, job_id):
     job = get_object_or_404(GenomeAnnotationJob, job_id=job_id)
 
-    if job.status == "done":
+    if job.status in {"done", "failed", "no_hit", "No Hit"}:
         return redirect("annotategenome_result", job_id=job_id)
 
     return render(request, "base/tools/annotategenome_running.html", {
@@ -1259,21 +1434,47 @@ def annotategenome_result(request, job_id):
 
     results = []
     pesticide_hits = []
+    hmmer_hits = []
+    all_matches_available = (
+        settings.MEDIA_ROOT
+        / "genome_jobs"
+        / job_id
+        / f"{job_id}_all_validated_matches.csv"
+    ).exists()
+
+    if job.status == "failed":
+        return render(request, "base/tools/annotategenome_result.html", {
+            "job": job,
+            "error": job.message,
+            "results": [],
+            "nohit": False,
+        })
+
+    if job.status in {"no_hit", "No Hit"}:
+        return render(request, "base/tools/annotategenome_result.html", {
+            "job": job,
+            "results": [],
+            "nohit": True,
+            "message": job.message,
+        })
 
     if job.result_file and os.path.exists(job.result_file):
-        df = pd.read_csv(job.result_file, dtype=str)
+        df = read_annotation_results(job.result_file)
+        best_df = df
+        results = best_df.to_dict(orient="records")
+        _attach_pathway_links(results)
 
-        # Keep e-value
-        if "diamond_evalue" in df.columns:
-            df["diamond_evalue"] = df["diamond_evalue"].apply(
-                lambda x: f"{float(x):.2e}" if pd.notnull(x) and str(x).lower() != "nan" else "-"
+        if "pesticide" in best_df.columns:
+            pesticide_hits = (
+                best_df.groupby("pesticide")
+                .size()
+                .reset_index(name="hit_count")
+                .to_dict(orient="records")
             )
 
-        results = df.to_dict(orient="records")
-
-        if "pesticide" in df.columns:
-            pesticide_hits = (
-                df.groupby("pesticide")
+        if "hmmer_family" in best_df.columns:
+            hmmer_hits = (
+                best_df.groupby("hmmer_family")
                 .size()
                 .reset_index(name="hit_count")
                 .to_dict(orient="records")
@@ -1283,6 +1484,9 @@ def annotategenome_result(request, job_id):
         "job": job,
         "results": results,
         "pesticide_hits": pesticide_hits,
+        "hmmer_hits": hmmer_hits,
+        "all_matches_available": all_matches_available,
+        "nohit": False,
     })
 
 
@@ -1298,8 +1502,382 @@ def annotategenome_download(request, job_id):
         filename=f"{job_id}_genome_annotation_results.csv"
     )
 
+
+def annotategenome_all_matches_download(request, job_id):
+    job = get_object_or_404(GenomeAnnotationJob, job_id=job_id)
+    all_matches_path = (
+        settings.MEDIA_ROOT
+        / "genome_jobs"
+        / job_id
+        / f"{job_id}_all_validated_matches.csv"
+    )
+    if not all_matches_path.exists():
+        raise Http404("All-matches result file not found.")
+    return FileResponse(
+        open(all_matches_path, "rb"),
+        as_attachment=True,
+        filename=all_matches_path.name,
+    )
+
+def _concise_pathway_reaction_label(step, detailed=False):
+    label = step.gene or ""
+    label_lower = label.lower()
+    enzyme = (step.enzyme or "").strip()
+    enzyme_lower = enzyme.lower()
+    gene_is_locus_code = bool(re.search(r"(^|[.\s_-])orf\d*($|[.\s_-])", label_lower))
+    enzyme_is_named = bool(enzyme) and not any(
+        phrase in enzyme_lower
+        for phrase in ("not assigned", "not identified", "activity not assigned", "unassigned")
+    )
+    if (
+        label
+        and step.evidence_type == "PURIFIED_ENZYME"
+        and gene_is_locus_code
+        and enzyme_is_named
+    ):
+        return enzyme
+    if label and not detailed and (
+        "inferred" in label_lower
+        or "plasmid" in label_lower
+        or "not required" in label_lower
+        or len(label) > 28
+    ):
+        label = ""
+    if not label and step.protein:
+        label = (
+            step.protein.gene_name
+            or step.protein.pesticidedb_protein_id
+            or step.protein.reported_protein_name
+            or ""
+        )
+    if label:
+        return label
+
+    if not detailed:
+        return ""
+
+    if "; enzyme not genetically assigned" in enzyme_lower:
+        clean_enzyme = enzyme.split(";", 1)[0].strip()
+        if clean_enzyme and detailed:
+            return f"{clean_enzyme} (enzyme not genetically assigned)"
+        if clean_enzyme:
+            return clean_enzyme
+    if "hydrolysis" in enzyme_lower or "hydrolase" in enzyme_lower:
+        return "Hydrolysis (enzyme not identified)" if detailed else "Hydrolysis"
+    if "transformation" in enzyme_lower:
+        return "Transformation (enzyme not identified)" if detailed else "Transformation"
+    if "unassigned" in enzyme_lower or not enzyme:
+        return "Enzyme not identified"
+    return enzyme
+
+
+def _is_unresolved_pathway_step(step):
+    product = (step.product or "").casefold()
+    unresolved_phrases = (
+        "not resolved in current database source",
+        "products/intermediates not identified",
+        "microbial transformation products",
+        "transformation products not resolved",
+        "degradation products not resolved",
+    )
+    return any(phrase in product for phrase in unresolved_phrases)
+
+
+def _split_pathway_products(product):
+    product = (product or "").strip()
+    if " + " not in product:
+        return [product] if product else []
+    return [
+        part.strip()
+        for part in product.split(" + ")
+        if part.strip()
+    ]
+
+
+def _pathway_confidence_status(pathway_steps, drawable_step_count):
+    total_steps = len(pathway_steps)
+    unresolved_count = sum(1 for step in pathway_steps if _is_unresolved_pathway_step(step))
+    strong_count = sum(
+        1
+        for step in pathway_steps
+        if step.evidence_type in {"PURIFIED_ENZYME", "GENETIC"}
+    )
+    if not total_steps:
+        return {
+            "label": "Evidence record only",
+            "class": "secondary",
+            "detail": "Biodegradation evidence exists, but no curated pathway step is available yet.",
+        }
+    if drawable_step_count == 0:
+        return {
+            "label": "Transformation evidence only",
+            "class": "warning",
+            "detail": "Biodegradation evidence is curated, but products/intermediates are not resolved enough to draw a chemical pathway.",
+        }
+    if unresolved_count:
+        label = "Gene/enzyme-supported partial pathway" if strong_count else "Partial pathway"
+        return {
+            "label": label,
+            "class": "info",
+            "detail": f"{drawable_step_count} drawable step(s); {unresolved_count} unresolved evidence record(s) kept in the table.",
+        }
+    if strong_count:
+        return {
+            "label": "Gene/enzyme-supported pathway",
+            "class": "success",
+            "detail": f"{drawable_step_count} drawable step(s), including purified-enzyme or genetic evidence.",
+        }
+    return {
+        "label": "Metabolite-supported pathway",
+        "class": "primary",
+        "detail": f"{drawable_step_count} drawable metabolite-supported step(s).",
+    }
+
+
+def _pathway_graph_elements(pathways, selected_pesticide):
+    elements = []
+    added_nodes = set()
+    added_edges = set()
+    selected_compound = None
+    if selected_pesticide:
+        selected_compound = Compound.objects.filter(name__iexact=selected_pesticide).first()
+
+    metabolite_code_pattern = re.compile(r"^(?:CGA|SYN|NOA)\s+\d+$", re.IGNORECASE)
+
+    def pathway_node_label(label):
+        clean_label = (label or "").strip()
+        if metabolite_code_pattern.match(clean_label):
+            return f"{clean_label}\n(metabolite code)"
+        return clean_label
+
+    def add_node(node_id, label, node_type, url="", extra=None):
+        if node_id in added_nodes:
+            return
+        data = {
+            "id": node_id,
+            "label": pathway_node_label(label),
+            "compound_name": label,
+            "node_type": node_type,
+            "url": url,
+        }
+        if extra:
+            data.update(extra)
+        elements.append({"data": data})
+        added_nodes.add(node_id)
+
+    def compound_node_id(compound, fallback_label):
+        if compound:
+            return f"compound-{compound.id}"
+        normalized = re.sub(r"[^a-z0-9]+", "-", fallback_label.casefold()).strip("-")
+        return f"compound-label-{normalized or 'unknown'}"
+
+    compound_lookup = {}
+
+    def compound_for_label(label):
+        clean_label = clean_pesticide_name(label)
+        if not clean_label:
+            return None
+        key = clean_label.casefold()
+        if key not in compound_lookup:
+            compound_lookup[key] = Compound.objects.filter(name__iexact=clean_label).first()
+        return compound_lookup[key]
+
+    def compound_extra(compound):
+        if not compound:
+            return {}
+        return {
+            "compound_id": compound.id,
+            "smiles": compound.smiles,
+            "pubchem_cid": compound.pubchem_cid,
+            "structure_url": compound.pubchem_structure_image_url,
+            "chemical_status": (
+                "structure available"
+                if compound.pubchem_structure_image_url
+                else "SMILES available"
+                if compound.smiles
+                else "no single structure assigned"
+            ),
+        }
+
+    pathway_list = list(pathways)
+
+    for pathway in pathway_list:
+        steps = list(pathway.steps.all())
+        if not steps:
+            continue
+
+        for step in steps:
+            if _is_unresolved_pathway_step(step):
+                continue
+            substrate_id = compound_node_id(step.substrate_compound, step.substrate)
+            add_node(
+                substrate_id,
+                step.substrate,
+                "compound",
+                step.substrate_compound and request_path("compound_detail", step.substrate_compound_id),
+                compound_extra(step.substrate_compound),
+            )
+            for product_index, product_label in enumerate(_split_pathway_products(step.product)):
+                product_compound = (
+                    step.product_compound
+                    if product_label == step.product
+                    else compound_for_label(product_label)
+                )
+                product_id = compound_node_id(product_compound, product_label)
+                add_node(
+                    product_id,
+                    product_label,
+                    "compound",
+                    product_compound and request_path("compound_detail", product_compound.id),
+                    compound_extra(product_compound),
+                )
+                edge_label = _concise_pathway_reaction_label(step)
+                edge_key = (
+                    substrate_id,
+                    product_id,
+                    edge_label.casefold(),
+                    step.evidence_type,
+                )
+                if edge_key in added_edges:
+                    continue
+                added_edges.add(edge_key)
+                elements.append({
+                    "data": {
+                        "id": f"step-{step.id}-{product_index}",
+                        "source": substrate_id,
+                        "target": product_id,
+                        "label": edge_label,
+                        "reaction": _concise_pathway_reaction_label(step, detailed=True),
+                        "organism": step.microorganism or pathway.microorganism,
+                        "pathway_title": pathway.title,
+                        "evidence_type": step.evidence_type,
+                        "url": request_path("pathway_step_detail", step.id),
+                    }
+                })
+
+    return elements
+
+
+def request_path(route_name, *args):
+    from django.urls import reverse
+
+    return reverse(route_name, args=args)
+
+
+def _attach_pathway_links(results):
+    pesticides = {
+        str(row.get("pesticide", "")).strip()
+        for row in results
+        if str(row.get("pesticide", "")).strip() and str(row.get("pesticide", "")).strip() != "-"
+    }
+    pathway_counts = {
+        pesticide.casefold(): DegradationPathway.objects.filter(pesticide__iexact=pesticide).count()
+        for pesticide in pesticides
+    }
+    for row in results:
+        pesticide = str(row.get("pesticide", "")).strip()
+        count = pathway_counts.get(pesticide.casefold(), 0)
+        row["pathway_record_count"] = count
+        row["has_pathway"] = bool(count)
+
+
 def pathwayanalysis(request):
-    return render(request, 'base/tools/pathwayanalysis.html')
+    selected_pesticide = request.GET.get("pesticide", "").strip()
+    pathway_aliases = {
+        "aldrin": "Aldrin and Dieldrin",
+        "dieldrin": "Aldrin and Dieldrin",
+    }
+    selected_pesticide = pathway_aliases.get(selected_pesticide.casefold(), selected_pesticide)
+    pathway_pesticides = curated_pathway_pesticide_names()
+    eligible_pathway_names = {name.casefold(): name for name in pathway_pesticides}
+    selected_pesticide = eligible_pathway_names.get(selected_pesticide.casefold(), selected_pesticide)
+    selected_is_pathway_eligible = not selected_pesticide or selected_pesticide.casefold() in eligible_pathway_names
+    pathways = DegradationPathway.objects.none()
+    evidence_records = Pesticide.objects.none()
+    graph_elements = []
+    pathway_steps = []
+    pathway_status = None
+    selected_compound = None
+    has_unresolved_only_graph = False
+
+    if selected_pesticide and selected_is_pathway_eligible:
+        selected_compound = Compound.objects.filter(name__iexact=selected_pesticide).first()
+        pathways = (
+            DegradationPathway.objects
+            .filter(pesticide__iexact=selected_pesticide)
+            .prefetch_related(
+                "steps__protein",
+                "steps__substrate_compound",
+                "steps__product_compound",
+                "steps__references",
+                "references",
+            )
+        )
+        evidence_records = (
+            Pesticide.objects
+            .filter(pesticide__iexact=selected_pesticide)
+            .order_by("publication_year", "microorganism")
+        )
+        graph_elements = _pathway_graph_elements(pathways, selected_pesticide)
+        pathway_steps = [
+            step
+            for pathway in pathways
+            for step in pathway.steps.all()
+        ]
+        for step in pathway_steps:
+            step.display_reaction_label = _concise_pathway_reaction_label(step, detailed=True)
+        drawable_step_count = sum(1 for step in pathway_steps if not _is_unresolved_pathway_step(step))
+        pathway_status = _pathway_confidence_status(pathway_steps, drawable_step_count)
+        has_unresolved_only_graph = bool(graph_elements) and not pathway_steps
+
+    return render(request, "base/tools/pathwayanalysis.html", {
+        "pesticides_list": pathway_pesticides,
+        "selected_pesticide": selected_pesticide,
+        "pathways": pathways,
+        "pathway_steps": pathway_steps,
+        "pathway_status": pathway_status,
+        "evidence_records": evidence_records,
+        "selected_compound": selected_compound,
+        "has_unresolved_only_graph": has_unresolved_only_graph,
+        "pathway_graph_json": json.dumps(graph_elements),
+        **database_summary(),
+    })
+
+
+def compound_detail(request, compound_id):
+    compound = get_object_or_404(Compound, id=compound_id)
+    substrate_steps = (
+        compound.pathway_steps_as_substrate
+        .select_related("pathway", "product_compound", "protein")
+        .prefetch_related("references")
+    )
+    product_steps = (
+        compound.pathway_steps_as_product
+        .select_related("pathway", "substrate_compound", "protein")
+        .prefetch_related("references")
+    )
+    return render(request, "base/compound_detail.html", {
+        "compound": compound,
+        "substrate_steps": substrate_steps,
+        "product_steps": product_steps,
+    })
+
+
+def pathway_step_detail(request, step_id):
+    step = get_object_or_404(
+        DegradationPathwayStep.objects
+        .select_related("pathway", "protein", "substrate_compound", "product_compound")
+        .prefetch_related("references", "evidence_links__reference"),
+        id=step_id,
+    )
+    evidence_links = PathwayEvidence.objects.filter(step=step).select_related(
+        "reference",
+        "pesticide_record",
+    )
+    return render(request, "base/pathway_step_detail.html", {
+        "step": step,
+        "evidence_links": evidence_links,
+    })
 
 
 def pesticideclassification(request):
@@ -1310,4 +1888,3 @@ def pesticideclassification(request):
         "pesticides_with_evidence": counts["with_evidence"],
         "pesticides_no_evidence": counts["no_evidence"],
     })
-

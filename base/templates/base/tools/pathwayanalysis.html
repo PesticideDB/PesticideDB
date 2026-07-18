@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+
+{% block title %}Curated Degradation Pathways - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container-fluid pathway-analysis-page py-5">
+  <h1>Curated Degradation Pathways</h1>
+  <p class="pathway-page-subtitle">
+    Pesticide transformation routes linked to compounds, genes, enzymes, organisms, and literature evidence.
+  </p>
+
+  <form method="get" class="form-row align-items-end pathway-selector mb-4">
+    <div class="col-md-8">
+      <label for="pathway-pesticide">Pesticide</label>
+      <select id="pathway-pesticide" name="pesticide" class="form-control">
+        <option value="">Select a pesticide</option>
+        {% for pesticide in pesticides_list %}
+          <option value="{{ pesticide }}" {% if selected_pesticide == pesticide %}selected{% endif %}>{{ pesticide }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-4">
+      <button class="btn btn-primary" type="submit">Show pathway map</button>
+    </div>
+  </form>
+
+  {% if selected_pesticide %}
+    <div class="mb-4">
+      <a class="btn btn-outline-primary mr-2" href="{% url 'proteins' %}?pesticide={{ selected_pesticide|urlencode }}">Related proteins</a>
+      <a class="btn btn-outline-primary mr-2" href="{% url 'microorganisms' %}?pesticide={{ selected_pesticide|urlencode }}">Organism evidence</a>
+      <a class="btn btn-outline-secondary mr-2" href="{% url 'annotategene' %}">Annotate gene</a>
+      <a class="btn btn-outline-secondary" href="{% url 'annotategenome' %}">Annotate genome</a>
+    </div>
+
+    {% if pathway_status or pathway_graph_json != "[]" %}
+      <section class="mb-5">
+        <h3>{{ selected_pesticide }} degradation pathway</h3>
+        {% if pathway_status %}
+          <div class="pathway-status-line">
+            <span class="badge badge-{{ pathway_status.class }}">Pathway status: {{ pathway_status.label }}</span>
+            <span>{{ pathway_status.detail }}</span>
+          </div>
+        {% endif %}
+        {% if pathway_graph_json != "[]" %}
+          <p class="pathway-section-note">Curated substrate-to-product transformations from database-linked experimental literature.</p>
+          <div class="pathway-cytoscape-frame">
+            <div id="pathway-cytoscape" class="pathway-cytoscape" aria-label="Interactive pathway sketch"></div>
+          </div>
+          <div class="pathway-map-legend">
+            <span><i class="legend-line legend-strong"></i> purified enzyme or genetic evidence</span>
+            <span><i class="legend-line legend-supported"></i> metabolite, whole-cell, or crude-extract evidence</span>
+            <span><i class="legend-line legend-proposed"></i> proposed or inferred step</span>
+          </div>
+          <div id="pathway-cytoscape-fallback" class="alert alert-light border mt-3 d-none">
+            The interactive viewer could not load. The curated evidence remains available in the tables below.
+          </div>
+        {% else %}
+          <div class="alert alert-warning pathway-curation-note">
+            <strong>Pathway not drawn:</strong>
+            biodegradation evidence is curated for {{ selected_pesticide }},
+            but the current source does not resolve confirmed substrate-to-product compounds for a pathway map.
+          </div>
+        {% endif %}
+      </section>
+    {% endif %}
+
+    <section class="mb-5">
+      <h3>Pathway Evidence Summary</h3>
+      <div class="table-responsive">
+        <table class="table table-bordered table-sm pathway-summary-table">
+          <thead class="thead-dark">
+            <tr>
+              <th>Use in pathway</th>
+              <th>Substrate / observation</th>
+              <th>Reaction / gene / enzyme</th>
+              <th>Product or metabolite</th>
+              <th>Microorganism</th>
+              <th>Evidence type</th>
+              <th>Year</th>
+              <th>Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for step in pathway_steps %}
+              <tr class="pathway-arrow-row">
+                <td><span class="badge badge-primary">Pathway arrow</span></td>
+                <td>{{ step.substrate }}</td>
+                <td>
+                  {{ step.display_reaction_label|default:"Enzyme not identified" }}
+                  {% if step.gene %}<br><span class="text-muted">Gene/protein: {{ step.gene }}</span>{% endif %}
+                  {% if step.protein %}<br><a href="{% url 'protein_detail' step.protein.pesticidedb_protein_id %}">{{ step.protein.pesticidedb_protein_id }}</a>{% endif %}
+                </td>
+                <td>{{ step.product }}</td>
+                <td>{{ step.microorganism|default:step.pathway.microorganism|default:"-" }}</td>
+                <td>{{ step.get_evidence_type_display }}</td>
+                <td>-</td>
+                <td>
+                  {% if step.doi %}
+                    <a href="https://doi.org/{{ step.doi }}" target="_blank" rel="noopener">{{ step.doi }}</a>
+                  {% elif step.pathway.doi %}
+                    <a href="https://doi.org/{{ step.pathway.doi }}" target="_blank" rel="noopener">{{ step.pathway.doi }}</a>
+                  {% else %}
+                    {{ step.pathway.reference|default:"-"|truncatechars:90 }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+            {% for record in evidence_records %}
+              <tr>
+                <td><span class="badge badge-secondary">Experimental record</span></td>
+                <td>{{ record.pesticide }}</td>
+                <td>
+                  {% if record.gene %}{{ record.gene }}{% endif %}
+                  {% if record.gene and record.enzyme %}<br>{% endif %}
+                  {% if record.enzyme %}{{ record.enzyme }}{% endif %}
+                  {% if not record.gene and not record.enzyme %}-{% endif %}
+                </td>
+                <td>{{ record.metabolite_or_product|default:"-"|truncatechars:90 }}</td>
+                <td>{{ record.microorganism|default:"-" }}</td>
+                <td>{{ record.evidence_level|default:"-" }}</td>
+                <td>{{ record.publication_year|default:"-" }}</td>
+                <td>
+                  {% if record.doi %}
+                    <a href="https://doi.org/{{ record.doi }}" target="_blank" rel="noopener">{{ record.doi }}</a>
+                  {% else %}
+                    {{ record.reference|default:"-"|truncatechars:90 }}
+                  {% endif %}
+                </td>
+              </tr>
+            {% empty %}
+              {% if not pathway_steps %}
+                <tr><td colspan="8">No evidence records found.</td></tr>
+              {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+<style>
+  .pathway-cytoscape {
+    width: 100%;
+    height: 320px;
+    min-height: 240px;
+    border: 2px solid #2c2c2c;
+    border-radius: 2px;
+    background: #ffffff;
+    box-sizing: border-box;
+  }
+  .pathway-analysis-page {
+    padding-left: 2rem;
+    padding-right: 2rem;
+    color: #252b33;
+  }
+  .pathway-analysis-page h1 {
+    margin-bottom: .35rem;
+    font-size: 2.35rem;
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .pathway-analysis-page h3 {
+    margin-bottom: .45rem;
+    font-size: 1.55rem;
+    line-height: 1.25;
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+  .pathway-page-subtitle,
+  .pathway-section-note {
+    max-width: 820px;
+    color: #68717c;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+  .pathway-selector {
+    max-width: 1300px;
+  }
+  .pathway-selector label {
+    margin-bottom: .35rem;
+    color: #252b33;
+    font-size: .95rem;
+    font-weight: 650;
+  }
+  .pathway-selector .form-control,
+  .pathway-selector .btn {
+    min-height: 42px;
+    font-size: .98rem;
+  }
+  .pathway-analysis-page .btn {
+    font-weight: 600;
+  }
+  .pathway-analysis-page .btn-outline-primary,
+  .pathway-analysis-page .btn-outline-secondary {
+    background: #fff;
+  }
+  .pathway-cytoscape-frame {
+    width: 100%;
+    overflow-x: auto;
+    padding: .35rem .25rem .65rem;
+  }
+  @media (max-width: 768px) {
+    .pathway-analysis-page {
+      padding-left: 1rem;
+      padding-right: 1rem;
+    }
+  }
+  .pathway-map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .85rem 1.35rem;
+    align-items: center;
+    margin-top: .75rem;
+    color: #495057;
+    font-size: .92rem;
+  }
+  .pathway-status-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem .65rem;
+    align-items: center;
+    margin: .2rem 0 .45rem;
+    color: #56606b;
+    font-size: .92rem;
+    line-height: 1.35;
+  }
+  .pathway-status-line .badge {
+    font-size: .82rem;
+    padding: .38rem .5rem;
+  }
+  .legend-line {
+    display: inline-block;
+    width: 42px;
+    margin-right: .35rem;
+    vertical-align: middle;
+  }
+  .legend-strong { border-top: 3px solid #0057ff; }
+  .legend-supported { border-top: 3px dashed #d21919; }
+  .legend-proposed { border-top: 3px dotted #555; }
+  .pathway-summary-table th,
+  .pathway-summary-table td {
+    vertical-align: top;
+  }
+  .pathway-summary-table td {
+    line-height: 1.35;
+  }
+  .pathway-summary-table th:first-child,
+  .pathway-summary-table td:first-child {
+    text-align: center;
+    width: 8.5rem;
+  }
+  .pathway-arrow-row {
+    background: #f5f9ff;
+  }
+  .pathway-summary-table .badge {
+    white-space: normal;
+  }
+  .pathway-curation-note {
+    max-width: 880px;
+    padding: .85rem 1rem;
+    color: #735500;
+    font-size: 1rem;
+    line-height: 1.55;
+  }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  (function () {
+    const container = document.getElementById("pathway-cytoscape");
+    if (!container) {
+      return;
+    }
+
+    const elements = {{ pathway_graph_json|safe }};
+    if (!window.cytoscape || !elements.length) {
+      document.getElementById("pathway-cytoscape-fallback")?.classList.remove("d-none");
+      return;
+    }
+
+    const minNodeWidth = 112;
+    const comfortableNodeWidth = 160;
+    const maxNodeWidth = 290;
+    const minNodeHeight = 46;
+    const lineHeight = 18;
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function breakLongToken(token, maxChars) {
+      const chunks = [];
+      let remaining = token;
+      while (remaining.length > maxChars) {
+        const searchWindow = remaining.slice(0, maxChars + 1);
+        const breakAt = Math.max(
+          searchWindow.lastIndexOf("-"),
+          searchWindow.lastIndexOf(","),
+          searchWindow.lastIndexOf("/"),
+          searchWindow.lastIndexOf(")")
+        );
+        const chunkEnd = breakAt > Math.floor(maxChars * 0.45) ? breakAt + 1 : maxChars;
+        chunks.push(remaining.slice(0, chunkEnd));
+        remaining = remaining.slice(chunkEnd);
+      }
+      if (remaining) {
+        chunks.push(remaining);
+      }
+      return chunks;
+    }
+
+    function wrapPathwayLabel(label, maxChars) {
+      const explicitLines = String(label || "")
+        .split(/\n+/)
+        .map((line) => line.replace(/\s+/g, " ").trim())
+        .filter(Boolean);
+      const normalized = explicitLines.join("\n");
+      if (!normalized) {
+        return "";
+      }
+
+      const lines = [];
+      explicitLines.forEach((explicitLine) => {
+        if (/^\(.+\)$/.test(explicitLine)) {
+          lines.push(explicitLine);
+          return;
+        }
+
+        const tokens = explicitLine
+          .replace(/([,;/])/g, "$1 ")
+          .split(/\s+/)
+          .filter(Boolean)
+          .flatMap((token) => token.length > maxChars ? breakLongToken(token, maxChars) : [token]);
+
+        let current = "";
+        tokens.forEach((token) => {
+          const candidate = current ? `${current} ${token}` : token;
+          if (candidate.length <= maxChars || !current) {
+            current = candidate;
+            return;
+          }
+          lines.push(current);
+          current = token;
+        });
+        if (current) {
+          lines.push(current);
+        }
+      });
+      return lines.join("\n");
+    }
+
+    function nodeMetrics(label) {
+      const normalized = String(label || "").trim();
+      const longestToken = normalized
+        .split(/\s+/)
+        .reduce((longest, token) => Math.max(longest, token.length), 0);
+      const initialWidth = clamp(
+        Math.max(8.4 * longestToken + 44, normalized.length > 34 ? 250 : minNodeWidth),
+        minNodeWidth,
+        maxNodeWidth
+      );
+      const maxChars = clamp(Math.floor((initialWidth - 34) / 7.2), 13, 34);
+      const displayLabel = wrapPathwayLabel(normalized, maxChars);
+      const longestLine = displayLabel
+        .split("\n")
+        .reduce((longest, line) => Math.max(longest, line.length), 0);
+      const width = clamp(
+        Math.max(8.6 * longestLine + 48, normalized.length > 26 ? comfortableNodeWidth : minNodeWidth),
+        minNodeWidth,
+        maxNodeWidth
+      );
+      const lineCount = Math.max(1, displayLabel.split("\n").length);
+      const height = clamp(22 + lineCount * lineHeight, minNodeHeight, 92);
+      return {
+        displayLabel,
+        width,
+        height,
+        textMaxWidth: width - 28
+      };
+    }
+
+    function buildReferencePathwayLayout(rawElements) {
+      const nodes = rawElements.filter((element) => !element.data.source);
+      const edges = rawElements.filter((element) => element.data.source);
+      const hasVisibleEdgeLabels = edges.some((edge) => Boolean((edge.data.label || "").trim()));
+      const nodeById = new Map(nodes.map((node) => [node.data.id, node]));
+      const metricsById = new Map(nodes.map((node) => [node.data.id, nodeMetrics(node.data.label)]));
+      const nodeWidths = Array.from(metricsById.values()).map((metric) => metric.width);
+      const widestNode = Math.max(...nodeWidths, minNodeWidth);
+      const typicalNodeWidth = clamp(
+        nodeWidths.reduce((sum, width) => sum + width, 0) / Math.max(nodeWidths.length, 1),
+        minNodeWidth,
+        comfortableNodeWidth + 54
+      );
+      const tallestNode = Math.max(...Array.from(metricsById.values()).map((metric) => metric.height), minNodeHeight);
+      const incoming = new Map();
+      const outgoing = new Map();
+
+      nodes.forEach((node) => {
+        incoming.set(node.data.id, []);
+        outgoing.set(node.data.id, []);
+      });
+      edges.forEach((edge) => {
+        incoming.get(edge.data.target)?.push(edge);
+        outgoing.get(edge.data.source)?.push(edge);
+      });
+
+      const selectedLabel = "{{ selected_pesticide|escapejs }}".toLowerCase();
+      let roots = nodes.filter((node) => !incoming.get(node.data.id)?.length);
+      const selectedRoot = nodes.find((node) => (node.data.label || "").toLowerCase() === selectedLabel);
+      if (selectedRoot && !roots.some((node) => node.data.id === selectedRoot.data.id)) {
+        roots.unshift(selectedRoot);
+      }
+      if (!roots.length && nodes.length) {
+        roots = [nodes[0]];
+      }
+
+      const positions = new Map();
+      const visited = new Set();
+      let laneCursor = 0;
+      const linearMap = nodes.length > 3 && nodes.every((node) => {
+        const nodeId = node.data.id;
+        return (incoming.get(nodeId)?.length || 0) <= 1 && (outgoing.get(nodeId)?.length || 0) <= 1;
+      });
+      const denseMap = !linearMap && (nodes.length > 8 || edges.length > 9);
+      const simpleMap = nodes.length <= 3 && edges.length <= 2;
+      const compactUnlabeledMap = !hasVisibleEdgeLabels && !simpleMap;
+      const maxLinearColumns = nodes.length > 7 ? 4 : nodes.length > 5 ? 5 : Math.max(nodes.length, 1);
+      const typicalEdgeSpan = Math.max(
+        ...edges.map((edge) => {
+          const sourceWidth = metricsById.get(edge.data.source)?.width || typicalNodeWidth;
+          const targetWidth = metricsById.get(edge.data.target)?.width || typicalNodeWidth;
+          return Math.max(sourceWidth, targetWidth);
+        }),
+        typicalNodeWidth
+      );
+      const spacingX = Math.max(
+        typicalEdgeSpan + (
+          hasVisibleEdgeLabels
+            ? (linearMap ? 118 : simpleMap ? 145 : denseMap ? 130 : 136)
+            : (linearMap ? 38 : simpleMap ? 72 : denseMap ? 40 : 42)
+        ),
+        hasVisibleEdgeLabels ? (simpleMap ? 330 : 300) : (simpleMap ? 230 : 150)
+      );
+      const spacingY = Math.max(
+        tallestNode + (
+          hasVisibleEdgeLabels
+            ? (linearMap ? 88 : simpleMap ? 110 : 82)
+            : (linearMap ? 54 : simpleMap ? 68 : 58)
+        ),
+        hasVisibleEdgeLabels ? 142 : 104
+      );
+      const originX = widestNode / 2 + 54;
+      const originY = tallestNode / 2 + 64;
+
+      function assign(nodeId, depth) {
+        const children = (outgoing.get(nodeId) || [])
+          .map((edge) => edge.data.target)
+          .filter((targetId) => nodeById.has(targetId));
+
+        if (visited.has(nodeId)) {
+          return positions.get(nodeId)?.lane ?? laneCursor++;
+        }
+        visited.add(nodeId);
+
+        let lane;
+        if (!children.length) {
+          lane = laneCursor++;
+        } else {
+          const childLanes = children.map((childId) => assign(childId, depth + 1));
+          lane = childLanes.reduce((sum, value) => sum + value, 0) / childLanes.length;
+        }
+
+        positions.set(nodeId, {
+          depth,
+          lane,
+          x: originX + depth * spacingX,
+          y: originY + lane * spacingY
+        });
+        return lane;
+      }
+
+      roots.forEach((root) => {
+        assign(root.data.id, 0);
+        laneCursor += 0.65;
+      });
+      nodes.forEach((node) => {
+        if (!positions.has(node.data.id)) {
+          positions.set(node.data.id, {
+            depth: 0,
+            lane: laneCursor,
+            x: originX,
+            y: originY + laneCursor * spacingY
+          });
+          laneCursor += 1;
+        }
+      });
+
+      if (linearMap) {
+        positions.forEach((position, nodeId) => {
+          const row = Math.floor(position.depth / maxLinearColumns);
+          const depthInRow = position.depth % maxLinearColumns;
+          const col = row % 2 === 0 ? depthInRow : maxLinearColumns - 1 - depthInRow;
+          positions.set(nodeId, {
+            ...position,
+            x: originX + col * spacingX,
+            y: originY + row * spacingY
+          });
+        });
+      } else {
+        const depths = new Map();
+        const queue = [];
+        roots.forEach((root) => {
+          if (!depths.has(root.data.id)) {
+            depths.set(root.data.id, 0);
+            queue.push(root.data.id);
+          }
+        });
+
+        while (queue.length) {
+          const nodeId = queue.shift();
+          const nextDepth = (depths.get(nodeId) || 0) + 1;
+          (outgoing.get(nodeId) || []).forEach((edge) => {
+            const targetId = edge.data.target;
+            if (!nodeById.has(targetId) || depths.has(targetId)) {
+              return;
+            }
+            depths.set(targetId, nextDepth);
+            queue.push(targetId);
+          });
+        }
+
+        nodes.forEach((node) => {
+          if (!depths.has(node.data.id)) {
+            depths.set(node.data.id, 0);
+          }
+        });
+
+        const columns = new Map();
+        nodes.forEach((node) => {
+          const depth = depths.get(node.data.id) || 0;
+          if (!columns.has(depth)) {
+            columns.set(depth, []);
+          }
+          columns.get(depth).push(node);
+        });
+
+        columns.forEach((columnNodes, depth) => {
+          columnNodes.forEach((node, index) => {
+            positions.set(node.data.id, {
+              depth,
+              lane: index,
+              x: originX + depth * spacingX,
+              y: originY + index * spacingY
+            });
+          });
+        });
+      }
+
+      const maxX = Math.max(...Array.from(positions.values()).map((position) => position.x), originX);
+      const maxY = Math.max(...Array.from(positions.values()).map((position) => position.y), originY);
+      const fittedHeight = maxY + tallestNode + (hasVisibleEdgeLabels ? 150 : compactUnlabeledMap ? 78 : 104);
+      const fittedWidth = maxX + widestNode + (hasVisibleEdgeLabels ? 120 : compactUnlabeledMap ? 34 : 70);
+      container.style.height = `${Math.max(simpleMap ? 240 : hasVisibleEdgeLabels ? 320 : 280, Math.min(760, fittedHeight))}px`;
+      container.style.minWidth = `${Math.max(simpleMap ? 500 : compactUnlabeledMap ? 500 : 640, fittedWidth)}px`;
+
+      const edgeLaneCounts = new Map();
+      const sourceEdgeLaneCounts = new Map();
+      return rawElements.map((element) => {
+        if (element.data.source) {
+          const sourcePosition = positions.get(element.data.source);
+          const targetPosition = positions.get(element.data.target);
+          const laneKey = `${element.data.source}->${element.data.target}`;
+          const sourceLaneKey = element.data.source;
+          const laneIndex = edgeLaneCounts.get(laneKey) || 0;
+          const sourceLaneIndex = sourceEdgeLaneCounts.get(sourceLaneKey) || 0;
+          edgeLaneCounts.set(laneKey, laneIndex + 1);
+          sourceEdgeLaneCounts.set(sourceLaneKey, sourceLaneIndex + 1);
+          const dx = sourcePosition && targetPosition ? targetPosition.x - sourcePosition.x : 0;
+          const dy = sourcePosition && targetPosition ? targetPosition.y - sourcePosition.y : 0;
+          const isSteepArrow = Math.abs(dy) > Math.max(58, Math.abs(dx) * 0.72);
+          const directionOffset = dy < 0 ? 1 : -1;
+          const hasCanvasLabel = Boolean((element.data.label || "").trim());
+          const sideOffsetDirection = dx === 0
+            ? (sourceLaneIndex % 2 === 0 ? 1 : -1)
+            : (dx > 0 ? 1 : -1);
+          const labelLineCount = String(element.data.label || "").split(/\n+/).filter(Boolean).length || 1;
+          const labelCharCount = String(element.data.label || "").replace(/\s+/g, "").length;
+          const edgeLabelFontSize = labelCharCount && labelCharCount <= 16
+            ? 13
+            : labelCharCount <= 26
+              ? 12
+              : 10;
+          const labelOffsetY = hasCanvasLabel && !isSteepArrow
+            ? directionOffset * (16 + labelLineCount * 5 + (laneIndex % 2) * 5)
+            : 0;
+          const labelOffsetX = hasCanvasLabel && isSteepArrow
+            ? sideOffsetDirection * (18 + labelLineCount * 5 + (laneIndex % 2) * 5)
+            : 0;
+          return {
+            ...element,
+            data: {
+              ...element.data,
+              label_offset_x: labelOffsetX,
+              label_offset_y: labelOffsetY,
+              label_font_size: edgeLabelFontSize,
+              label_max_width: simpleMap ? 112 : 86
+            }
+          };
+        }
+        const metrics = metricsById.get(element.data.id) || nodeMetrics(element.data.label);
+        return {
+          ...element,
+          data: {
+            ...element.data,
+            display_label: metrics.displayLabel,
+            node_width: metrics.width,
+            node_height: metrics.height,
+            text_max_width: metrics.textMaxWidth
+          },
+          position: positions.get(element.data.id)
+        };
+      });
+    }
+
+    const cy = cytoscape({
+      container,
+      elements: buildReferencePathwayLayout(elements),
+      layout: {
+        name: "preset",
+        fit: true,
+        padding: 34
+      },
+      userZoomingEnabled: false,
+      userPanningEnabled: false,
+      autoungrabify: true,
+      boxSelectionEnabled: false,
+      style: [
+        {
+          selector: "node",
+          style: {
+            "label": "data(display_label)",
+            "shape": "round-rectangle",
+            "background-color": "#ffffff",
+            "border-color": "#1f1f1f",
+            "border-width": 2,
+            "color": "#212529",
+            "font-size": 13,
+            "font-family": "Arial, Helvetica, sans-serif",
+            "font-weight": 700,
+            "text-wrap": "wrap",
+            "text-max-width": "data(text_max_width)",
+            "text-valign": "center",
+            "text-halign": "center",
+            "width": "data(node_width)",
+            "height": "data(node_height)",
+            "padding": "6px"
+          }
+        },
+        {
+          selector: "node[node_type = 'unresolved']",
+          style: {
+            "border-style": "dashed",
+            "background-color": "#fffdf7",
+            "border-color": "#b26a00",
+            "color": "#495057"
+          }
+        },
+        {
+          selector: "edge",
+          style: {
+            "label": "data(label)",
+            "curve-style": "segments",
+            "segment-distances": "0",
+            "segment-weights": "0.5",
+            "target-arrow-shape": "triangle",
+            "line-color": "#555555",
+            "target-arrow-color": "#555555",
+            "line-style": "dotted",
+            "width": 3,
+            "font-size": "data(label_font_size)",
+            "font-family": "Arial, sans-serif",
+            "font-weight": 700,
+            "text-background-color": "#ffffff",
+            "text-background-opacity": 0.92,
+            "text-background-padding": "3px",
+            "text-border-color": "#ffffff",
+            "text-border-opacity": 1,
+            "text-border-width": 2,
+            "text-wrap": "wrap",
+            "text-max-width": "data(label_max_width)",
+            "text-rotation": "none",
+            "text-halign": "center",
+            "text-margin-y": "data(label_offset_y)",
+            "text-margin-x": "data(label_offset_x)"
+          }
+        },
+        {
+          selector: "edge[evidence_type = 'PURIFIED_ENZYME'], edge[evidence_type = 'GENETIC']",
+          style: {
+            "line-color": "#0057ff",
+            "target-arrow-color": "#0057ff",
+            "line-style": "solid"
+          }
+        },
+        {
+          selector: "edge[evidence_type = 'METABOLITE'], edge[evidence_type = 'WHOLE_CELL'], edge[evidence_type = 'UNRESOLVED']",
+          style: {
+            "line-color": "#d21919",
+            "target-arrow-color": "#d21919",
+            "line-style": "dashed"
+          }
+        }
+      ]
+    });
+
+    cy.ready(function () {
+      cy.fit(undefined, 18);
+      cy.zoom(Math.min(cy.zoom(), 1.45));
+      cy.center();
+    });
+
+    cy.on("tap", "node, edge", function (event) {
+      const url = event.target.data("url");
+      if (url) {
+        window.location.href = url;
+      }
+    });
+  })();
+</script>
+{% endblock %}
