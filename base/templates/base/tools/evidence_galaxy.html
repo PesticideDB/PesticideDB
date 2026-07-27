@@ -7,7 +7,7 @@
 <div class="galaxy-page">
   <section class="galaxy-toolbar">
     <div>
-      <p class="galaxy-kicker">Experimental knowledge graph</p>
+      <p class="galaxy-kicker">Experimental evidence overview</p>
       <h1>Evidence Galaxy</h1>
     </div>
     <form id="galaxy-form" class="galaxy-controls">
@@ -18,13 +18,21 @@
         {% endfor %}
       </select>
       <button type="submit">Load</button>
+      <button type="button" id="galaxy-view-toggle" class="galaxy-secondary-button">Network view</button>
       <button type="button" id="galaxy-mode-toggle" class="galaxy-secondary-button">2D view</button>
     </form>
   </section>
 
   <section class="galaxy-shell">
-    <div id="galaxy-graph" class="galaxy-graph">
+    <div id="galaxy-graph" class="galaxy-graph is-overview">
       <div id="galaxy-loading" class="galaxy-loading">Loading graph...</div>
+      <div id="galaxy-overview" class="galaxy-overview">
+        <div class="galaxy-overview-rings" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <button type="button" id="galaxy-overview-core" class="galaxy-overview-core"></button>
+        <div id="galaxy-orbit-metrics" class="galaxy-orbit-metrics"></div>
+      </div>
     </div>
     <div class="galaxy-layer-guide" aria-hidden="true">
       <span style="--guide-color:#f7c948">Pesticide core</span>
@@ -54,8 +62,8 @@
         <span><i class="legend-ring" style="border-color:#fb923c"></i>Pathways/products</span>
       </div>
       <div class="galaxy-detail" id="galaxy-detail">
-        <h2>Hover or click a node</h2>
-        <p>Short labels appear in the galaxy. Full details stay here so the graph does not become crowded.</p>
+        <h2>Select an evidence layer</h2>
+        <p>The overview shows curated evidence breadth first. Network view is available for detailed connections.</p>
       </div>
       <div class="galaxy-connections" id="galaxy-connections"></div>
     </aside>
@@ -155,11 +163,134 @@
   .galaxy-loading {
     position: absolute;
     inset: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #dbeafe;
     font-weight: 800;
+  }
+
+  .galaxy-graph.is-overview canvas {
+    display: none !important;
+  }
+
+  .galaxy-overview {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    color: #e5e7eb;
+  }
+
+  .galaxy-graph:not(.is-overview) .galaxy-overview {
+    display: none;
+  }
+
+  .galaxy-overview-rings,
+  .galaxy-overview-rings span {
+    position: absolute;
+    inset: 50%;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .galaxy-overview-rings {
+    width: min(72%, 680px);
+    aspect-ratio: 1;
+    background:
+      radial-gradient(circle, rgba(247, 201, 72, .2) 0 7%, transparent 7.4%),
+      radial-gradient(circle, transparent 0 26%, rgba(96, 165, 250, .08) 26.3% 27.2%, transparent 27.6%),
+      radial-gradient(circle, transparent 0 44%, rgba(52, 211, 153, .08) 44.3% 45.2%, transparent 45.6%),
+      radial-gradient(circle, transparent 0 62%, rgba(192, 132, 252, .08) 62.3% 63.2%, transparent 63.6%),
+      radial-gradient(circle, transparent 0 79%, rgba(251, 146, 60, .08) 79.3% 80.2%, transparent 80.6%);
+    box-shadow: inset 0 0 95px rgba(96, 165, 250, .07);
+  }
+
+  .galaxy-overview-rings span {
+    border: 1px solid rgba(148, 163, 184, .12);
+  }
+
+  .galaxy-overview-rings span:nth-child(1) { width: 31%; height: 31%; }
+  .galaxy-overview-rings span:nth-child(2) { width: 50%; height: 50%; }
+  .galaxy-overview-rings span:nth-child(3) { width: 69%; height: 69%; }
+  .galaxy-overview-rings span:nth-child(4) { width: 88%; height: 88%; }
+
+  .galaxy-overview-core,
+  .galaxy-orbit-card {
+    border: 1px solid rgba(148, 163, 184, .22);
+    color: #f8fafc;
+    cursor: pointer;
+    backdrop-filter: blur(12px);
+  }
+
+  .galaxy-overview-core {
+    position: relative;
+    z-index: 3;
+    width: min(12rem, 30vw);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background:
+      radial-gradient(circle at 35% 28%, rgba(255, 255, 255, .52), transparent 12%),
+      radial-gradient(circle at 62% 70%, rgba(180, 83, 9, .36), transparent 32%),
+      #f7c948;
+    box-shadow: 0 0 45px rgba(247, 201, 72, .38);
+    color: #431407;
+    font-size: clamp(.82rem, 1.1vw, 1.05rem);
+    font-weight: 900;
+    line-height: 1.18;
+    padding: 1rem;
+  }
+
+  .galaxy-orbit-metrics {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+
+  .galaxy-orbit-card {
+    position: absolute;
+    width: clamp(9.4rem, 17vw, 13rem);
+    padding: .72rem .78rem;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, .76);
+    text-align: left;
+    pointer-events: auto;
+    box-shadow: 0 14px 32px rgba(2, 6, 23, .28);
+    transform: translate(-50%, -50%);
+  }
+
+  .galaxy-orbit-card strong {
+    display: block;
+    font-size: 1.45rem;
+    line-height: 1;
+  }
+
+  .galaxy-orbit-card span {
+    display: block;
+    margin-top: .24rem;
+    color: #cbd5e1;
+    font-size: .78rem;
+    font-weight: 700;
+  }
+
+  .galaxy-orbit-meter {
+    height: .36rem;
+    margin-top: .55rem;
+    border-radius: 999px;
+    background: rgba(148, 163, 184, .18);
+    overflow: hidden;
+  }
+
+  .galaxy-orbit-meter i {
+    display: block;
+    height: 100%;
+    width: var(--metric-width);
+    border-radius: inherit;
+    background: var(--metric-color);
+    box-shadow: 0 0 18px var(--metric-color);
   }
 
   .galaxy-layer-guide {
@@ -390,10 +521,27 @@
       min-height: 560px;
     }
 
+    .galaxy-overview-core {
+      width: 8rem;
+    }
+
+    .galaxy-orbit-card {
+      width: 8.4rem;
+      padding: .58rem .62rem;
+    }
+
+    .galaxy-orbit-card strong {
+      font-size: 1.15rem;
+    }
+
     .galaxy-panel {
       max-height: none;
       border-left: 0;
       border-top: 1px solid rgba(148, 163, 184, .22);
+    }
+
+    .galaxy-layer-guide {
+      display: none;
     }
   }
 </style>
@@ -408,14 +556,19 @@
     const connectionsElement = document.getElementById("galaxy-connections");
     const summaryElement = document.getElementById("galaxy-summary");
     const storyElement = document.getElementById("galaxy-story");
+    const overviewElement = document.getElementById("galaxy-overview");
+    const overviewCore = document.getElementById("galaxy-overview-core");
+    const orbitMetrics = document.getElementById("galaxy-orbit-metrics");
     const form = document.getElementById("galaxy-form");
     const select = document.getElementById("pesticide-select");
+    const viewToggle = document.getElementById("galaxy-view-toggle");
     const modeToggle = document.getElementById("galaxy-mode-toggle");
     const filterInputs = Array.from(document.querySelectorAll(".galaxy-filters input"));
     let graph = null;
     let currentData = { nodes: [], links: [], summary: {} };
     let selectedNodeId = "";
     let hoveredNodeId = "";
+    let galaxyView = "overview";
     let galaxyMode = "3d";
 
     const kindConfig = {
@@ -428,6 +581,14 @@
       pathway: { radius: 276, color: "#fb923c", sizeBoost: 1.05 },
       metabolite: { radius: 276, color: "#fb923c", sizeBoost: .88 },
     };
+
+    const overviewGroups = [
+      { key: "reference", label: "Reference papers", kinds: ["reference"], color: "#60a5fa", x: 50, y: 16 },
+      { key: "microorganism", label: "Microorganisms", kinds: ["microorganism"], color: "#34d399", x: 18, y: 48 },
+      { key: "gene", label: "Genes", kinds: ["gene"], color: "#c084fc", x: 50, y: 84 },
+      { key: "protein", label: "Proteins/enzymes", kinds: ["protein", "enzyme"], color: "#f472b6", x: 82, y: 48 },
+      { key: "pathway", label: "Pathways/products", kinds: ["pathway", "metabolite"], color: "#fb923c", x: 72, y: 76 },
+    ];
 
     function escapeHtml(value) {
       return String(value === null || value === undefined ? "" : value)
@@ -452,12 +613,70 @@
       `).join("");
       storyElement.innerHTML = `
         <strong>${escapeHtml(summary.pesticide || select.value)}</strong> connects
-        ${escapeHtml(summary.references || 0)} reference nodes with
+        ${escapeHtml(summary.references || 0)} references with
         ${escapeHtml(summary.microorganisms || 0)} microorganisms,
         ${escapeHtml(summary.genes || 0)} genes, and
-        ${escapeHtml(summary.proteins_or_enzymes || 0)} protein/enzyme nodes.
-        Click a node to highlight its local evidence neighborhood.
+        ${escapeHtml(summary.proteins_or_enzymes || 0)} protein/enzyme records.
+        Use the overview layers first; switch to network view only when you need individual connections.
       `;
+    }
+
+    function renderOverview(data) {
+      const summary = data.summary || {};
+      const byKind = new Map();
+      data.nodes.forEach(node => {
+        if (!byKind.has(node.kind)) byKind.set(node.kind, []);
+        byKind.get(node.kind).push(node);
+      });
+      const groupCounts = overviewGroups.map(group => ({
+        ...group,
+        nodes: group.kinds.flatMap(kind => byKind.get(kind) || []),
+      }));
+      const maxCount = Math.max(1, ...groupCounts.map(group => group.nodes.length));
+
+      overviewCore.textContent = summary.pesticide || select.value;
+      overviewCore.onclick = () => {
+        renderPesticideOverviewDetail(data);
+      };
+
+      orbitMetrics.innerHTML = groupCounts.map(group => `
+        <button type="button" class="galaxy-orbit-card" data-group="${escapeHtml(group.key)}"
+          style="left:${group.x}%; top:${group.y}%; --metric-color:${group.color}; --metric-width:${Math.max(8, (group.nodes.length / maxCount) * 100)}%;">
+          <strong>${escapeHtml(group.nodes.length)}</strong>
+          <span>${escapeHtml(group.label)}</span>
+          <div class="galaxy-orbit-meter"><i></i></div>
+        </button>
+      `).join("");
+
+      orbitMetrics.querySelectorAll(".galaxy-orbit-card").forEach(card => {
+        card.addEventListener("click", () => {
+          const group = groupCounts.find(item => item.key === card.dataset.group);
+          if (group) renderOverviewDetail(group);
+        });
+      });
+    }
+
+    function renderOverviewDetail(group) {
+      const shown = group.nodes.slice(0, 8);
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(group.label)}</h2>
+        <p><strong>${escapeHtml(group.nodes.length)}</strong> curated item${group.nodes.length === 1 ? "" : "s"} linked to ${escapeHtml(currentData.summary?.pesticide || select.value)}.</p>
+        <p>This overview keeps the galaxy clean; switch to network view if you want individual links.</p>
+      `;
+      connectionsElement.innerHTML = shown.length ? `
+        <div class="galaxy-connection"><strong>Examples</strong><span>${Math.min(shown.length, 8)} shown</span></div>
+        ${shown.map(node => `<div class="galaxy-connection"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || node.layer || node.kind)}</span></div>`).join("")}
+      ` : "";
+    }
+
+    function renderPesticideOverviewDetail(data) {
+      const summary = data.summary || {};
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(summary.pesticide || select.value)}</h2>
+        <p><strong>Evidence overview</strong> · curated database coverage</p>
+        <p>${escapeHtml(summary.references || 0)} references, ${escapeHtml(summary.microorganisms || 0)} microorganisms, ${escapeHtml(summary.genes || 0)} genes, and ${escapeHtml(summary.proteins_or_enzymes || 0)} protein/enzyme records are summarized here.</p>
+      `;
+      connectionsElement.innerHTML = "";
     }
 
     function renderDetail(node) {
@@ -707,6 +926,14 @@
       selectedNodeId = "";
       hoveredNodeId = "";
       renderSummary(data.summary || {});
+      renderOverview(data);
+      updateViewControls();
+
+      if (galaxyView === "overview") {
+        graphElement.classList.add("is-overview");
+        renderPesticideOverviewDetail(data);
+        return;
+      }
 
       if (!window.ForceGraph3D) {
         detailElement.innerHTML = "<h2>3D library unavailable</h2><p>Please check your internet connection because this prototype loads its 3D graph library from a CDN.</p>";
@@ -759,9 +986,15 @@
         const pesticideNode = data.nodes.find(node => node.kind === "pesticide") || data.nodes[0];
         selectedNodeId = "";
         hoveredNodeId = "";
-        renderDetail(pesticideNode);
+        if (galaxyView === "network") renderDetail(pesticideNode);
         updateGraphStyles();
       }
+    }
+
+    function updateViewControls() {
+      graphElement.classList.toggle("is-overview", galaxyView === "overview");
+      viewToggle.textContent = galaxyView === "overview" ? "Network view" : "Overview";
+      modeToggle.style.display = galaxyView === "overview" ? "none" : "";
     }
 
     form.addEventListener("submit", (event) => {
@@ -769,7 +1002,14 @@
       loadGraph();
     });
     filterInputs.forEach(input => {
-      input.addEventListener("change", applyGraphData);
+      input.addEventListener("change", () => {
+        if (galaxyView === "network") applyGraphData();
+      });
+    });
+    viewToggle.addEventListener("click", () => {
+      galaxyView = galaxyView === "overview" ? "network" : "overview";
+      updateViewControls();
+      loadGraph();
     });
     modeToggle.addEventListener("click", () => {
       galaxyMode = galaxyMode === "3d" ? "2d" : "3d";
@@ -777,6 +1017,7 @@
       graph.numDimensions(galaxyMode === "3d" ? 3 : 2);
       applyGraphData();
     });
+    updateViewControls();
     loadGraph();
   })();
 </script>
