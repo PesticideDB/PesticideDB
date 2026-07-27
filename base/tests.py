@@ -42,9 +42,41 @@ class StatisticsTests(TestCase):
 
 class PageSmokeTests(TestCase):
     def test_core_pages_render(self):
-        for name in ["home", "about", "microorganisms", "proteins", "statistics", "citation_download", "help", "pathwayanalysis"]:
+        for name in ["home", "about", "microorganisms", "proteins", "statistics", "citation_download", "help", "pathwayanalysis", "evidence_galaxy"]:
             response = self.client.get(reverse(name))
             self.assertEqual(response.status_code, 200, name)
+
+    def test_evidence_galaxy_data_links_database_entities(self):
+        Pesticide.objects.create(
+            pesticide="Carbaryl",
+            microorganism="Pseudomonas sp.",
+            gene="mcbA",
+            enzyme="Hydrolases",
+            enzyme_name_reported="Carbaryl hydrolase",
+            metabolite_or_product="1-naphthol",
+            publication_year=2020,
+            doi="10.1000/carbaryl",
+            reference="10.1000/carbaryl",
+        )
+        ProteinRecord.objects.create(
+            pesticide="Carbaryl",
+            microorganism="Pseudomonas sp.",
+            reported_protein_name="Carbaryl hydrolase",
+            gene_name="mcbA",
+            doi="10.1000/carbaryl",
+        )
+
+        response = self.client.get(reverse("evidence_galaxy_data"), {"pesticide": "Carbaryl"})
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        kinds = {node["kind"] for node in payload["nodes"]}
+        self.assertIn("pesticide", kinds)
+        self.assertIn("reference", kinds)
+        self.assertIn("microorganism", kinds)
+        self.assertIn("gene", kinds)
+        self.assertIn("protein", kinds)
+        self.assertGreaterEqual(len(payload["links"]), 4)
 
     def test_supplemental_download_assets_are_available(self):
         for asset_name in ["validated-supplemental-proteins", "discovery-candidates"]:

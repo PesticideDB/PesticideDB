@@ -39,6 +39,8 @@ urlpatterns = [
 
     path('annotategenome/', views.annotategenome, name='annotategenome'),
     path('pathwayanalysis/', views.pathwayanalysis, name='pathwayanalysis'),
+    path('evidence-galaxy/', views.evidence_galaxy, name='evidence_galaxy'),
+    path('evidence-galaxy/data/', views.evidence_galaxy_data, name='evidence_galaxy_data'),
     path('compounds/<int:compound_id>/', views.compound_detail, name='compound_detail'),
     path('pathway-steps/<int:step_id>/', views.pathway_step_detail, name='pathway_step_detail'),
     path('pesticideclassification/', views.pesticideclassification, name='pesticideclassification'),

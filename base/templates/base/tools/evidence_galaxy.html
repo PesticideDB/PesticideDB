@@ -1,0 +1,385 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Evidence Galaxy - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="galaxy-page">
+  <section class="galaxy-toolbar">
+    <div>
+      <p class="galaxy-kicker">Experimental knowledge graph</p>
+      <h1>Evidence Galaxy</h1>
+    </div>
+    <form id="galaxy-form" class="galaxy-controls">
+      <label for="pesticide-select">Pesticide</label>
+      <select id="pesticide-select" name="pesticide">
+        {% for pesticide in pesticide_names %}
+          <option value="{{ pesticide }}" {% if pesticide == selected_pesticide %}selected{% endif %}>{{ pesticide }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Load</button>
+    </form>
+  </section>
+
+  <section class="galaxy-shell">
+    <div id="galaxy-graph" class="galaxy-graph">
+      <div id="galaxy-loading" class="galaxy-loading">Loading graph...</div>
+    </div>
+    <aside class="galaxy-panel">
+      <div class="galaxy-summary" id="galaxy-summary"></div>
+      <div class="galaxy-legend">
+        <span><i style="background:#f7c948"></i>Pesticide</span>
+        <span><i style="background:#60a5fa"></i>Reference</span>
+        <span><i style="background:#34d399"></i>Microorganism</span>
+        <span><i style="background:#c084fc"></i>Gene</span>
+        <span><i style="background:#f472b6"></i>Protein/enzyme</span>
+        <span><i style="background:#fb923c"></i>Pathway/product</span>
+      </div>
+      <div class="galaxy-detail" id="galaxy-detail">
+        <h2>Hover or click a node</h2>
+        <p>Short labels appear in the galaxy. Full details stay here so the graph does not become crowded.</p>
+      </div>
+    </aside>
+  </section>
+</div>
+
+<style>
+  .galaxy-page {
+    max-width: 1480px;
+    margin: 0 auto;
+    padding: 1.4rem 1rem 2.5rem;
+  }
+
+  .galaxy-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .galaxy-kicker {
+    margin: 0 0 .25rem;
+    color: #64748b;
+    font-size: .86rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+  }
+
+  .galaxy-toolbar h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 2rem;
+    font-weight: 800;
+  }
+
+  .galaxy-controls {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+  }
+
+  .galaxy-controls label {
+    margin: 0;
+    color: #334155;
+    font-size: .9rem;
+    font-weight: 700;
+  }
+
+  .galaxy-controls select {
+    width: min(32rem, 58vw);
+    padding: .48rem .6rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: white;
+  }
+
+  .galaxy-controls button {
+    padding: .5rem .9rem;
+    border: 0;
+    border-radius: 7px;
+    background: #0f766e;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .galaxy-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    min-height: 680px;
+    border: 1px solid #111827;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #020617;
+    box-shadow: 0 22px 52px rgba(15, 23, 42, .2);
+  }
+
+  .galaxy-graph {
+    position: relative;
+    min-height: 680px;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(96, 165, 250, .18), transparent 34%),
+      radial-gradient(circle at 80% 70%, rgba(244, 114, 182, .12), transparent 30%),
+      #020617;
+  }
+
+  .galaxy-loading {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dbeafe;
+    font-weight: 800;
+  }
+
+  .galaxy-panel {
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+    padding: 1rem;
+    background: rgba(15, 23, 42, .96);
+    border-left: 1px solid rgba(148, 163, 184, .22);
+    color: #e5e7eb;
+  }
+
+  .galaxy-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .45rem;
+  }
+
+  .galaxy-stat {
+    padding: .55rem;
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 7px;
+    background: rgba(30, 41, 59, .72);
+  }
+
+  .galaxy-stat strong {
+    display: block;
+    color: #ffffff;
+    font-size: 1.2rem;
+  }
+
+  .galaxy-stat span {
+    color: #94a3b8;
+    font-size: .75rem;
+  }
+
+  .galaxy-legend {
+    display: grid;
+    gap: .42rem;
+    font-size: .82rem;
+  }
+
+  .galaxy-legend span {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+  }
+
+  .galaxy-legend i {
+    width: .72rem;
+    height: .72rem;
+    border-radius: 50%;
+    box-shadow: 0 0 14px currentColor;
+  }
+
+  .galaxy-detail {
+    min-height: 210px;
+    padding: .85rem;
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 7px;
+    background: rgba(2, 6, 23, .54);
+  }
+
+  .galaxy-detail h2 {
+    margin: 0 0 .45rem;
+    color: #f8fafc;
+    font-size: 1.08rem;
+  }
+
+  .galaxy-detail p {
+    margin: 0 0 .45rem;
+    color: #cbd5e1;
+    font-size: .88rem;
+  }
+
+  .galaxy-detail a {
+    color: #93c5fd;
+    font-weight: 700;
+  }
+
+  .galaxy-node-label {
+    padding: 3px 5px;
+    border-radius: 999px;
+    background: rgba(15, 23, 42, .72);
+    color: #f8fafc;
+    font: 600 10px Arial, sans-serif;
+    pointer-events: none;
+    text-shadow: 0 1px 5px #000;
+  }
+
+  #research-fortune-card {
+    display: none !important;
+  }
+
+  @media (max-width: 920px) {
+    .galaxy-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .galaxy-controls select {
+      width: 100%;
+    }
+
+    .galaxy-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .galaxy-panel {
+      border-left: 0;
+      border-top: 1px solid rgba(148, 163, 184, .22);
+    }
+  }
+</style>
+
+<script src="https://unpkg.com/three@0.160.0/build/three.min.js"></script>
+<script src="https://unpkg.com/3d-force-graph@1.73.0/dist/3d-force-graph.min.js"></script>
+<script>
+  (() => {
+    const graphElement = document.getElementById("galaxy-graph");
+    const loadingElement = document.getElementById("galaxy-loading");
+    const detailElement = document.getElementById("galaxy-detail");
+    const summaryElement = document.getElementById("galaxy-summary");
+    const form = document.getElementById("galaxy-form");
+    const select = document.getElementById("pesticide-select");
+    let graph = null;
+
+    function escapeHtml(value) {
+      return String(value === null || value === undefined ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function renderSummary(summary) {
+      const items = [
+        ["Records", summary.evidence_records],
+        ["References", summary.references],
+        ["Microbes", summary.microorganisms],
+        ["Genes", summary.genes],
+        ["Proteins", summary.proteins_or_enzymes],
+        ["Pathway", summary.pathway_nodes],
+      ];
+      summaryElement.innerHTML = items.map(([label, value]) => `
+        <div class="galaxy-stat"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>
+      `).join("");
+    }
+
+    function renderDetail(node) {
+      if (!node) return;
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(node.label)}</h2>
+        <p><strong>${escapeHtml(node.kind)}</strong> · ${escapeHtml(node.layer)}</p>
+        <p>${escapeHtml(node.detail || "")}</p>
+        ${node.url ? `<a href="${escapeHtml(node.url)}" target="_blank" rel="noopener noreferrer">Open linked record</a>` : ""}
+      `;
+    }
+
+    function nodeObject(node) {
+      const group = new THREE.Group();
+      const geometry = new THREE.SphereGeometry(Math.max(2.8, node.size || 5), 18, 18);
+      const material = new THREE.MeshLambertMaterial({ color: node.color || "#ffffff", transparent: true, opacity: .92 });
+      const sphere = new THREE.Mesh(geometry, material);
+      group.add(sphere);
+
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      const label = node.kind === "pesticide" ? node.label : node.label.slice(0, 26);
+      context.font = "600 24px Arial";
+      const width = Math.ceil(context.measureText(label).width) + 24;
+      canvas.width = Math.max(width, 90);
+      canvas.height = 42;
+      context.font = "600 24px Arial";
+      context.fillStyle = "rgba(2, 6, 23, .74)";
+      context.beginPath();
+      context.roundRect(0, 3, canvas.width, 34, 17);
+      context.fill();
+      context.fillStyle = "#f8fafc";
+      context.fillText(label, 12, 28);
+      const texture = new THREE.CanvasTexture(canvas);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
+      sprite.scale.set(canvas.width / 5.5, canvas.height / 5.5, 1);
+      sprite.position.set(0, (node.size || 5) + 7, 0);
+      sprite.visible = node.kind === "pesticide";
+      group.add(sprite);
+      node.__labelSprite = sprite;
+      return group;
+    }
+
+    async function loadGraph() {
+      const pesticide = select.value;
+      loadingElement.style.display = "flex";
+      const response = await fetch(`{% url 'evidence_galaxy_data' %}?pesticide=${encodeURIComponent(pesticide)}`);
+      const data = await response.json();
+      loadingElement.style.display = "none";
+      renderSummary(data.summary || {});
+
+      if (!window.ForceGraph3D) {
+        detailElement.innerHTML = "<h2>3D library unavailable</h2><p>Please check your internet connection because this prototype loads its 3D graph library from a CDN.</p>";
+        return;
+      }
+
+      if (!graph) {
+        graph = ForceGraph3D()(graphElement)
+          .backgroundColor("rgba(0,0,0,0)")
+          .nodeThreeObject(nodeObject)
+          .nodeLabel(node => `${node.kind}: ${node.label}`)
+          .linkColor(link => link.color || "#64748b")
+          .linkWidth(link => Math.min(3, 0.55 + (link.weight || 1) * .22))
+          .linkOpacity(.38)
+          .linkDirectionalParticles(link => Math.min(3, link.weight || 1))
+          .linkDirectionalParticleSpeed(.004)
+          .onNodeHover(node => {
+            graphElement.style.cursor = node ? "pointer" : "default";
+            data.nodes.forEach(item => {
+              if (item.__labelSprite) item.__labelSprite.visible = item.kind === "pesticide" || item === node;
+            });
+            if (node) renderDetail(node);
+          })
+          .onNodeClick(node => {
+            renderDetail(node);
+            const distance = 78;
+            const distRatio = 1 + distance / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
+            graph.cameraPosition(
+              { x: (node.x || 1) * distRatio, y: (node.y || 1) * distRatio, z: (node.z || 1) * distRatio },
+              node,
+              900
+            );
+          })
+          .onNodeRightClick(node => {
+            if (node.url) window.open(node.url, "_blank", "noopener");
+          });
+      }
+      graph.graphData(data);
+      graph.d3Force("charge").strength(-76);
+      graph.d3Force("link").distance(link => link.label === "reported in" ? 56 : 34);
+      if (data.nodes.length) renderDetail(data.nodes[0]);
+    }
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      loadGraph();
+    });
+    loadGraph();
+  })();
+</script>
+{% endblock %}

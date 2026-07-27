@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
-from django.http import HttpResponse, FileResponse, Http404
+from django.http import HttpResponse, FileResponse, Http404, JsonResponse
 from django.conf import settings
 from django.views.decorators.http import require_POST
 
@@ -807,6 +807,237 @@ def statistics(request):
         **summary,
         "publications_by_year": publications_by_year,
     })
+
+
+def evidence_galaxy(request):
+    pesticide_names = canonical_pesticide_names()
+    selected_pesticide = request.GET.get("pesticide", "").strip()
+    if not selected_pesticide and pesticide_names:
+        selected_pesticide = pesticide_names[0]
+
+    context = {
+        "pesticide_names": pesticide_names,
+        "selected_pesticide": selected_pesticide,
+    }
+    return render(request, "base/tools/evidence_galaxy.html", context)
+
+
+def evidence_galaxy_data(request):
+    pesticide = request.GET.get("pesticide", "").strip()
+    if not pesticide:
+        return JsonResponse({"nodes": [], "links": [], "summary": {"message": "Select a pesticide."}})
+
+    records = list(
+        Pesticide.objects.filter(pesticide__iexact=pesticide)
+        .order_by("publication_year", "microorganism", "id")
+    )
+    proteins = list(
+        ProteinRecord.objects.filter(pesticide__iexact=pesticide)
+        .order_by("year", "microorganism", "gene_name", "id")
+    )
+    pathways = list(
+        DegradationPathway.objects.filter(pesticide__iexact=pesticide)
+        .prefetch_related("steps")
+        .order_by("title", "id")
+    )
+
+    nodes = {}
+    links = {}
+
+    def clean_node(value):
+        return re.sub(r"\s+", " ", str(value or "")).strip()
+
+    def node_id(kind, label):
+        key = re.sub(r"[^a-z0-9]+", "-", clean_node(label).casefold()).strip("-") or "unknown"
+        return f"{kind}-{key}"
+
+    def add_node(kind, label, layer, color, size=6, detail=None, url=""):
+        label = clean_node(label)
+        if not label:
+            return ""
+        identifier = node_id(kind, label)
+        existing = nodes.get(identifier)
+        if existing:
+            existing["size"] = max(existing["size"], size)
+            existing["record_count"] = existing.get("record_count", 1) + 1
+            return identifier
+        nodes[identifier] = {
+            "id": identifier,
+            "label": label,
+            "kind": kind,
+            "layer": layer,
+            "color": color,
+            "size": size,
+            "detail": detail or label,
+            "url": url,
+            "record_count": 1,
+        }
+        return identifier
+
+    def add_link(source, target, label, color="#8ea4c8"):
+        if not source or not target or source == target:
+            return
+        key = (source, target, label)
+        if key in links:
+            links[key]["weight"] += 1
+            return
+        links[key] = {
+            "source": source,
+            "target": target,
+            "label": label,
+            "color": color,
+            "weight": 1,
+        }
+
+    pesticide_id = add_node(
+        "pesticide",
+        pesticide,
+        "pesticide",
+        "#f7c948",
+        14,
+        f"{pesticide}: selected pesticide evidence cluster",
+    )
+
+    for record in records:
+        doi = clean_node(record.doi) or clean_node(record.reference)
+        reference_label = doi or f"Reference {record.id}"
+        reference_id = add_node(
+            "reference",
+            reference_label,
+            "reference",
+            "#60a5fa",
+            7,
+            f"{record.publication_year or 'Year not recorded'} | {record.reference or doi}",
+            f"https://doi.org/{doi}" if doi.startswith("10.") else "",
+        )
+        microbe_id = add_node(
+            "microorganism",
+            record.microorganism,
+            "microorganism",
+            "#34d399",
+            8,
+            f"{record.microorganism or 'Microorganism not recorded'} | {record.culture_type or 'Individual strain'}",
+        )
+        add_link(pesticide_id, reference_id, "reported in", "#93c5fd")
+        add_link(reference_id, microbe_id, "reports", "#86efac")
+        add_link(microbe_id, pesticide_id, "degrades", "#facc15")
+
+        for gene in _split_galaxy_terms(record.gene):
+            gene_id = add_node("gene", gene, "gene/protein", "#c084fc", 5, f"Gene linked to {record.microorganism}")
+            add_link(microbe_id, gene_id, "has gene", "#d8b4fe")
+            add_link(gene_id, pesticide_id, "linked to", "#e9d5ff")
+
+        enzyme_terms = _split_galaxy_terms(record.enzyme_name_reported) or _split_galaxy_terms(record.enzyme)
+        for enzyme in enzyme_terms:
+            enzyme_id = add_node("enzyme", enzyme, "gene/protein", "#f472b6", 5, f"Protein/enzyme reported for {record.microorganism}")
+            add_link(microbe_id, enzyme_id, "enzyme", "#f9a8d4")
+            add_link(enzyme_id, pesticide_id, "acts on", "#fbcfe8")
+
+        for product in _split_galaxy_terms(record.metabolite_or_product):
+            product_id = add_node("metabolite", product, "pathway", "#fb923c", 5, f"Metabolite/product reported for {pesticide}")
+            add_link(pesticide_id, product_id, "forms", "#fdba74")
+            add_link(reference_id, product_id, "supports", "#fed7aa")
+
+    for protein in proteins:
+        microbe_id = add_node(
+            "microorganism",
+            protein.microorganism,
+            "microorganism",
+            "#34d399",
+            8,
+            f"{protein.microorganism or 'Microorganism not recorded'}",
+        )
+        protein_label = protein.reported_protein_name or protein.pesticidedb_protein_id or protein.gene_name
+        protein_id = add_node(
+            "protein",
+            protein_label,
+            "gene/protein",
+            "#f472b6",
+            6,
+            f"{protein.pesticidedb_protein_id or ''} | {protein.gene_name or ''} | {protein.doi or ''}",
+            request_path("protein_detail", protein.pesticidedb_protein_id) if protein.pesticidedb_protein_id else "",
+        )
+        add_link(microbe_id, protein_id, "protein", "#f9a8d4")
+        add_link(protein_id, pesticide_id, "evidence", "#fbcfe8")
+        if protein.doi:
+            reference_id = add_node(
+                "reference",
+                protein.doi,
+                "reference",
+                "#60a5fa",
+                7,
+                f"Protein record reference | {protein.year or 'Year not recorded'}",
+                f"https://doi.org/{protein.doi}" if protein.doi.startswith("10.") else "",
+            )
+            add_link(reference_id, protein_id, "reports", "#bfdbfe")
+
+        for gene in _split_galaxy_terms(protein.gene_name):
+            gene_id = add_node("gene", gene, "gene/protein", "#c084fc", 5, f"Gene for {protein_label}")
+            add_link(gene_id, protein_id, "encodes", "#d8b4fe")
+
+    for pathway in pathways:
+        pathway_id = add_node(
+            "pathway",
+            pathway.title,
+            "pathway",
+            "#fb923c",
+            8,
+            f"{pathway.completeness} | {pathway.summary or pathway.reference}",
+        )
+        add_link(pesticide_id, pathway_id, "pathway", "#fdba74")
+        if pathway.doi:
+            reference_id = add_node(
+                "reference",
+                pathway.doi,
+                "reference",
+                "#60a5fa",
+                7,
+                f"Pathway reference | {pathway.reference}",
+                f"https://doi.org/{pathway.doi}" if pathway.doi.startswith("10.") else "",
+            )
+            add_link(reference_id, pathway_id, "supports", "#bfdbfe")
+        if pathway.microorganism:
+            microbe_id = add_node("microorganism", pathway.microorganism, "microorganism", "#34d399", 8)
+            add_link(microbe_id, pathway_id, "pathway", "#86efac")
+        for step in pathway.steps.all():
+            for product in _split_galaxy_terms(step.product):
+                product_id = add_node("metabolite", product, "pathway", "#fb923c", 5, f"Step {step.step_order}: {step.substrate} to {step.product}")
+                add_link(pathway_id, product_id, "step", "#fdba74")
+            for gene in _split_galaxy_terms(step.gene):
+                gene_id = add_node("gene", gene, "gene/protein", "#c084fc", 5, f"Pathway step gene | {step.evidence_type}")
+                add_link(gene_id, pathway_id, "step gene", "#d8b4fe")
+            for enzyme in _split_galaxy_terms(step.enzyme):
+                enzyme_id = add_node("enzyme", enzyme, "gene/protein", "#f472b6", 5, f"Pathway step enzyme | {step.evidence_type}")
+                add_link(enzyme_id, pathway_id, "step enzyme", "#f9a8d4")
+
+    summary = {
+        "pesticide": pesticide,
+        "evidence_records": len(records),
+        "references": len([node for node in nodes.values() if node["kind"] == "reference"]),
+        "microorganisms": len([node for node in nodes.values() if node["kind"] == "microorganism"]),
+        "genes": len([node for node in nodes.values() if node["kind"] == "gene"]),
+        "proteins_or_enzymes": len([node for node in nodes.values() if node["kind"] in {"protein", "enzyme"}]),
+        "pathway_nodes": len([node for node in nodes.values() if node["kind"] in {"pathway", "metabolite"}]),
+    }
+    return JsonResponse({"nodes": list(nodes.values()), "links": list(links.values()), "summary": summary})
+
+
+def _split_galaxy_terms(value):
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    if not text or text in {"-", "Not linked", "Not specified", "None", "nan"}:
+        return []
+    parts = re.split(r"\s*(?:;|,|\||/|\band\b)\s*", text)
+    cleaned = []
+    seen = set()
+    for part in parts:
+        item = part.strip()
+        if not item or item in {"-", "Not linked", "Not specified"}:
+            continue
+        key = item.casefold()
+        if key not in seen:
+            cleaned.append(item[:90])
+            seen.add(key)
+    return cleaned[:8]
 
 
 def classification(request):
