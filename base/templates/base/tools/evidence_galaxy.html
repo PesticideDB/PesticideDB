@@ -18,6 +18,7 @@
         {% endfor %}
       </select>
       <button type="submit">Load</button>
+      <button type="button" id="galaxy-mode-toggle" class="galaxy-secondary-button">2D view</button>
     </form>
   </section>
 
@@ -25,20 +26,38 @@
     <div id="galaxy-graph" class="galaxy-graph">
       <div id="galaxy-loading" class="galaxy-loading">Loading graph...</div>
     </div>
+    <div class="galaxy-layer-guide" aria-hidden="true">
+      <span style="--guide-color:#f7c948">Pesticide core</span>
+      <span style="--guide-color:#60a5fa">References</span>
+      <span style="--guide-color:#34d399">Microbes</span>
+      <span style="--guide-color:#c084fc">Genes/proteins</span>
+      <span style="--guide-color:#fb923c">Pathway products</span>
+    </div>
     <aside class="galaxy-panel">
       <div class="galaxy-summary" id="galaxy-summary"></div>
+      <div class="galaxy-story" id="galaxy-story"></div>
+      <div class="galaxy-filters" aria-label="Evidence Galaxy filters">
+        <label><input type="checkbox" data-kind="reference" checked> References</label>
+        <label><input type="checkbox" data-kind="microorganism" checked> Microorganisms</label>
+        <label><input type="checkbox" data-kind="gene" checked> Genes</label>
+        <label><input type="checkbox" data-kind="protein" checked> Proteins</label>
+        <label><input type="checkbox" data-kind="enzyme" checked> Enzymes</label>
+        <label><input type="checkbox" data-kind="pathway" checked> Pathways</label>
+        <label><input type="checkbox" data-kind="metabolite" checked> Products</label>
+      </div>
       <div class="galaxy-legend">
-        <span><i style="background:#f7c948"></i>Pesticide</span>
-        <span><i style="background:#60a5fa"></i>Reference</span>
-        <span><i style="background:#34d399"></i>Microorganism</span>
-        <span><i style="background:#c084fc"></i>Gene</span>
-        <span><i style="background:#f472b6"></i>Protein/enzyme</span>
-        <span><i style="background:#fb923c"></i>Pathway/product</span>
+        <span><i style="background:#f7c948"></i>Pesticide core</span>
+        <span><i class="legend-square" style="background:#60a5fa"></i>Reference papers</span>
+        <span><i style="background:#34d399"></i>Microorganisms</span>
+        <span><i class="legend-diamond" style="background:#c084fc"></i>Genes</span>
+        <span><i class="legend-facet" style="background:#f472b6"></i>Proteins/enzymes</span>
+        <span><i class="legend-ring" style="border-color:#fb923c"></i>Pathways/products</span>
       </div>
       <div class="galaxy-detail" id="galaxy-detail">
         <h2>Hover or click a node</h2>
         <p>Short labels appear in the galaxy. Full details stay here so the graph does not become crowded.</p>
       </div>
+      <div class="galaxy-connections" id="galaxy-connections"></div>
     </aside>
   </section>
 </div>
@@ -106,9 +125,15 @@
     cursor: pointer;
   }
 
+  .galaxy-secondary-button {
+    background: #334155 !important;
+  }
+
   .galaxy-shell {
+    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
+    height: clamp(680px, calc(100vh - 180px), 780px);
     min-height: 680px;
     border: 1px solid #111827;
     border-radius: 8px;
@@ -119,6 +144,7 @@
 
   .galaxy-graph {
     position: relative;
+    height: 100%;
     min-height: 680px;
     background:
       radial-gradient(circle at 20% 20%, rgba(96, 165, 250, .18), transparent 34%),
@@ -136,6 +162,41 @@
     font-weight: 800;
   }
 
+  .galaxy-layer-guide {
+    position: absolute;
+    left: .85rem;
+    bottom: .85rem;
+    z-index: 5;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    max-width: min(42rem, calc(100% - 1.7rem));
+    pointer-events: none;
+  }
+
+  .galaxy-layer-guide span {
+    display: inline-flex;
+    align-items: center;
+    gap: .34rem;
+    padding: .28rem .46rem;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 999px;
+    background: rgba(2, 6, 23, .72);
+    color: #dbeafe;
+    font-size: .72rem;
+    font-weight: 700;
+    backdrop-filter: blur(8px);
+  }
+
+  .galaxy-layer-guide span::before {
+    content: "";
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--guide-color);
+    box-shadow: 0 0 14px var(--guide-color);
+  }
+
   .galaxy-panel {
     display: flex;
     flex-direction: column;
@@ -144,6 +205,7 @@
     background: rgba(15, 23, 42, .96);
     border-left: 1px solid rgba(148, 163, 184, .22);
     color: #e5e7eb;
+    overflow-y: auto;
   }
 
   .galaxy-summary {
@@ -170,6 +232,43 @@
     font-size: .75rem;
   }
 
+  .galaxy-story {
+    padding: .75rem;
+    border: 1px solid rgba(20, 184, 166, .28);
+    border-radius: 7px;
+    background: rgba(13, 148, 136, .12);
+    color: #d1fae5;
+    font-size: .84rem;
+    line-height: 1.45;
+  }
+
+  .galaxy-story strong {
+    color: white;
+  }
+
+  .galaxy-filters {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .38rem .5rem;
+    padding: .7rem;
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 7px;
+    background: rgba(30, 41, 59, .45);
+    font-size: .78rem;
+  }
+
+  .galaxy-filters label {
+    display: flex;
+    align-items: center;
+    gap: .34rem;
+    margin: 0;
+    color: #dbeafe;
+  }
+
+  .galaxy-filters input {
+    accent-color: #0f766e;
+  }
+
   .galaxy-legend {
     display: grid;
     gap: .42rem;
@@ -187,6 +286,25 @@
     height: .72rem;
     border-radius: 50%;
     box-shadow: 0 0 14px currentColor;
+  }
+
+  .galaxy-legend .legend-square {
+    border-radius: 2px;
+  }
+
+  .galaxy-legend .legend-diamond {
+    border-radius: 2px;
+    transform: rotate(45deg);
+  }
+
+  .galaxy-legend .legend-facet {
+    border-radius: 4px;
+    clip-path: polygon(50% 0, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  }
+
+  .galaxy-legend .legend-ring {
+    border: 2px solid;
+    background: transparent !important;
   }
 
   .galaxy-detail {
@@ -214,6 +332,29 @@
     font-weight: 700;
   }
 
+  .galaxy-connections {
+    display: grid;
+    gap: .42rem;
+    font-size: .78rem;
+  }
+
+  .galaxy-connection {
+    display: grid;
+    gap: .12rem;
+    padding: .48rem .55rem;
+    border: 1px solid rgba(148, 163, 184, .18);
+    border-radius: 7px;
+    background: rgba(15, 23, 42, .58);
+  }
+
+  .galaxy-connection strong {
+    color: #f8fafc;
+  }
+
+  .galaxy-connection span {
+    color: #94a3b8;
+  }
+
   .galaxy-node-label {
     padding: 3px 5px;
     border-radius: 999px;
@@ -224,6 +365,7 @@
     text-shadow: 0 1px 5px #000;
   }
 
+  .research-fortune,
   #research-fortune-card {
     display: none !important;
   }
@@ -240,9 +382,16 @@
 
     .galaxy-shell {
       grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .galaxy-graph {
+      height: 560px;
+      min-height: 560px;
     }
 
     .galaxy-panel {
+      max-height: none;
       border-left: 0;
       border-top: 1px solid rgba(148, 163, 184, .22);
     }
@@ -256,10 +405,29 @@
     const graphElement = document.getElementById("galaxy-graph");
     const loadingElement = document.getElementById("galaxy-loading");
     const detailElement = document.getElementById("galaxy-detail");
+    const connectionsElement = document.getElementById("galaxy-connections");
     const summaryElement = document.getElementById("galaxy-summary");
+    const storyElement = document.getElementById("galaxy-story");
     const form = document.getElementById("galaxy-form");
     const select = document.getElementById("pesticide-select");
+    const modeToggle = document.getElementById("galaxy-mode-toggle");
+    const filterInputs = Array.from(document.querySelectorAll(".galaxy-filters input"));
     let graph = null;
+    let currentData = { nodes: [], links: [], summary: {} };
+    let selectedNodeId = "";
+    let hoveredNodeId = "";
+    let galaxyMode = "3d";
+
+    const kindConfig = {
+      pesticide: { radius: 0, color: "#f7c948", sizeBoost: 1.35 },
+      reference: { radius: 86, color: "#60a5fa", sizeBoost: 1 },
+      microorganism: { radius: 152, color: "#34d399", sizeBoost: 1.08 },
+      gene: { radius: 214, color: "#c084fc", sizeBoost: .92 },
+      protein: { radius: 214, color: "#f472b6", sizeBoost: 1 },
+      enzyme: { radius: 214, color: "#f472b6", sizeBoost: .92 },
+      pathway: { radius: 276, color: "#fb923c", sizeBoost: 1.05 },
+      metabolite: { radius: 276, color: "#fb923c", sizeBoost: .88 },
+    };
 
     function escapeHtml(value) {
       return String(value === null || value === undefined ? "" : value)
@@ -282,6 +450,14 @@
       summaryElement.innerHTML = items.map(([label, value]) => `
         <div class="galaxy-stat"><strong>${escapeHtml(value)}</strong><span>${escapeHtml(label)}</span></div>
       `).join("");
+      storyElement.innerHTML = `
+        <strong>${escapeHtml(summary.pesticide || select.value)}</strong> connects
+        ${escapeHtml(summary.references || 0)} reference nodes with
+        ${escapeHtml(summary.microorganisms || 0)} microorganisms,
+        ${escapeHtml(summary.genes || 0)} genes, and
+        ${escapeHtml(summary.proteins_or_enzymes || 0)} protein/enzyme nodes.
+        Click a node to highlight its local evidence neighborhood.
+      `;
     }
 
     function renderDetail(node) {
@@ -292,37 +468,233 @@
         <p>${escapeHtml(node.detail || "")}</p>
         ${node.url ? `<a href="${escapeHtml(node.url)}" target="_blank" rel="noopener noreferrer">Open linked record</a>` : ""}
       `;
+      renderConnections(node);
+    }
+
+    function renderConnections(node) {
+      const links = currentData.links
+        .filter(link => linkEndpointId(link.source) === node.id || linkEndpointId(link.target) === node.id)
+        .slice(0, 12);
+      if (!links.length) {
+        connectionsElement.innerHTML = "";
+        return;
+      }
+      const byId = new Map(currentData.nodes.map(item => [item.id, item]));
+      connectionsElement.innerHTML = `
+        <div class="galaxy-connection"><strong>Connected evidence</strong><span>${links.length} shown</span></div>
+        ${links.map(link => {
+          const otherId = linkEndpointId(link.source) === node.id ? linkEndpointId(link.target) : linkEndpointId(link.source);
+          const other = byId.get(otherId);
+          return `<div class="galaxy-connection"><strong>${escapeHtml(link.label)}</strong><span>${escapeHtml(other ? other.label : otherId)}</span></div>`;
+        }).join("")}
+      `;
+    }
+
+    function linkEndpointId(endpoint) {
+      return typeof endpoint === "object" ? endpoint.id : endpoint;
+    }
+
+    function selectedNeighborIds() {
+      if (!selectedNodeId) return new Set();
+      const ids = new Set([selectedNodeId]);
+      currentData.links.forEach(link => {
+        const source = linkEndpointId(link.source);
+        const target = linkEndpointId(link.target);
+        if (source === selectedNodeId) ids.add(target);
+        if (target === selectedNodeId) ids.add(source);
+      });
+      return ids;
+    }
+
+    function selectedLinkKeys() {
+      if (!selectedNodeId) return new Set();
+      const keys = new Set();
+      currentData.links.forEach(link => {
+        const source = linkEndpointId(link.source);
+        const target = linkEndpointId(link.target);
+        if (source === selectedNodeId || target === selectedNodeId) {
+          keys.add(`${source}|${target}|${link.label}`);
+        }
+      });
+      return keys;
+    }
+
+    function makeTextSprite(label, options = {}) {
+      const canvas = document.createElement("canvas");
+      const context = canvas.getContext("2d");
+      const fontSize = options.fontSize || 24;
+      const text = String(label || "").slice(0, options.maxChars || 30);
+      context.font = `700 ${fontSize}px Arial`;
+      const width = Math.ceil(context.measureText(text).width) + 26;
+      canvas.width = Math.max(width, 80);
+      canvas.height = fontSize + 20;
+      context.font = `700 ${fontSize}px Arial`;
+      context.fillStyle = options.background || "rgba(2, 6, 23, .78)";
+      context.beginPath();
+      if (context.roundRect) {
+        context.roundRect(0, 3, canvas.width, canvas.height - 6, (canvas.height - 6) / 2);
+      } else {
+        context.rect(0, 3, canvas.width, canvas.height - 6);
+      }
+      context.fill();
+      context.fillStyle = options.color || "#f8fafc";
+      context.fillText(text, 13, fontSize + 4);
+      const texture = new THREE.CanvasTexture(canvas);
+      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+      sprite.scale.set(canvas.width / (options.scaleDivisor || 5.8), canvas.height / (options.scaleDivisor || 5.8), 1);
+      return sprite;
+    }
+
+    function nodeGeometry(node) {
+      const size = Math.max(2.8, (node.size || 5) * (kindConfig[node.kind]?.sizeBoost || 1));
+      if (node.kind === "reference") return new THREE.BoxGeometry(size * 1.4, size, size * .18);
+      if (node.kind === "gene") return new THREE.OctahedronGeometry(size, 0);
+      if (node.kind === "protein" || node.kind === "enzyme") return new THREE.DodecahedronGeometry(size, 0);
+      if (node.kind === "pathway") return new THREE.TorusGeometry(size * .72, size * .22, 10, 28);
+      return new THREE.SphereGeometry(size, 22, 22);
     }
 
     function nodeObject(node) {
       const group = new THREE.Group();
-      const geometry = new THREE.SphereGeometry(Math.max(2.8, node.size || 5), 18, 18);
-      const material = new THREE.MeshLambertMaterial({ color: node.color || "#ffffff", transparent: true, opacity: .92 });
+      const geometry = nodeGeometry(node);
+      const material = new THREE.MeshLambertMaterial({
+        color: node.color || kindConfig[node.kind]?.color || "#ffffff",
+        transparent: true,
+        opacity: .94,
+      });
       const sphere = new THREE.Mesh(geometry, material);
       group.add(sphere);
+      node.__core = sphere;
 
-      const canvas = document.createElement("canvas");
-      const context = canvas.getContext("2d");
-      const label = node.kind === "pesticide" ? node.label : node.label.slice(0, 26);
-      context.font = "600 24px Arial";
-      const width = Math.ceil(context.measureText(label).width) + 24;
-      canvas.width = Math.max(width, 90);
-      canvas.height = 42;
-      context.font = "600 24px Arial";
-      context.fillStyle = "rgba(2, 6, 23, .74)";
-      context.beginPath();
-      context.roundRect(0, 3, canvas.width, 34, 17);
-      context.fill();
-      context.fillStyle = "#f8fafc";
-      context.fillText(label, 12, 28);
-      const texture = new THREE.CanvasTexture(canvas);
-      const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true }));
-      sprite.scale.set(canvas.width / 5.5, canvas.height / 5.5, 1);
-      sprite.position.set(0, (node.size || 5) + 7, 0);
+      if (node.kind === "pesticide") {
+        const ring = new THREE.Mesh(
+          new THREE.TorusGeometry(Math.max(9, node.size || 8), .45, 8, 46),
+          new THREE.MeshBasicMaterial({ color: "#fde68a", transparent: true, opacity: .62 })
+        );
+        ring.rotation.x = Math.PI / 2.4;
+        group.add(ring);
+        node.__halo = ring;
+      }
+
+      const sprite = makeTextSprite(node.kind === "pesticide" ? node.label : node.label, {
+        fontSize: node.kind === "pesticide" ? 25 : 19,
+        maxChars: node.kind === "pesticide" ? 36 : 28,
+        background: node.kind === "pesticide" ? "rgba(120, 53, 15, .78)" : "rgba(2, 6, 23, .78)",
+      });
+      sprite.position.set(0, (node.size || 5) + 8, 0);
       sprite.visible = node.kind === "pesticide";
       group.add(sprite);
       node.__labelSprite = sprite;
       return group;
+    }
+
+    function linkLabelObject(link) {
+      const sprite = makeTextSprite(link.label, {
+        fontSize: 17,
+        maxChars: 18,
+        background: "rgba(15, 23, 42, .82)",
+        scaleDivisor: 7.6,
+      });
+      sprite.visible = false;
+      link.__labelSprite = sprite;
+      return sprite;
+    }
+
+    function assignOrbitalPositions(nodes) {
+      const grouped = new Map();
+      nodes.forEach(node => {
+        if (!grouped.has(node.kind)) grouped.set(node.kind, []);
+        grouped.get(node.kind).push(node);
+      });
+      grouped.forEach((items, kind) => {
+        const radius = kindConfig[kind]?.radius || 220;
+        items.forEach((node, index) => {
+          const count = Math.max(items.length, 1);
+          const angle = (Math.PI * 2 * index) / count;
+          const wave = count > 1 ? Math.sin(index * 1.618) : 0;
+          node.x = radius * Math.cos(angle);
+          node.y = radius * Math.sin(angle);
+          node.z = galaxyMode === "3d" ? wave * Math.min(68, radius * .28) : 0;
+          node.fx = node.x;
+          node.fy = node.y;
+          node.fz = node.z;
+        });
+      });
+    }
+
+    function activeKinds() {
+      return new Set(["pesticide", ...filterInputs.filter(input => input.checked).map(input => input.dataset.kind)]);
+    }
+
+    function filteredGraphData() {
+      const kinds = activeKinds();
+      const nodes = currentData.nodes
+        .filter(node => kinds.has(node.kind))
+        .map(node => ({ ...node }));
+      const nodeIds = new Set(nodes.map(node => node.id));
+      const links = currentData.links
+        .filter(link => nodeIds.has(linkEndpointId(link.source)) && nodeIds.has(linkEndpointId(link.target)))
+        .map(link => ({
+          ...link,
+          source: linkEndpointId(link.source),
+          target: linkEndpointId(link.target),
+        }));
+      assignOrbitalPositions(nodes);
+      return { nodes, links };
+    }
+
+    function isSelectedLink(link) {
+      if (!selectedNodeId) return false;
+      return linkEndpointId(link.source) === selectedNodeId || linkEndpointId(link.target) === selectedNodeId;
+    }
+
+    function updateGraphStyles() {
+      if (!graph) return;
+      const neighborIds = selectedNeighborIds();
+      graph
+        .linkOpacity(link => selectedNodeId ? (isSelectedLink(link) ? .78 : .11) : .38)
+        .linkWidth(link => Math.min(selectedNodeId && isSelectedLink(link) ? 4 : 2.4, 0.55 + (link.weight || 1) * .28 + (isSelectedLink(link) ? 1.1 : 0)))
+        .linkDirectionalParticles(link => selectedNodeId && isSelectedLink(link) ? Math.min(4, (link.weight || 1) + 1) : Math.min(2, link.weight || 1));
+
+      graph.graphData().nodes.forEach(node => {
+        const isActive = !selectedNodeId || neighborIds.has(node.id) || node.id === hoveredNodeId;
+        if (node.__core?.material) {
+          node.__core.material.opacity = isActive ? .96 : .22;
+          node.__core.scale.setScalar(node.id === selectedNodeId ? 1.36 : (node.id === hoveredNodeId ? 1.18 : 1));
+        }
+        if (node.__halo?.material) {
+          node.__halo.material.opacity = isActive ? .68 : .2;
+        }
+      });
+
+      const selectedKeys = selectedLinkKeys();
+      graph.graphData().links.forEach(link => {
+        if (link.__labelSprite) {
+          const key = `${linkEndpointId(link.source)}|${linkEndpointId(link.target)}|${link.label}`;
+          link.__labelSprite.visible = selectedKeys.has(key) && selectedKeys.size <= 10;
+        }
+      });
+      updateNodeLabels();
+    }
+
+    function updateNodeLabels(hoveredNode = null) {
+      if (!graph) return;
+      graph.graphData().nodes.forEach(item => {
+        if (item.__labelSprite) {
+          item.__labelSprite.visible = item.kind === "pesticide" || item.id === selectedNodeId || item.id === hoveredNodeId || item === hoveredNode;
+        }
+      });
+    }
+
+    function applyGraphData() {
+      const data = filteredGraphData();
+      graph.graphData(data);
+      graph.d3Force("charge").strength(galaxyMode === "3d" ? -18 : -8);
+      graph.d3Force("link").distance(link => link.label === "reported in" ? 76 : 48);
+      updateGraphStyles();
+      window.setTimeout(() => {
+        if (graph) graph.zoomToFit(650, 70);
+      }, 350);
     }
 
     async function loadGraph() {
@@ -331,6 +703,9 @@
       const response = await fetch(`{% url 'evidence_galaxy_data' %}?pesticide=${encodeURIComponent(pesticide)}`);
       const data = await response.json();
       loadingElement.style.display = "none";
+      currentData = data;
+      selectedNodeId = "";
+      hoveredNodeId = "";
       renderSummary(data.summary || {});
 
       if (!window.ForceGraph3D) {
@@ -344,20 +719,30 @@
           .nodeThreeObject(nodeObject)
           .nodeLabel(node => `${node.kind}: ${node.label}`)
           .linkColor(link => link.color || "#64748b")
+          .linkThreeObjectExtend(true)
+          .linkThreeObject(linkLabelObject)
+          .linkPositionUpdate((sprite, { start, end }) => {
+            if (!start || !end) return;
+            sprite.position.x = start.x + (end.x - start.x) * .5;
+            sprite.position.y = start.y + (end.y - start.y) * .5;
+            sprite.position.z = start.z + (end.z - start.z) * .5;
+          })
           .linkWidth(link => Math.min(3, 0.55 + (link.weight || 1) * .22))
           .linkOpacity(.38)
-          .linkDirectionalParticles(link => Math.min(3, link.weight || 1))
+          .linkDirectionalParticles(link => Math.min(2, link.weight || 1))
           .linkDirectionalParticleSpeed(.004)
           .onNodeHover(node => {
             graphElement.style.cursor = node ? "pointer" : "default";
-            data.nodes.forEach(item => {
-              if (item.__labelSprite) item.__labelSprite.visible = item.kind === "pesticide" || item === node;
-            });
+            hoveredNodeId = node ? node.id : "";
+            updateGraphStyles();
+            updateNodeLabels(node);
             if (node) renderDetail(node);
           })
           .onNodeClick(node => {
+            selectedNodeId = node.id;
             renderDetail(node);
-            const distance = 78;
+            updateGraphStyles();
+            const distance = galaxyMode === "3d" ? 122 : 90;
             const distRatio = 1 + distance / Math.hypot(node.x || 1, node.y || 1, node.z || 1);
             graph.cameraPosition(
               { x: (node.x || 1) * distRatio, y: (node.y || 1) * distRatio, z: (node.z || 1) * distRatio },
@@ -369,15 +754,28 @@
             if (node.url) window.open(node.url, "_blank", "noopener");
           });
       }
-      graph.graphData(data);
-      graph.d3Force("charge").strength(-76);
-      graph.d3Force("link").distance(link => link.label === "reported in" ? 56 : 34);
-      if (data.nodes.length) renderDetail(data.nodes[0]);
+      applyGraphData();
+      if (data.nodes.length) {
+        const pesticideNode = data.nodes.find(node => node.kind === "pesticide") || data.nodes[0];
+        selectedNodeId = "";
+        hoveredNodeId = "";
+        renderDetail(pesticideNode);
+        updateGraphStyles();
+      }
     }
 
     form.addEventListener("submit", (event) => {
       event.preventDefault();
       loadGraph();
+    });
+    filterInputs.forEach(input => {
+      input.addEventListener("change", applyGraphData);
+    });
+    modeToggle.addEventListener("click", () => {
+      galaxyMode = galaxyMode === "3d" ? "2d" : "3d";
+      modeToggle.textContent = galaxyMode === "3d" ? "2D view" : "3D view";
+      graph.numDimensions(galaxyMode === "3d" ? 3 : 2);
+      applyGraphData();
     });
     loadGraph();
   })();
