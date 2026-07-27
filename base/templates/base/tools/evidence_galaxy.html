@@ -385,6 +385,41 @@
       return Array.from(new Map(nodes.map(node => [node.id, node])).values());
     }
 
+    function pesticideNode() {
+      return currentData.nodes.find(node => node.kind === "pesticide");
+    }
+
+    function supportForFocus(microbe, reference) {
+      const supportKinds = ["gene", "protein", "enzyme", "pathway", "metabolite"];
+      const directReference = connectedNodes(reference, supportKinds);
+      const directMicrobe = connectedNodes(microbe, supportKinds);
+      const pesticide = pesticideNode();
+      const pesticideSupport = pesticide ? connectedNodes(pesticide, supportKinds) : [];
+      const pooled = uniqueById([...directReference, ...directMicrobe, ...pesticideSupport]);
+      return balancedSupport(pooled).slice(0, visibleLimit);
+    }
+
+    function balancedSupport(nodes) {
+      const buckets = {
+        gene: nodes.filter(node => node.kind === "gene"),
+        protein: nodes.filter(node => node.kind === "protein" || node.kind === "enzyme"),
+        pathway: nodes.filter(node => node.kind === "pathway" || node.kind === "metabolite"),
+      };
+      const selected = [];
+      const take = (bucket, count) => {
+        bucket.slice(0, count).forEach(node => {
+          if (!selected.some(item => item.id === node.id)) selected.push(node);
+        });
+      };
+      take(buckets.gene, 4);
+      take(buckets.protein, 4);
+      take(buckets.pathway, 4);
+      nodes.forEach(node => {
+        if (selected.length < visibleLimit && !selected.some(item => item.id === node.id)) selected.push(node);
+      });
+      return selected;
+    }
+
     function renderSummary(summary) {
       const items = [
         ["Records", summary.evidence_records],
@@ -681,10 +716,7 @@
     }
 
     function renderSupportLayer(microbe, reference) {
-      const supportKinds = ["gene", "protein", "enzyme", "pathway", "metabolite"];
-      let support = connectedNodes(reference, supportKinds);
-      if (!support.length) support = connectedNodes(microbe, supportKinds);
-      support = support.slice(0, visibleLimit);
+      const support = supportForFocus(microbe, reference);
       const points = spherePoints(Math.max(1, support.length), .012);
       const core = makeParticle(reference, { x: 0, y: 0, z: 0 }, {
         radius: 92,
@@ -705,7 +737,7 @@
       detailElement.innerHTML = `
         <h2>${escapeHtml(reference.label)}</h2>
         <p><strong>Focused DOI</strong> · support layer</p>
-        <p>Genes, proteins/enzymes, pathway steps, and products linked to this evidence are shown inside the sphere.</p>
+        <p>Genes, proteins/enzymes, pathway steps, and products from the DOI, microorganism, and pesticide context are shown inside the sphere.</p>
       `;
       listElement.innerHTML = support.map(node => `
         <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "")}</span></button>
