@@ -26,6 +26,7 @@
       <div id="galaxy-loading" class="galaxy-loading">Loading evidence sphere...</div>
       <div class="sphere-depth" aria-hidden="true"></div>
       <div class="sphere-halo" aria-hidden="true"></div>
+      <svg id="sphere-edges" class="sphere-edges" aria-hidden="true"></svg>
       <button type="button" id="sphere-core" class="sphere-core"></button>
       <div id="sphere-dots" class="sphere-dots"></div>
       <div id="sphere-caption" class="sphere-caption"></div>
@@ -193,6 +194,63 @@
     padding: 1rem;
     transform: translate(-50%, -50%);
     box-shadow: 0 0 48px rgba(247, 201, 72, .38);
+    transition: width .24s ease, background .24s ease, box-shadow .24s ease;
+  }
+
+  .galaxy-stage.is-pesticide .sphere-core {
+    width: clamp(13rem, 26vw, 20rem);
+    font-size: clamp(1.2rem, 2.2vw, 2rem);
+  }
+
+  .sphere-core.is-microbe {
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .5), transparent 12%),
+      radial-gradient(circle at 67% 70%, rgba(6, 78, 59, .34), transparent 32%),
+      #34d399;
+    color: #052e16;
+    box-shadow: 0 0 48px rgba(52, 211, 153, .36);
+  }
+
+  .sphere-core.is-reference {
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .5), transparent 12%),
+      radial-gradient(circle at 67% 70%, rgba(30, 64, 175, .34), transparent 32%),
+      #60a5fa;
+    color: #082f49;
+    box-shadow: 0 0 48px rgba(96, 165, 250, .36);
+  }
+
+  .sphere-core.is-support {
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, .5), transparent 12%),
+      radial-gradient(circle at 67% 70%, rgba(88, 28, 135, .34), transparent 32%),
+      #c084fc;
+    color: #2e1065;
+    box-shadow: 0 0 48px rgba(192, 132, 252, .36);
+  }
+
+  .sphere-edges {
+    position: absolute;
+    inset: 0;
+    z-index: 6;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+  }
+
+  .sphere-edges line {
+    stroke: var(--edge-color, #fde68a);
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    opacity: .78;
+    filter: drop-shadow(0 0 6px var(--edge-color, #fde68a));
+    animation: edge-pulse 1.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes edge-pulse {
+    from { opacity: .42; stroke-width: 2; }
+    to { opacity: .9; stroke-width: 3.4; }
   }
 
   .sphere-dot {
@@ -408,6 +466,11 @@
       font-size: .74rem;
     }
 
+    .galaxy-stage.is-pesticide .sphere-core {
+      width: min(58vw, 13rem);
+      font-size: 1.2rem;
+    }
+
     .sphere-dot span {
       display: none;
     }
@@ -421,32 +484,36 @@
 
 <script>
   (() => {
+    const stageElement = document.getElementById("galaxy-stage");
     const loadingElement = document.getElementById("galaxy-loading");
     const summaryElement = document.getElementById("galaxy-summary");
     const storyElement = document.getElementById("galaxy-story");
     const detailElement = document.getElementById("galaxy-detail");
     const listElement = document.getElementById("galaxy-list");
     const dotsElement = document.getElementById("sphere-dots");
+    const edgesElement = document.getElementById("sphere-edges");
     const coreElement = document.getElementById("sphere-core");
     const captionElement = document.getElementById("sphere-caption");
     const form = document.getElementById("galaxy-form");
     const select = document.getElementById("pesticide-select");
     let currentData = { nodes: [], links: [], summary: {} };
-    let currentLayer = "overview";
+    let selectedMicrobe = null;
 
-    const groups = [
-      { key: "reference", label: "References", kinds: ["reference"], color: "#60a5fa", x: 50, y: 16, depth: .88 },
-      { key: "microorganism", label: "Microbes", kinds: ["microorganism"], color: "#34d399", x: 20, y: 49, depth: 1.08 },
-      { key: "gene", label: "Genes", kinds: ["gene"], color: "#c084fc", x: 47, y: 82, depth: 1 },
-      { key: "protein", label: "Proteins", kinds: ["protein", "enzyme"], color: "#f472b6", x: 80, y: 48, depth: 1.02 },
-      { key: "pathway", label: "Pathway", kinds: ["pathway", "metabolite"], color: "#fb923c", x: 70, y: 76, depth: .92 },
+    const positions = [
+      [50, 16, .88], [66, 23, 1.04], [79, 42, 1.14], [73, 64, 1.02],
+      [56, 80, .94], [37, 77, 1.08], [21, 58, 1.16], [24, 36, .98],
+      [40, 28, 1.16], [59, 42, .92], [48, 60, 1.18], [34, 49, .86],
     ];
 
-    const itemPositions = [
-      [48, 17, .88], [65, 24, 1.03], [76, 42, 1.12], [72, 62, 1.02],
-      [56, 78, .94], [38, 76, 1.06], [24, 58, 1.12], [25, 36, .96],
-      [40, 27, 1.14], [58, 40, .9], [49, 58, 1.18], [35, 48, .84],
-    ];
+    const colors = {
+      microorganism: "#34d399",
+      reference: "#60a5fa",
+      gene: "#c084fc",
+      protein: "#f472b6",
+      enzyme: "#f472b6",
+      pathway: "#fb923c",
+      metabolite: "#fb923c",
+    };
 
     function escapeHtml(value) {
       return String(value === null || value === undefined ? "" : value)
@@ -461,12 +528,79 @@
       return typeof endpoint === "object" ? endpoint.id : endpoint;
     }
 
-    function nodesForGroup(group) {
-      return currentData.nodes.filter(node => group.kinds.includes(node.kind));
+    function shortLabel(value, maxLength) {
+      const text = String(value || "");
+      return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
     }
 
-    function groupForKey(key) {
-      return groups.find(group => group.key === key);
+    function byId() {
+      return new Map(currentData.nodes.map(node => [node.id, node]));
+    }
+
+    function connectedNodes(node, kinds = null) {
+      const nodeMap = byId();
+      const linked = [];
+      currentData.links.forEach(link => {
+        const source = nodeId(link.source);
+        const target = nodeId(link.target);
+        if (source !== node.id && target !== node.id) return;
+        const other = nodeMap.get(source === node.id ? target : source);
+        if (other && (!kinds || kinds.includes(other.kind))) linked.push(other);
+      });
+      return uniqueById(linked);
+    }
+
+    function uniqueById(nodes) {
+      return Array.from(new Map(nodes.map(node => [node.id, node])).values());
+    }
+
+    function setCore(label, mode, clickHandler) {
+      coreElement.className = `sphere-core ${mode ? `is-${mode}` : ""}`;
+      coreElement.textContent = label;
+      coreElement.onclick = clickHandler;
+    }
+
+    function setStage(layer) {
+      stageElement.classList.remove("is-pesticide");
+      if (layer === "pesticide") stageElement.classList.add("is-pesticide");
+    }
+
+    function clearEdges() {
+      edgesElement.innerHTML = "";
+    }
+
+    function renderEdges(targets, color) {
+      const lines = targets.map(item => `
+        <line x1="50%" y1="50%" x2="${item.x}%" y2="${item.y}%"></line>
+      `).join("");
+      edgesElement.style.setProperty("--edge-color", color);
+      edgesElement.innerHTML = lines;
+    }
+
+    function renderDots(nodes, options) {
+      const maxSize = Math.max(1, ...nodes.map(node => node.size || 5));
+      dotsElement.innerHTML = nodes.map((node, index) => {
+        const [x, y, depth] = positions[index % positions.length];
+        const size = options.size || Math.max(72, Math.min(116, 70 + ((node.size || 5) / maxSize) * 42));
+        return `
+          <button type="button" class="sphere-dot is-item" data-node-id="${escapeHtml(node.id)}"
+            title="${escapeHtml(node.label)}"
+            style="left:${x}%; top:${y}%; --dot-color:${options.color || colors[node.kind] || "#94a3b8"}; --dot-size:${size}px; --dot-depth:${depth};">
+            ${options.showCount ? `<strong>${escapeHtml(node.size || 1)}</strong>` : ""}
+            <span>${escapeHtml(shortLabel(node.label, options.maxLabel || 24))}</span>
+          </button>
+        `;
+      }).join("");
+      dotsElement.querySelectorAll(".sphere-dot").forEach(dot => {
+        dot.addEventListener("click", () => {
+          const node = currentData.nodes.find(item => item.id === dot.dataset.nodeId);
+          if (node) options.onClick(node);
+        });
+      });
+      return nodes.map((node, index) => {
+        const [x, y] = positions[index % positions.length];
+        return { node, x, y };
+      });
     }
 
     function renderSummary(summary) {
@@ -482,89 +616,105 @@
         <div class="galaxy-stat"><strong>${escapeHtml(value || 0)}</strong><span>${escapeHtml(label)}</span></div>
       `).join("");
       storyElement.innerHTML = `
-        <strong>${escapeHtml(summary.pesticide || select.value)}</strong> evidence is summarized as large layered dots.
-        Click a dot to enter that layer; click one item to see concise linked support.
+        Start at the <strong>${escapeHtml(summary.pesticide || select.value)}</strong> sphere.
+        Enter microorganisms, then focus on a strain to see DOI evidence, then open DOI support for genes, proteins, and pathway records.
       `;
     }
 
-    function renderOverview() {
-      currentLayer = "overview";
-      const summary = currentData.summary || {};
-      const maxCount = Math.max(1, ...groups.map(group => nodesForGroup(group).length));
-      coreElement.textContent = summary.pesticide || select.value;
-      coreElement.onclick = renderPesticideDetail;
-      dotsElement.innerHTML = groups.map(group => {
-        const count = nodesForGroup(group).length;
-        const size = 86 + Math.min(72, (count / maxCount) * 72);
-        return `
-          <button type="button" class="sphere-dot" data-group="${escapeHtml(group.key)}"
-            style="left:${group.x}%; top:${group.y}%; --dot-color:${group.color}; --dot-size:${size}px; --dot-depth:${group.depth};">
-            <strong>${escapeHtml(count)}</strong><span>${escapeHtml(group.label)}</span>
-          </button>
-        `;
-      }).join("");
-      dotsElement.querySelectorAll(".sphere-dot").forEach(dot => {
-        dot.addEventListener("click", () => renderGroup(dot.dataset.group));
-      });
-      captionElement.innerHTML = "Overview";
-      renderPesticideDetail();
+    function renderPesticideSphere() {
+      selectedMicrobe = null;
+      setStage("pesticide");
+      clearEdges();
+      dotsElement.innerHTML = "";
+      setCore(currentData.summary?.pesticide || select.value, "", renderMicrobeLayer);
+      captionElement.innerHTML = "Click the pesticide sphere to enter microorganisms";
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(currentData.summary?.pesticide || select.value)}</h2>
+        <p><strong>Evidence sphere</strong> · first layer</p>
+        <p>Click the yellow pesticide sphere to move inside and view microorganisms reported for degradation evidence.</p>
+      `;
+      listElement.innerHTML = `<button type="button" class="galaxy-list-item" id="enter-microbes"><strong>Enter microorganisms</strong><span>${escapeHtml(currentData.summary?.microorganisms || 0)} curated microbe records</span></button>`;
+      document.getElementById("enter-microbes").addEventListener("click", renderMicrobeLayer);
     }
 
-    function renderGroup(groupKey) {
-      const group = groupForKey(groupKey);
-      if (!group) return;
-      currentLayer = groupKey;
-      const nodes = nodesForGroup(group).slice(0, itemPositions.length);
-      coreElement.textContent = group.label;
-      coreElement.onclick = renderOverview;
-      dotsElement.innerHTML = nodes.map((node, index) => {
-        const [x, y, depth] = itemPositions[index];
-        const size = Math.max(70, Math.min(112, 68 + (node.size || 5) * 5));
-        return `
-          <button type="button" class="sphere-dot is-item" data-node-id="${escapeHtml(node.id)}"
-            title="${escapeHtml(node.label)}"
-            style="left:${x}%; top:${y}%; --dot-color:${group.color}; --dot-size:${size}px; --dot-depth:${depth};">
-            ${escapeHtml(shortLabel(node.label, 22))}
-          </button>
-        `;
-      }).join("");
-      dotsElement.querySelectorAll(".sphere-dot").forEach(dot => {
-        dot.addEventListener("click", () => {
-          const node = currentData.nodes.find(item => item.id === dot.dataset.nodeId);
-          if (node) renderNodeDetail(node);
+    function renderMicrobeLayer() {
+      setStage("microbes");
+      clearEdges();
+      const microbes = currentData.nodes.filter(node => node.kind === "microorganism").slice(0, positions.length);
+      setCore("Microorganisms", "microbe", renderPesticideSphere);
+      renderDots(microbes, {
+        color: colors.microorganism,
+        maxLabel: 24,
+        onClick: renderReferenceLayer,
+      });
+      captionElement.innerHTML = `<button type="button" id="back-pesticide">Pesticide</button><span>Microorganisms inside ${escapeHtml(currentData.summary?.pesticide || select.value)}</span>`;
+      document.getElementById("back-pesticide").addEventListener("click", renderPesticideSphere);
+      detailElement.innerHTML = `
+        <h2>Microorganisms</h2>
+        <p><strong>${escapeHtml(currentData.summary?.microorganisms || microbes.length)}</strong> records are linked to ${escapeHtml(currentData.summary?.pesticide || select.value)}.</p>
+        <p>Select a microorganism to focus its DOI evidence. Shiny edges appear only in that focused view.</p>
+      `;
+      listElement.innerHTML = microbes.map(node => `
+        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Microorganism")}</span></button>
+      `).join("");
+      listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
+          if (node) renderReferenceLayer(node);
         });
       });
-      captionElement.innerHTML = `<button type="button" id="sphere-back">Overview</button><span>${escapeHtml(group.label)} layer</span>`;
-      document.getElementById("sphere-back").addEventListener("click", renderOverview);
-      renderGroupDetail(group, nodes);
     }
 
-    function renderPesticideDetail() {
-      const summary = currentData.summary || {};
+    function renderReferenceLayer(microbe) {
+      selectedMicrobe = microbe;
+      setStage("references");
+      const references = connectedNodes(microbe, ["reference"]).slice(0, positions.length);
+      setCore(shortLabel(microbe.label, 28), "microbe", renderMicrobeLayer);
+      const targets = renderDots(references, {
+        color: colors.reference,
+        maxLabel: 22,
+        onClick: reference => renderSupportLayer(microbe, reference),
+      });
+      renderEdges(targets, "#93c5fd");
+      captionElement.innerHTML = `<button type="button" id="back-microbes">Microbes</button><span>DOI evidence for ${escapeHtml(shortLabel(microbe.label, 26))}</span>`;
+      document.getElementById("back-microbes").addEventListener("click", renderMicrobeLayer);
       detailElement.innerHTML = `
-        <h2>${escapeHtml(summary.pesticide || select.value)}</h2>
-        <p><strong>Evidence sphere</strong> · curated overview</p>
-        <p>${escapeHtml(summary.references || 0)} references, ${escapeHtml(summary.microorganisms || 0)} microorganisms, ${escapeHtml(summary.genes || 0)} genes, and ${escapeHtml(summary.proteins_or_enzymes || 0)} protein/enzyme records.</p>
+        <h2>${escapeHtml(microbe.label)}</h2>
+        <p><strong>Focused microorganism</strong> · DOI evidence layer</p>
+        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. Select one DOI to reveal gene, protein, and pathway support.</p>
       `;
-      listElement.innerHTML = groups.map(group => {
-        const count = nodesForGroup(group).length;
-        return `<button type="button" class="galaxy-list-item" data-group="${escapeHtml(group.key)}"><strong>${escapeHtml(group.label)}</strong><span>${escapeHtml(count)} items</span></button>`;
-      }).join("");
+      listElement.innerHTML = references.map(node => `
+        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Reference")}</span></button>
+      `).join("");
       listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
-        item.addEventListener("click", () => renderGroup(item.dataset.group));
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
+          if (node) renderSupportLayer(microbe, node);
+        });
       });
     }
 
-    function renderGroupDetail(group, nodes) {
+    function renderSupportLayer(microbe, reference) {
+      setStage("support");
+      const supportKinds = ["gene", "protein", "enzyme", "pathway", "metabolite"];
+      let support = connectedNodes(reference, supportKinds);
+      if (!support.length) support = connectedNodes(microbe, supportKinds);
+      support = support.slice(0, positions.length);
+      setCore(shortLabel(reference.label, 26), "reference", () => renderReferenceLayer(microbe));
+      const targets = renderDots(support, {
+        maxLabel: 22,
+        onClick: renderNodeDetail,
+      });
+      renderEdges(targets, "#f9a8d4");
+      captionElement.innerHTML = `<button type="button" id="back-doi">DOI layer</button><span>Gene, protein, and pathway support</span>`;
+      document.getElementById("back-doi").addEventListener("click", () => renderReferenceLayer(microbe));
       detailElement.innerHTML = `
-        <h2>${escapeHtml(group.label)}</h2>
-        <p><strong>${escapeHtml(nodesForGroup(group).length)}</strong> curated item${nodesForGroup(group).length === 1 ? "" : "s"} linked to ${escapeHtml(currentData.summary?.pesticide || select.value)}.</p>
-        <p>The sphere shows the first ${escapeHtml(nodes.length)} items. Select a dot or list item for details.</p>
+        <h2>${escapeHtml(reference.label)}</h2>
+        <p><strong>Focused DOI</strong> · support layer</p>
+        <p>Genes, proteins/enzymes, pathway steps, and products linked to this evidence are shown inside the sphere.</p>
       `;
-      listElement.innerHTML = nodes.map(node => `
-        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}">
-          <strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || node.layer || node.kind)}</span>
-        </button>
+      listElement.innerHTML = support.map(node => `
+        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "")}</span></button>
       `).join("");
       listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
         item.addEventListener("click", () => {
@@ -578,23 +728,18 @@
       const links = currentData.links
         .filter(link => nodeId(link.source) === node.id || nodeId(link.target) === node.id)
         .slice(0, 6);
-      const byId = new Map(currentData.nodes.map(item => [item.id, item]));
+      const nodeMap = byId();
       detailElement.innerHTML = `
         <h2>${escapeHtml(node.label)}</h2>
-        <p><strong>${escapeHtml(node.kind)}</strong> · ${escapeHtml(node.layer)}</p>
+        <p><strong>${escapeHtml(node.kind)}</strong> · ${escapeHtml(node.layer || "evidence")}</p>
         <p>${escapeHtml(node.detail || "")}</p>
         ${node.url ? `<a href="${escapeHtml(node.url)}" target="_blank" rel="noopener noreferrer">Open linked record</a>` : ""}
       `;
-      listElement.innerHTML = links.length ? links.map(link => {
+      listElement.innerHTML = links.map(link => {
         const otherId = nodeId(link.source) === node.id ? nodeId(link.target) : nodeId(link.source);
-        const other = byId.get(otherId);
+        const other = nodeMap.get(otherId);
         return `<div class="galaxy-list-item"><strong>${escapeHtml(link.label)}</strong><span>${escapeHtml(other ? other.label : otherId)}</span></div>`;
-      }).join("") : "";
-    }
-
-    function shortLabel(value, maxLength) {
-      const text = String(value || "");
-      return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
+      }).join("");
     }
 
     async function loadSphere() {
@@ -603,7 +748,7 @@
       currentData = await response.json();
       loadingElement.style.display = "none";
       renderSummary(currentData.summary || {});
-      renderOverview();
+      renderPesticideSphere();
     }
 
     form.addEventListener("submit", event => {
