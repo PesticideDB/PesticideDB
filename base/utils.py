@@ -15,9 +15,9 @@ from base.models import (
 )
 
 
-DATABASE_VERSION = "1.0"
-DATABASE_RELEASE_DATE = "June 15, 2026"
-DATABASE_LAST_UPDATE = "July 7, 2026"
+DATABASE_VERSION = "1.1"
+DATABASE_RELEASE_DATE = "July 21, 2026"
+DATABASE_LAST_UPDATE = "July 21, 2026"
 
 
 def clean_pesticide_name(value):

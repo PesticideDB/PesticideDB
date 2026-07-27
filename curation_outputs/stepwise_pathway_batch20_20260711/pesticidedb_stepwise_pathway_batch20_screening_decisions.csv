@@ -1,0 +1,15 @@
+pesticide,decision,reason
+Acetochlor,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Aldrin and Dieldrin,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Buprofezin,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Dicamba,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Diphenylamine,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Flonicamid,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Iprodione,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Parathion-Methyl,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Pendimethalin,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Sulfoxaflor,Integrated,Reference DOI is present in pesticide_data.xlsx and/or PBDB_master_with_ids.xlsx.
+Difenoconazole,Not integrated,The DOI used in the earlier draft is not present in pesticide_data.xlsx or PBDB_master_with_ids.xlsx.
+Paraquat,Not integrated,The Lipomyces starkeyi source DOI is not present in pesticide_data.xlsx or PBDB_master_with_ids.xlsx.
+Imazamox,Not integrated,The draft row came from a PDF not represented by a DOI/reference in pesticide_data.xlsx or PBDB_master_with_ids.xlsx.
+Propanil,Not integrated,The AmiH52 propanil DOI is not present in pesticide_data.xlsx or PBDB_master_with_ids.xlsx.

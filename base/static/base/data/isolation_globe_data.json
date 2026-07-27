@@ -1,9 +1,9 @@
 {
   "title": "Global isolation sites of pesticide-degrading microorganisms",
-  "source_file": "/Users/nana/Downloads/globe_data.xlsx",
-  "point_count": 40,
-  "total_georeferenced_microorganisms": 741,
-  "unmapped_other_microorganisms": 144,
+  "source_file": "Pesticide.objects isolation_location, regenerated from current local database",
+  "point_count": 39,
+  "total_georeferenced_microorganisms": 884,
+  "unmapped_other_microorganisms": 172,
   "points": [
     {
       "country": "Algeria",
@@ -39,7 +39,7 @@
       "country": "Brazil",
       "count": 14,
       "lat": -14.235,
-      "lon": -14.235
+      "lon": -51.9253
     },
     {
       "country": "Canada",
@@ -49,13 +49,13 @@
     },
     {
       "country": "China",
-      "count": 269,
+      "count": 333,
       "lat": 35.8617,
       "lon": 104.1954
     },
     {
       "country": "Czech Republic",
-      "count": 4,
+      "count": 8,
       "lat": 49.8175,
       "lon": 15.473
     },
@@ -67,7 +67,7 @@
     },
     {
       "country": "Egypt",
-      "count": 17,
+      "count": 18,
       "lat": 26.8206,
       "lon": 30.8025
     },
@@ -85,31 +85,31 @@
     },
     {
       "country": "France",
-      "count": 13,
+      "count": 15,
       "lat": 46.2276,
       "lon": 2.2137
     },
     {
       "country": "Germany",
-      "count": 24,
+      "count": 26,
       "lat": 51.1657,
       "lon": 10.4515
     },
     {
       "country": "Greece",
-      "count": 16,
+      "count": 17,
       "lat": 39.0742,
       "lon": 21.8243
     },
     {
       "country": "India",
-      "count": 136,
+      "count": 155,
       "lat": 20.5937,
       "lon": 78.9629
     },
     {
       "country": "Indonesia",
-      "count": 10,
+      "count": 18,
       "lat": -0.7893,
       "lon": 113.9213
     },
@@ -127,7 +127,7 @@
     },
     {
       "country": "Japan",
-      "count": 31,
+      "count": 35,
       "lat": 36.2048,
       "lon": 138.2529
     },
@@ -145,15 +145,9 @@
     },
     {
       "country": "Mexico",
-      "count": 13,
+      "count": 15,
       "lat": 23.6345,
       "lon": -102.5528
-    },
-    {
-      "country": "Mongolia",
-      "count": 1,
-      "lat": 46.8625,
-      "lon": 103.8467
     },
     {
       "country": "Nigeria",
@@ -163,19 +157,19 @@
     },
     {
       "country": "Pakistan",
-      "count": 8,
+      "count": 9,
       "lat": 30.3753,
       "lon": 69.3451
     },
     {
       "country": "Poland",
-      "count": 17,
+      "count": 41,
       "lat": 51.9194,
       "lon": 19.1451
     },
     {
       "country": "Portugal",
-      "count": 11,
+      "count": 12,
       "lat": 39.3999,
       "lon": -8.2245
     },
@@ -199,7 +193,7 @@
     },
     {
       "country": "Spain",
-      "count": 10,
+      "count": 12,
       "lat": 40.4637,
       "lon": -3.7492
     },
@@ -211,13 +205,13 @@
     },
     {
       "country": "Taiwan",
-      "count": 3,
+      "count": 4,
       "lat": 23.6978,
       "lon": 120.9605
     },
     {
       "country": "Thailand",
-      "count": 5,
+      "count": 4,
       "lat": 15.87,
       "lon": 100.9925
     },
@@ -235,13 +229,13 @@
     },
     {
       "country": "United States",
-      "count": 65,
+      "count": 72,
       "lat": 39.8283,
       "lon": -98.5795
     },
     {
       "country": "Vietnam",
-      "count": 6,
+      "count": 8,
       "lat": 14.0583,
       "lon": 108.2772
     }

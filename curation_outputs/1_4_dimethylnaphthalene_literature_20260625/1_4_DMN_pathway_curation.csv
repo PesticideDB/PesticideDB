@@ -1,0 +1,2 @@
+pathway_id,pesticide,pathway_title,pathway_status,step_order,substrate_name,product_name,gene,enzyme,organism,step_evidence_type,source_doi,step_confidence,review_status,notes
+DMN_PATHWAY_UNRESOLVED_001,"1,4-Dimethylnaphthalene","1,4-Dimethylnaphthalene microbial degradation",INSUFFICIENT_PRODUCT_DATA,,"1,4-Dimethylnaphthalene",,,,,PARENT_DISAPPEARANCE_ONLY,10.1128/aem.55.12.3221-3225.1989,Not arrow-ready,NEEDS_PRODUCT_IDENTIFICATION_PAPER,Do not draw a pathway arrow until at least one experimentally identified transformation product is supported by a source.

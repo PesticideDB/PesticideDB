@@ -1,0 +1,41 @@
+pesticide,is_oa,download_status,count
+Acetamiprid,False,not_attempted,6
+Acetamiprid,True,downloaded_open_access_pdf,2
+Acetamiprid,True,no_pdf_url,2
+Carbaryl,False,not_attempted,3
+Carbaryl,True,download_error: HTTP Error 403: Forbidden,4
+Carbaryl,True,no_pdf_url,3
+Carbendazim,False,not_attempted,6
+Carbendazim,True,download_error: HTTP Error 403: Forbidden,1
+Carbendazim,True,no_pdf_url,1
+Chlorothalonil,False,not_attempted,7
+Chlorothalonil,True,download_error: HTTP Error 403: Forbidden,1
+Chlorothalonil,True,downloaded_open_access_pdf,1
+Chlorothalonil,True,no_pdf_url,1
+Chlorpyrifos-methyl,True,downloaded_open_access_pdf,1
+DDT,False,not_attempted,6
+DDT,True,download_error: HTTP Error 403: Forbidden,3
+DDT,True,downloaded_open_access_pdf,1
+Dichlorvos,False,not_attempted,2
+Dichlorvos,True,download_error: HTTP Error 403: Forbidden,1
+Dichlorvos,True,downloaded_open_access_pdf,1
+Dimethoate,False,not_attempted,5
+Dimethoate,True,no_pdf_url,1
+Endosulfan,False,not_attempted,8
+Endosulfan,True,download_error: HTTP Error 403: Forbidden,1
+Endosulfan,True,downloaded_open_access_pdf,1
+Fipronil,False,not_attempted,6
+Fipronil,True,download_error: HTTP Error 403: Forbidden,1
+Glyphosate,False,not_attempted,3
+Glyphosate,True,download_error: HTTP Error 403: Forbidden,3
+Glyphosate,True,downloaded_open_access_pdf,1
+Glyphosate,True,no_pdf_url,3
+Imidacloprid,False,not_attempted,4
+Imidacloprid,True,download_error: HTTP Error 403: Forbidden,1
+Imidacloprid,True,downloaded_open_access_pdf,1
+Malathion,False,not_attempted,7
+Malathion,True,downloaded_content_not_pdf,1
+Malathion,True,downloaded_open_access_pdf,2
+Paraquat,False,not_attempted,1
+Paraquat,True,download_error: HTTP Error 403: Forbidden,1
+Paraquat,True,downloaded_open_access_pdf,1

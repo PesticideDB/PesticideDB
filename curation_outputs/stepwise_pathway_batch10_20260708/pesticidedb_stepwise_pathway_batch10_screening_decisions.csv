@@ -1,0 +1,5 @@
+pesticide,decision,reason
+DDT,Not integrated in this batch,"The database has extensive DDT evidence, but a full DDT route has multiple aerobic/anaerobic branches. Import should use a source-backed product table or pathway figure to avoid mixing branch-specific metabolites."
+Acetamiprid,Not integrated in this batch,"The database has strong nitrile hydratase/amidase protein evidence, but exact product names need to be extracted from the original papers before a pathway sketch is imported."
+Carbosulfan,Not integrated in this batch,Only one database record was found and product/intermediate information was insufficient for a conservative stepwise arrow.
+Propoxur,Not integrated in this batch,Only one database record was found and product/intermediate information was insufficient for a conservative stepwise arrow.

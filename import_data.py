@@ -15,6 +15,13 @@ from django.db import IntegrityError
 from base.models import Pesticide, NoEvidencePesticide
 
 
+ADDITIONAL_EVIDENCE_FILES = [
+    os.path.join(BASE_DIR, "data_files", "core", "additional_existing_curated_evidence.xlsx"),
+    os.path.join(BASE_DIR, "data_files", "core", "additional_2025-2026-search.xlsx"),
+]
+PROMOTED_TO_WITH_EVIDENCE = {"ethiprole", "spinetoram"}
+
+
 # ==============================
 # Helpers
 # ==============================
@@ -27,6 +34,16 @@ def _clean_str(v) -> str:
     if pd.isna(v):
         return ""
     return str(v).strip()
+
+
+def _canonical(v) -> str:
+    return " ".join(_clean_str(v).split()).casefold()
+
+
+def _read_evidence_workbook(path):
+    df = pd.read_excel(path)
+    df.columns = [c.strip() for c in df.columns]
+    return df
 
 
 # ==============================
@@ -43,11 +60,30 @@ def import_pesticide_data():
     if not os.path.exists(excel_path):
         raise FileNotFoundError(f"❌ File not found: {excel_path}")
 
-    df = pd.read_excel(excel_path)
-    df.columns = [c.strip() for c in df.columns]
+    df = _read_evidence_workbook(excel_path)
+    if "Culture_type" not in df.columns:
+        df["Culture_type"] = "Individual strain"
+    if "Metabolite_or_product" not in df.columns:
+        df["Metabolite_or_product"] = ""
 
     if "Pesticide" not in df.columns:
         raise ValueError("❌ 'Pesticide' column missing in data_files/core/pesticide_data.xlsx")
+
+    source_frames = [df]
+    for additional_path in ADDITIONAL_EVIDENCE_FILES:
+        if os.path.exists(additional_path):
+            additional_df = _read_evidence_workbook(additional_path)
+            if "Culture_type" not in additional_df.columns:
+                additional_df["Culture_type"] = "Individual strain"
+            if "Metabolite_or_product" not in additional_df.columns:
+                additional_df["Metabolite_or_product"] = ""
+            missing = [c for c in df.columns if c not in additional_df.columns]
+            if missing:
+                raise ValueError(
+                    f"❌ Additional evidence file missing columns {missing}: {additional_path}"
+                )
+            source_frames.append(additional_df[df.columns])
+    df = pd.concat(source_frames, ignore_index=True)
 
     # Clean pesticide column
     df["Pesticide"] = df["Pesticide"].astype(str).str.strip()
@@ -66,6 +102,7 @@ def import_pesticide_data():
             Pesticide.objects.create(
                 pesticide=_clean_str(row_data.get("Pesticide")),
                 microorganism=_clean_str(row_data.get("Microorganism")),
+                culture_type=_clean_str(row_data.get("Culture_type")) or "Individual strain",
                 evidence_by_microbe=_clean_str(row_data.get("Evidence")),
                 isolation_environment=_clean_str(row_data.get("Isolation_environment")),
                 isolation_location=_clean_str(row_data.get("Isolation_Location")),
@@ -75,6 +112,9 @@ def import_pesticide_data():
                 enzyme_name_reported=_clean_str(row_data.get("Enzyme_name_reported")),
                 gene=_clean_str(row_data.get("Gene")),
                 reference=_clean_str(row_data.get("Reference")),
+                metabolite_or_product=_clean_str(row_data.get("Metabolite_or_product")) or None,
+                doi=_clean_str(row_data.get("Reference"))
+                if _clean_str(row_data.get("Reference")).startswith("10.") else None,
             )
             created += 1
 
@@ -131,6 +171,7 @@ def import_no_evidence_data():
 
     df["Pesticide"] = df["Pesticide"].astype(str).str.strip()
     df = df[df["Pesticide"] != ""]
+    df = df[~df["Pesticide"].map(_canonical).isin(PROMOTED_TO_WITH_EVIDENCE)]
 
     # Deduplicate (correct for no-evidence list)
     df = df.drop_duplicates(subset=["Pesticide"], keep="first")

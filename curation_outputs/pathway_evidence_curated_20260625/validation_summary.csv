@@ -1,0 +1,14 @@
+Metric,Value,Interpretation
+Source file,pesticide_data.xlsx,Curated biodegradation source only
+Database fidelity,1016/1016 exact rows,Live Pesticide table matches source multiset
+Source rows,1016,All rows retained
+Canonical pesticides,117,Whitespace/case-normalized
+Potential duplicate rows,69,Review before merging; repeated records may represent distinct enzyme/evidence entries
+Duplicate key groups,34,"Key: pesticide, organism, gene, enzyme, reference"
+Records missing enzyme,493,Pathway enzyme assignment unavailable
+Records missing gene,743,Pathway gene assignment unavailable
+Records missing location,6,Source metadata gap
+DOI-shaped references,1005,Format check only; not full-text biological validation
+PMID references,6,Format check only
+References requiring review,2,Probable typo or non-standard reference string
+Supplemental protein rows included,0,Protein supplemental files are not read by this export or pathway evidence table

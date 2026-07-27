@@ -14,6 +14,12 @@ class Pesticide(models.Model):
     pesticide_identifier = models.CharField(max_length=255, blank=True, null=True)
 
     microorganism = models.CharField(max_length=200, blank=True, null=True)
+    culture_type = models.CharField(
+        max_length=80,
+        blank=True,
+        null=True,
+        help_text="Examples: Individual strain, Consortium member, Microbial community, Enrichment culture, Isolate group.",
+    )
     gene = models.CharField(max_length=200, blank=True, null=True)
 
     enzyme = models.CharField(max_length=200, blank=True, null=True)
@@ -297,7 +303,16 @@ class Compound(models.Model):
     @property
     def pubchem_structure_image_url(self):
         if self.pubchem_cid:
-            return f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{self.pubchem_cid}/PNG"
+            return (
+                "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/"
+                f"{self.pubchem_cid}/PNG?record_type=2d&image_size=700x520"
+            )
+        return ""
+
+    @property
+    def pubchem_sdf_url(self):
+        if self.pubchem_cid:
+            return f"https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/cid/{self.pubchem_cid}/SDF"
         return ""
 
     def __str__(self):
@@ -541,3 +556,16 @@ class PathwayEvidence(models.Model):
 
     def __str__(self):
         return f"{self.pathway} evidence: {self.evidence_type or self.directness}"
+
+
+class SiteVisitCounter(models.Model):
+    key = models.CharField(max_length=50, unique=True, default="site")
+    total_visits = models.PositiveBigIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "site visit counter"
+        verbose_name_plural = "site visit counters"
+
+    def __str__(self):
+        return f"{self.key}: {self.total_visits} visits"

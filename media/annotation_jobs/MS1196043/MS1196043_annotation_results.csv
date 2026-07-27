@@ -1,0 +1,2 @@
+query,pesticidedb_protein_id,protein_detail_id,ncbi_protein_accession,reported_protein_name,identity,alignment_length,diamond_evalue,bitscore,enzyme_class,gene_name,microorganism,pesticide,evidence_type,year,doi,collection_category,family_size,family_confidence,secreted,hmmer_family,hmmer_evalue
+ATA54505.1,PDBP0003,PDBP0003,ATA54505.1,Nitrilase,100.0,334,9.12e-253,677.0,Amidase,NitA,Variovorax boronicumulans CGMCC 4969,Flonicamid,Purified (Activity),2022,10.1111/jam.15561,-,14,HIGH,,amidase,2.80e-97

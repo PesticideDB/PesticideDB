@@ -1,0 +1,4 @@
+pesticide,decision,reason
+Fenvalerate,Not integrated in this batch,"Open-access papers identify multiple metabolites, but the extract does not provide a single unambiguous ordered substrate-to-product chain suitable for automatic pathway import."
+Bentazone,Not integrated in this batch,The paper reports 19 transformation products; the table/figure needs manual extraction before adding exact pathway arrows.
+Pyrimethanil / Fluxapyroxad / Paraquat / Pinoxaden,Not integrated in this batch,Accessible text supports degradation or genomic potential but does not give a clean named microbial substrate-to-product step.

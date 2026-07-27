@@ -12,9 +12,14 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+def env_bool(name, default=False):
+    return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,14 +31,47 @@ SECRET_KEY = os.environ.get(
     'django-insecure-h60d_8u(pe*cig@t_^-=&iyzva=h8^rwvw67%cm80m2@fo0mrq'
 )
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() == 'true'
+PUBLIC_DEMO = env_bool('DJANGO_PUBLIC_DEMO', False)
+if PUBLIC_DEMO and SECRET_KEY.startswith('django-insecure-'):
+    raise ImproperlyConfigured(
+        'DJANGO_PUBLIC_DEMO=True requires a real DJANGO_SECRET_KEY. '
+        'Use scripts/run_public_demo.sh or set DJANGO_SECRET_KEY yourself.'
+    )
+
+# SECURITY WARNING: don't run with debug turned on in production or public tunnels.
+DEBUG = env_bool('DJANGO_DEBUG', True) and not PUBLIC_DEMO
 
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
     if host.strip()
 ]
+if DEBUG and not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'testserver', '.devtunnels.ms']
+
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
+if DEBUG and not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = ['https://*.devtunnels.ms']
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+
+# Set these to True only behind a correctly configured HTTPS proxy/tunnel.
+SESSION_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', PUBLIC_DEMO)
+CSRF_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', PUBLIC_DEMO)
+
+DJANGO_ENABLE_ADMIN = env_bool('DJANGO_ENABLE_ADMIN', not PUBLIC_DEMO)
+DJANGO_ADMIN_URL = os.environ.get('DJANGO_ADMIN_URL', 'admin/')
+DJANGO_SERVE_MEDIA = DEBUG and env_bool('DJANGO_SERVE_MEDIA', True)
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get('DJANGO_DATA_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024))
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get('DJANGO_FILE_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024))
 
 
 # Application definition
@@ -57,6 +95,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'base.middleware.SiteVisitCounterMiddleware',
 ]
 
 ROOT_URLCONF = 'PepDatabase.urls'

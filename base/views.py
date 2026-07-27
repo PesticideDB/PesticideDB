@@ -123,6 +123,7 @@ def download_pesticides_csv(request):
     fields = [
         "pesticide",
         "microorganism",
+        "culture_type",
         "gene",
         "enzyme",
         "evidence_by_microbe",
@@ -175,7 +176,7 @@ def download_pathway_evidence_csv(request):
 def download_annotation_asset(request, asset_name):
     pathway_data_dir = settings.BASE_DIR / "data_files" / "pathway"
     allowed_assets = {
-        "protein-master": settings.PBDB_ANNOTATION_DIR / "data" / "PBDB_master_with_ids.xlsx",
+        "protein-master": settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master.xlsx",
         "reference-fasta": settings.PBDB_ANNOTATION_DIR / "data" / "pbdb_validated_reference_proteins.faa",
         "validated-supplemental-proteins": (
             settings.BASE_DIR
@@ -188,6 +189,10 @@ def download_annotation_asset(request, asset_name):
             / "supplemented_discovery_candidates_179.xlsx"
         ),
         "structure-report": settings.MEDIA_ROOT / "protein_structures" / "metadata" / "alphafold_download_report.csv",
+        "biodegradation-master-xlsx": settings.BASE_DIR / "data_files" / "core" / "pesticide_data.xlsx",
+        "biodegradation-master-csv": settings.BASE_DIR / "data_files" / "core" / "pesticide_data.csv",
+        "no-evidence-master": settings.BASE_DIR / "data_files" / "core" / "no_evidence_pesticide.xlsx",
+        "protein-master-with-2025-2026": settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master.xlsx",
         "pathway-evidence-master": pathway_data_dir / "PesticideDB_Pathway_Evidence_Master.xlsx",
         "pathway-evidence-master-csv": pathway_data_dir / "PesticideDB_Pathway_Evidence_Master.csv",
         "stepwise-pathway-master": pathway_data_dir / "PesticideDB_Stepwise_Pathway_Master.xlsx",
@@ -224,6 +229,7 @@ def microorganisms(request):
     protein = request.GET.get('protein', '').strip()
     environment = request.GET.get('environment', '').strip()
     location = request.GET.get('location', '').strip()
+    culture_type = request.GET.get('culture_type', '').strip()
 
     no_evidence_message = None
     if pesticide:
@@ -254,6 +260,9 @@ def microorganisms(request):
         is_search = True
     if location:
         filters['isolation_location__icontains'] = location
+        is_search = True
+    if culture_type:
+        filters['culture_type__iexact'] = culture_type
         is_search = True
 
     if pesticide and no_evidence_message:
@@ -308,6 +317,12 @@ def microorganisms(request):
         .distinct().order_by("isolation_location")
     )
 
+    culture_type_list = (
+        base_qs.values_list("culture_type", flat=True)
+        .exclude(culture_type__isnull=True).exclude(culture_type="")
+        .distinct().order_by("culture_type")
+    )
+
     context = {
         'results': results,
         'is_search': is_search,
@@ -321,6 +336,7 @@ def microorganisms(request):
         'protein_list': protein_list,
         'environment_list': environment_list,
         'location_list': location_list,
+        'culture_type_list': culture_type_list,
 
         'selected_microorganism': microorganism,
         'selected_pesticide': pesticide,
@@ -329,6 +345,7 @@ def microorganisms(request):
         'selected_protein': protein,
         'selected_environment': environment,
         'selected_location': location,
+        'selected_culture_type': culture_type,
     }
     return render(request, 'base/microorganisms.html', context)
 
@@ -1643,9 +1660,20 @@ def _pathway_graph_elements(pathways, selected_pesticide):
         selected_compound = Compound.objects.filter(name__iexact=selected_pesticide).first()
 
     metabolite_code_pattern = re.compile(r"^(?:CGA|SYN|NOA)\s+\d+$", re.IGNORECASE)
+    metabolite_mass_pattern = re.compile(
+        r"^(Metabolite\s+[A-Za-z0-9-]+)\s*\((m/z\s*[\d.]+)(?:;[^)]*)?\)$",
+        re.IGNORECASE,
+    )
+
+    def graph_label(label):
+        clean_label = (label or "").strip()
+        match = metabolite_mass_pattern.match(clean_label)
+        if match:
+            return f"{match.group(1)} ({match.group(2)})"
+        return clean_label
 
     def pathway_node_label(label):
-        clean_label = (label or "").strip()
+        clean_label = graph_label(label)
         if metabolite_code_pattern.match(clean_label):
             return f"{clean_label}\n(metabolite code)"
         return clean_label
@@ -1666,6 +1694,10 @@ def _pathway_graph_elements(pathways, selected_pesticide):
         added_nodes.add(node_id)
 
     def compound_node_id(compound, fallback_label):
+        normalized_label = graph_label(fallback_label)
+        if normalized_label and metabolite_mass_pattern.match((fallback_label or "").strip()):
+            normalized = re.sub(r"[^a-z0-9]+", "-", normalized_label.casefold()).strip("-")
+            return f"compound-label-{normalized or 'unknown'}"
         if compound:
             return f"compound-{compound.id}"
         normalized = re.sub(r"[^a-z0-9]+", "-", fallback_label.casefold()).strip("-")
@@ -1700,6 +1732,8 @@ def _pathway_graph_elements(pathways, selected_pesticide):
         }
 
     pathway_list = list(pathways)
+    selected_pesticide_label = (selected_pesticide or "").strip()
+    selected_pesticide_key = selected_pesticide_label.casefold()
 
     for pathway in pathway_list:
         steps = list(pathway.steps.all())
@@ -1709,13 +1743,23 @@ def _pathway_graph_elements(pathways, selected_pesticide):
         for step in steps:
             if _is_unresolved_pathway_step(step):
                 continue
-            substrate_id = compound_node_id(step.substrate_compound, step.substrate)
+            substrate_label = step.substrate
+            substrate_compound = step.substrate_compound
+            substrate_key = (substrate_label or "").strip().casefold()
+            if (
+                selected_pesticide_key
+                and substrate_key.startswith(f"{selected_pesticide_key}/")
+                and "route" in substrate_key
+            ):
+                substrate_label = selected_pesticide_label
+                substrate_compound = selected_compound
+            substrate_id = compound_node_id(substrate_compound, substrate_label)
             add_node(
                 substrate_id,
-                step.substrate,
+                substrate_label,
                 "compound",
-                step.substrate_compound and request_path("compound_detail", step.substrate_compound_id),
-                compound_extra(step.substrate_compound),
+                substrate_compound and request_path("compound_detail", substrate_compound.id),
+                compound_extra(substrate_compound),
             )
             for product_index, product_label in enumerate(_split_pathway_products(step.product)):
                 product_compound = (
@@ -1756,6 +1800,16 @@ def _pathway_graph_elements(pathways, selected_pesticide):
                 })
 
     return elements
+
+
+def _pathway_display_substrate(step, selected_pesticide):
+    substrate = (step.substrate or "").strip()
+    selected = (selected_pesticide or "").strip()
+    substrate_key = substrate.casefold()
+    selected_key = selected.casefold()
+    if selected_key and substrate_key.startswith(f"{selected_key}/") and "route" in substrate_key:
+        return selected
+    return substrate
 
 
 def request_path(route_name, *args):
@@ -1826,6 +1880,7 @@ def pathwayanalysis(request):
         ]
         for step in pathway_steps:
             step.display_reaction_label = _concise_pathway_reaction_label(step, detailed=True)
+            step.display_substrate = _pathway_display_substrate(step, selected_pesticide)
         drawable_step_count = sum(1 for step in pathway_steps if not _is_unresolved_pathway_step(step))
         pathway_status = _pathway_confidence_status(pathway_steps, drawable_step_count)
         has_unresolved_only_graph = bool(graph_elements) and not pathway_steps

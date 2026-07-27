@@ -1,0 +1,5 @@
+pesticide,decision,reason
+Paraquat,Not integrated,The accessible paper reports anaerobic transformation/removal by Pseudomonas geniculata PQ01 but does not provide a clean named product/intermediate arrow.
+Pinoxaden,Not integrated,"The accessible paper reports degradation and predicted genes, but no named microbial transformation products suitable for a pathway arrow."
+Thiacloprid,Not integrated,The accessible paper cites prior thiacloprid transformation literature but states that further studies are needed to explore metabolites in the tested system.
+Imazethapyr / Prochloraz / Fluxapyroxad / Pyrimethanil,Not integrated,Accessible PDFs support removal/degradation potential but do not provide named substrate-to-product microbial pathway steps for import.

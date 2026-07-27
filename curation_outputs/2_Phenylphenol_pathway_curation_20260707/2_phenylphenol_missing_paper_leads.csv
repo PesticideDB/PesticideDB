@@ -1,0 +1,4 @@
+lead_id,reason,title_or_reference,known_doi_or_url,why_it_matters,next_action
+OPP-L01,Referenced but PDF not present,"Purification and characterization of 2-hydroxybiphenyl 3-monooxygenase, a novel NADH-dependent FAD-containing aromatic hydroxylase from Pseudomonas azelaica HBP1",10.1074/jbc.272.39.24257,Likely best protein-level source for HbpA sequence/enzyme characterization.,Fetch PDF and curate protein accession/enzyme details.
+OPP-L02,Referenced but PDF not present,"HbpR, a new member of the XylR/DmpR subclass, regulates expression of 2-hydroxybiphenyl metabolism in Pseudomonas azelaica HBP1",,Likely best source for hbpR functional assignment.,Fetch DOI/PDF and add to regulatory evidence.
+OPP-L03,Referenced but PDF not present,"Metabolism of 2,2'-dihydroxybiphenyl by Pseudomonas sp. strain HBP1: production and consumption of 2,2',3-trihydroxybiphenyl",,"Would strengthen the 2,2'-DHBP side pathway.",Fetch DOI/PDF if side route is needed.

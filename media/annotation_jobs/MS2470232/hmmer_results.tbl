@@ -1,0 +1,15 @@
+#                                                                                           --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name        accession  query name                                       accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+#------------------- ----------                             -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+dehalogenase         -          lind_littlechange_AGCatposition3to6changetoTGC_1 -            6.1e-65  208.5   0.0   6.6e-65  208.4   0.0   1.0   1   0   0   1   1   1   1 -
+oxidoreductase       -          lind_littlechange_AGCatposition3to6changetoTGC_1 -            1.5e-54  174.8   0.0   1.8e-54  174.4   0.0   1.1   1   0   0   1   1   1   1 -
+#
+# Program:         hmmscan
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SCAN
+# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS2470232/MS2470232_predicted_proteins.faa
+# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_validated_profiles.hmm
+# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS2470232/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS2470232/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_validated_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS2470232/MS2470232_predicted_proteins.faa 
+# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Date:            Thu Jun 25 07:38:33 2026
+# [ok]

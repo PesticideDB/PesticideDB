@@ -1,0 +1,5 @@
+pesticide,decision,reason
+Dimethoate,Not integrated in this batch,"Database protein evidence supports DmhA/dimethoate amidohydrolase, but exact product naming should be confirmed from the blocked source paper before adding a pathway arrow."
+Fipronil,Not integrated in this batch,"Database records report degradation organisms and enzyme classes, but product direction differs among oxidation, reduction, hydrolysis, and photolytic routes; source-backed product arrows are needed."
+Endosulfan,Not integrated in this batch,Current accessible evidence supports degradation but does not provide a clean directed product step from the screened source.
+Paraquat,Not integrated in this batch,"Current accessible evidence reports anaerobic transformation and insoluble products, but not a named pathway compound suitable for a reaction arrow."

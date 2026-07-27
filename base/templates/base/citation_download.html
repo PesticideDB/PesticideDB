@@ -78,23 +78,18 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <a class="btn btn-primary btn-block" href="{% url 'download_pesticides_csv' %}">
-                        Download biodegradation records CSV
+                    <a class="btn btn-primary btn-block" href="{% url 'download_annotation_asset' 'biodegradation-master-xlsx' %}">
+                        Download biodegradation records XLSX
                     </a>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <a class="btn btn-primary btn-block" href="{% url 'download_proteins_csv' %}">
-                        Download protein records CSV
+                    <a class="btn btn-primary btn-block" href="{% url 'download_annotation_asset' 'protein-master-with-2025-2026' %}">
+                        Download protein/gene records XLSX
                     </a>
                 </div>
                 <div class="col-md-6 mb-3">
-                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_no_evidence_csv' %}">
-                        Download no-evidence pesticides CSV
-                    </a>
-                </div>
-                <div class="col-md-6 mb-3">
-                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'protein-master' %}">
-                        Download protein master XLSX
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'no-evidence-master' %}">
+                        Download no-evidence pesticides XLSX
                     </a>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -119,7 +114,7 @@
                 </div>
             </div>
             <p class="text-muted mb-0">
-                The validated supplemental workbook contains 15 protein-evidence rows supporting 12 newly added unique supplemented proteins plus one existing curated protein. The discovery workbook contains 179 separate records, including 151 Gene Only candidates, and is not part of the default validated annotation reference. Downloaded annotation results remain candidate sequence-similarity findings, not experimental proof of pesticide degradation.
+                The current biodegradation and protein/gene workbooks include the 2025-2026 update. Ethiprole and Spinetoram are represented in the with-evidence section and removed from the no-evidence workbook. CSV exports remain available from the relevant database tables for programmatic use.
             </p>
         </div>
     </div>

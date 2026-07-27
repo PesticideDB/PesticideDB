@@ -33,7 +33,7 @@
     </div>
 
     {% if pathway_status or pathway_graph_json != "[]" %}
-      <section class="mb-5">
+      <section class="mb-5 pathway-focus-section">
         <h3>{{ selected_pesticide }} degradation pathway</h3>
         {% if pathway_status %}
           <div class="pathway-status-line">
@@ -44,8 +44,15 @@
         {% if pathway_graph_json != "[]" %}
           <p class="pathway-section-note">Curated substrate-to-product transformations from database-linked experimental literature.</p>
           <div class="pathway-cytoscape-frame">
+            <div class="pathway-map-controls">
+              <button id="pathway-collapse-button" class="btn btn-light btn-sm" type="button">
+                Close
+              </button>
+            </div>
+            <p class="pathway-fullscreen-hint">Drag to pan; scroll or pinch to zoom. Click a chemical box for details.</p>
             <div id="pathway-cytoscape" class="pathway-cytoscape" aria-label="Interactive pathway sketch"></div>
           </div>
+          <div id="pathway-fullscreen-backdrop" class="pathway-fullscreen-backdrop"></div>
           <div class="pathway-map-legend">
             <span><i class="legend-line legend-strong"></i> purified enzyme or genetic evidence</span>
             <span><i class="legend-line legend-supported"></i> metabolite, whole-cell, or crude-extract evidence</span>
@@ -84,7 +91,7 @@
             {% for step in pathway_steps %}
               <tr class="pathway-arrow-row">
                 <td><span class="badge badge-primary">Pathway arrow</span></td>
-                <td>{{ step.substrate }}</td>
+                <td>{{ step.display_substrate|default:step.substrate }}</td>
                 <td>
                   {{ step.display_reaction_label|default:"Enzyme not identified" }}
                   {% if step.gene %}<br><span class="text-muted">Gene/protein: {{ step.gene }}</span>{% endif %}
@@ -138,6 +145,32 @@
     </section>
   {% endif %}
 </div>
+
+<div id="pathway-node-modal" class="pathway-node-modal" aria-hidden="true">
+  <div class="pathway-node-backdrop" data-close-pathway-modal></div>
+  <section class="pathway-node-dialog" role="dialog" aria-modal="true" aria-labelledby="pathway-node-title">
+    <button class="pathway-node-close" type="button" aria-label="Close pathway detail" data-close-pathway-modal>&times;</button>
+    <div class="pathway-node-layout">
+      <div class="pathway-node-main">
+        <span class="pathway-node-kicker">Pathway compound</span>
+        <h2 id="pathway-node-title"></h2>
+        <dl class="pathway-node-meta">
+          <dt>Structure status</dt>
+          <dd id="pathway-node-status"></dd>
+          <dt>PubChem CID</dt>
+          <dd id="pathway-node-cid"></dd>
+          <dt>SMILES</dt>
+          <dd id="pathway-node-smiles"></dd>
+        </dl>
+        <div class="pathway-node-actions">
+          <a id="pathway-node-link" class="btn btn-primary" href="#">Open Chemical Information</a>
+          <button class="btn btn-outline-secondary" type="button" data-close-pathway-modal>Back to Pathway</button>
+        </div>
+      </div>
+      <div class="pathway-node-structure" id="pathway-node-structure"></div>
+    </div>
+  </section>
+</div>
 {% endblock %}
 
 {% block extra_head %}
@@ -145,8 +178,9 @@
 <style>
   .pathway-cytoscape {
     width: 100%;
-    height: 320px;
-    min-height: 240px;
+    height: calc(100vh - 220px);
+    min-height: 620px;
+    max-height: 980px;
     border: 2px solid #2c2c2c;
     border-radius: 2px;
     background: #ffffff;
@@ -200,14 +234,87 @@
     background: #fff;
   }
   .pathway-cytoscape-frame {
+    position: relative;
     width: 100%;
     overflow-x: auto;
     padding: .35rem .25rem .65rem;
+  }
+  .pathway-map-controls {
+    position: sticky;
+    left: .5rem;
+    top: .5rem;
+    z-index: 4;
+    display: flex;
+    gap: .45rem;
+    width: max-content;
+    margin-bottom: .35rem;
+  }
+  .pathway-fullscreen-hint {
+    display: none;
+    margin: 0 0 .35rem;
+    color: #5f6b78;
+    font-size: .88rem;
+  }
+  #pathway-collapse-button {
+    display: none;
+  }
+  .pathway-fullscreen-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 1040;
+    display: none;
+    background: rgba(11, 18, 32, .58);
+    backdrop-filter: blur(7px);
+  }
+  .pathway-fullscreen-backdrop.is-open {
+    display: block;
+  }
+  .pathway-cytoscape-frame.is-fullscreen {
+    position: fixed;
+    inset: 2.2vh 2.2vw;
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: .75rem;
+    border: 1px solid rgba(255, 255, 255, .8);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 30px 80px rgba(2, 6, 23, .42);
+  }
+  .pathway-cytoscape-frame.is-fullscreen .pathway-map-controls {
+    position: static;
+    justify-content: flex-end;
+    width: 100%;
+  }
+  .pathway-cytoscape-frame.is-fullscreen .pathway-fullscreen-hint {
+    display: block;
+  }
+  .pathway-cytoscape-frame.is-fullscreen #pathway-collapse-button {
+    display: inline-block;
+  }
+  .pathway-cytoscape-frame.is-fullscreen .pathway-cytoscape {
+    flex: 1 1 auto;
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    max-height: none;
+    min-height: 0;
+  }
+  body.pathway-map-expanded {
+    overflow: hidden;
+  }
+  .pathway-focus-section {
+    min-height: calc(100vh - 150px);
   }
   @media (max-width: 768px) {
     .pathway-analysis-page {
       padding-left: 1rem;
       padding-right: 1rem;
+    }
+    .pathway-cytoscape {
+      min-height: 520px;
+      height: calc(100vh - 190px);
     }
   }
   .pathway-map-legend {
@@ -245,9 +352,15 @@
   .pathway-summary-table th,
   .pathway-summary-table td {
     vertical-align: top;
+    padding: .38rem .46rem;
+    font-size: .82rem;
   }
   .pathway-summary-table td {
-    line-height: 1.35;
+    line-height: 1.28;
+  }
+  .pathway-summary-table th {
+    font-size: .78rem;
+    line-height: 1.2;
   }
   .pathway-summary-table th:first-child,
   .pathway-summary-table td:first-child {
@@ -259,6 +372,8 @@
   }
   .pathway-summary-table .badge {
     white-space: normal;
+    font-size: .72rem;
+    line-height: 1.15;
   }
   .pathway-curation-note {
     max-width: 880px;
@@ -266,6 +381,133 @@
     color: #735500;
     font-size: 1rem;
     line-height: 1.55;
+  }
+  .pathway-node-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1060;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+  }
+  .pathway-node-modal.is-open {
+    display: flex;
+  }
+  .pathway-node-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(11, 18, 32, .58);
+    backdrop-filter: blur(7px);
+  }
+  .pathway-node-dialog {
+    position: relative;
+    width: min(1120px, 96vw);
+    max-height: min(780px, 92vh);
+    overflow: auto;
+    border: 1px solid rgba(255, 255, 255, .72);
+    border-radius: 8px;
+    background: #ffffff;
+    box-shadow: 0 28px 70px rgba(2, 6, 23, .38);
+  }
+  .pathway-node-layout {
+    display: grid;
+    grid-template-columns: minmax(0, .95fr) minmax(320px, 1.05fr);
+    min-height: 460px;
+  }
+  .pathway-node-main {
+    display: grid;
+    align-content: center;
+    gap: 1.1rem;
+    padding: 2rem;
+  }
+  .pathway-node-kicker {
+    color: #667085;
+    font-size: .78rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+  .pathway-node-main h2 {
+    margin: 0;
+    font-size: clamp(1.25rem, 2.2vw, 2rem);
+    line-height: 1.18;
+    font-weight: 800;
+    letter-spacing: 0;
+    overflow-wrap: anywhere;
+  }
+  .pathway-node-meta {
+    display: grid;
+    grid-template-columns: 8.8rem minmax(0, 1fr);
+    gap: .55rem .9rem;
+    margin: 0;
+  }
+  .pathway-node-meta dt {
+    color: #667085;
+    font-weight: 700;
+  }
+  .pathway-node-meta dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+  .pathway-node-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+  }
+  .pathway-node-structure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 460px;
+    padding: 1.4rem;
+    background: #f8fafc;
+    border-left: 1px solid #e2e8f0;
+  }
+  .pathway-node-structure img {
+    max-width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+  }
+  .pathway-node-placeholder {
+    max-width: 360px;
+    padding: 1.2rem;
+    border: 1px dashed #aab4c2;
+    border-radius: 8px;
+    color: #59636f;
+    text-align: center;
+    background: #ffffff;
+  }
+  .pathway-node-close {
+    position: absolute;
+    top: .8rem;
+    right: .9rem;
+    z-index: 2;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid #d2d9e3;
+    border-radius: 999px;
+    background: #ffffff;
+    color: #24303b;
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  body.pathway-modal-open {
+    overflow: hidden;
+  }
+  @media (max-width: 850px) {
+    .pathway-node-layout {
+      grid-template-columns: 1fr;
+    }
+    .pathway-node-structure {
+      min-height: 300px;
+      border-left: 0;
+      border-top: 1px solid #e2e8f0;
+    }
+    .pathway-node-meta {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 {% endblock %}
@@ -277,6 +519,9 @@
     if (!container) {
       return;
     }
+    const frame = container.closest(".pathway-cytoscape-frame");
+    const fullscreenBackdrop = document.getElementById("pathway-fullscreen-backdrop");
+    const collapseButton = document.getElementById("pathway-collapse-button");
 
     const elements = {{ pathway_graph_json|safe }};
     if (!window.cytoscape || !elements.length) {
@@ -284,11 +529,11 @@
       return;
     }
 
-    const minNodeWidth = 112;
-    const comfortableNodeWidth = 160;
-    const maxNodeWidth = 290;
-    const minNodeHeight = 46;
-    const lineHeight = 18;
+    const minNodeWidth = 106;
+    const comfortableNodeWidth = 150;
+    const maxNodeWidth = 250;
+    const minNodeHeight = 42;
+    const lineHeight = 15;
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
@@ -361,22 +606,22 @@
         .split(/\s+/)
         .reduce((longest, token) => Math.max(longest, token.length), 0);
       const initialWidth = clamp(
-        Math.max(8.4 * longestToken + 44, normalized.length > 34 ? 250 : minNodeWidth),
+        Math.max(7.2 * longestToken + 40, normalized.length > 34 ? 220 : minNodeWidth),
         minNodeWidth,
         maxNodeWidth
       );
-      const maxChars = clamp(Math.floor((initialWidth - 34) / 7.2), 13, 34);
+      const maxChars = clamp(Math.floor((initialWidth - 32) / 6.2), 12, 30);
       const displayLabel = wrapPathwayLabel(normalized, maxChars);
       const longestLine = displayLabel
         .split("\n")
         .reduce((longest, line) => Math.max(longest, line.length), 0);
       const width = clamp(
-        Math.max(8.6 * longestLine + 48, normalized.length > 26 ? comfortableNodeWidth : minNodeWidth),
+        Math.max(7.2 * longestLine + 44, normalized.length > 26 ? comfortableNodeWidth : minNodeWidth),
         minNodeWidth,
         maxNodeWidth
       );
       const lineCount = Math.max(1, displayLabel.split("\n").length);
-      const height = clamp(22 + lineCount * lineHeight, minNodeHeight, 92);
+      const height = clamp(22 + lineCount * lineHeight, minNodeHeight, 86);
       return {
         displayLabel,
         width,
@@ -567,8 +812,18 @@
       const maxY = Math.max(...Array.from(positions.values()).map((position) => position.y), originY);
       const fittedHeight = maxY + tallestNode + (hasVisibleEdgeLabels ? 150 : compactUnlabeledMap ? 78 : 104);
       const fittedWidth = maxX + widestNode + (hasVisibleEdgeLabels ? 120 : compactUnlabeledMap ? 34 : 70);
-      container.style.height = `${Math.max(simpleMap ? 240 : hasVisibleEdgeLabels ? 320 : 280, Math.min(760, fittedHeight))}px`;
-      container.style.minWidth = `${Math.max(simpleMap ? 500 : compactUnlabeledMap ? 500 : 640, fittedWidth)}px`;
+      const viewportHeight = Math.max(
+        window.innerHeight - (window.innerWidth < 768 ? 190 : 220),
+        window.innerWidth < 768 ? 520 : 620
+      );
+      container.style.height = `${Math.max(viewportHeight, Math.min(980, fittedHeight))}px`;
+      if (frame?.classList.contains("is-fullscreen")) {
+        container.style.minWidth = "0";
+        container.style.width = "100%";
+      } else {
+        container.style.width = "";
+        container.style.minWidth = `${Math.max(simpleMap ? 500 : compactUnlabeledMap ? 500 : 640, fittedWidth)}px`;
+      }
 
       const edgeLaneCounts = new Map();
       const sourceEdgeLaneCounts = new Map();
@@ -651,7 +906,7 @@
             "border-color": "#1f1f1f",
             "border-width": 2,
             "color": "#212529",
-            "font-size": 13,
+            "font-size": 11,
             "font-family": "Arial, Helvetica, sans-serif",
             "font-weight": 700,
             "text-wrap": "wrap",
@@ -722,11 +977,137 @@
 
     cy.ready(function () {
       cy.fit(undefined, 18);
-      cy.zoom(Math.min(cy.zoom(), 1.45));
       cy.center();
     });
 
-    cy.on("tap", "node, edge", function (event) {
+    function refitPathway(delay) {
+      window.setTimeout(() => {
+        cy.resize();
+        cy.fit(undefined, frame?.classList.contains("is-fullscreen") ? 36 : 18);
+        if (frame?.classList.contains("is-fullscreen")) {
+          cy.minZoom(0.05);
+          cy.maxZoom(2.2);
+          cy.userZoomingEnabled(true);
+          cy.userPanningEnabled(true);
+        } else {
+          cy.userZoomingEnabled(false);
+          cy.userPanningEnabled(false);
+        }
+        cy.center();
+      }, delay);
+    }
+
+    function openPathwayFullscreen() {
+      if (!frame) {
+        return;
+      }
+      frame.classList.add("is-fullscreen");
+      fullscreenBackdrop?.classList.add("is-open");
+      document.body.classList.add("pathway-map-expanded");
+      refitPathway(40);
+      collapseButton?.focus();
+    }
+
+    function closePathwayFullscreen() {
+      if (!frame) {
+        return;
+      }
+      frame.classList.remove("is-fullscreen");
+      fullscreenBackdrop?.classList.remove("is-open");
+      document.body.classList.remove("pathway-map-expanded");
+      refitPathway(40);
+    }
+
+    collapseButton?.addEventListener("click", closePathwayFullscreen);
+    fullscreenBackdrop?.addEventListener("click", closePathwayFullscreen);
+
+    const modal = document.getElementById("pathway-node-modal");
+    const modalTitle = document.getElementById("pathway-node-title");
+    const modalStatus = document.getElementById("pathway-node-status");
+    const modalCid = document.getElementById("pathway-node-cid");
+    const modalSmiles = document.getElementById("pathway-node-smiles");
+    const modalLink = document.getElementById("pathway-node-link");
+    const modalStructure = document.getElementById("pathway-node-structure");
+
+    function textOrDash(value) {
+      const text = String(value || "").trim();
+      return text || "-";
+    }
+
+    function replaceStructureContent(child) {
+      while (modalStructure.firstChild) {
+        modalStructure.removeChild(modalStructure.firstChild);
+      }
+      modalStructure.appendChild(child);
+    }
+
+    function structurePlaceholder(text) {
+      const placeholder = document.createElement("div");
+      placeholder.className = "pathway-node-placeholder";
+      placeholder.textContent = text;
+      return placeholder;
+    }
+
+    function openNodeModal(node) {
+      const data = node.data();
+      const label = data.compound_name || data.label || data.display_label || "Compound";
+      modalTitle.textContent = label;
+      modalStatus.textContent = textOrDash(data.chemical_status);
+      modalCid.textContent = textOrDash(data.pubchem_cid);
+      modalSmiles.textContent = textOrDash(data.smiles);
+      if (data.url) {
+        modalLink.href = data.url;
+        modalLink.classList.remove("disabled");
+        modalLink.removeAttribute("aria-disabled");
+      } else {
+        modalLink.href = "#";
+        modalLink.classList.add("disabled");
+        modalLink.setAttribute("aria-disabled", "true");
+      }
+      if (data.structure_url) {
+        const image = document.createElement("img");
+        image.src = data.structure_url;
+        image.alt = `2D chemical structure for ${label}`;
+        replaceStructureContent(image);
+      } else if (data.smiles) {
+        replaceStructureContent(structurePlaceholder("No image is linked yet, but curated SMILES are available for local structure rendering."));
+      } else {
+        replaceStructureContent(structurePlaceholder("No single compound structure has been curated for this pathway node yet."));
+      }
+      modal.classList.add("is-open");
+      modal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("pathway-modal-open");
+      modalLink.focus();
+    }
+
+    function closeNodeModal() {
+      modal.classList.remove("is-open");
+      modal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("pathway-modal-open");
+    }
+
+    document.querySelectorAll("[data-close-pathway-modal]").forEach((button) => {
+      button.addEventListener("click", closeNodeModal);
+    });
+    document.addEventListener("keydown", function (event) {
+      if (event.key === "Escape" && modal.classList.contains("is-open")) {
+        closeNodeModal();
+      } else if (event.key === "Escape" && frame?.classList.contains("is-fullscreen")) {
+        closePathwayFullscreen();
+      }
+    });
+
+    cy.on("tap", "node", function (event) {
+      openNodeModal(event.target);
+    });
+
+    cy.on("tap", function (event) {
+      if (event.target === cy && !frame?.classList.contains("is-fullscreen")) {
+        openPathwayFullscreen();
+      }
+    });
+
+    cy.on("tap", "edge", function (event) {
       const url = event.target.data("url");
       if (url) {
         window.location.href = url;

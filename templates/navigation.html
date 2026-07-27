@@ -35,14 +35,14 @@
                     <div class="dropdown-divider"></div>
                 </div>
             </li>
-            <li class="nav-item {% if 'submit_your_data' in request.path %}active{% endif %}">
-                <a class="nav-link" href="{% url 'submit_your_data' %}">Submit your data</a>
+            <li class="nav-item {% if 'citation-download' in request.path %}active{% endif %}">
+                <a class="nav-link" href="{% url 'citation_download' %}">Citation/Download</a>
             </li>
             <li class="nav-item {% if 'statistics' in request.path %}active{% endif %}">
                 <a class="nav-link" href="{% url 'statistics' %}">Statistics</a>
             </li>
-            <li class="nav-item {% if 'citation-download' in request.path %}active{% endif %}">
-                <a class="nav-link" href="{% url 'citation_download' %}">Citation/Download</a>
+            <li class="nav-item {% if 'submit_your_data' in request.path %}active{% endif %}">
+                <a class="nav-link" href="{% url 'submit_your_data' %}">Submit your data</a>
             </li>
             <li class="nav-item {% if 'contact' in request.path %}active{% endif %}">
                 <a class="nav-link" href="{% url 'contact' %}">Contact</a>

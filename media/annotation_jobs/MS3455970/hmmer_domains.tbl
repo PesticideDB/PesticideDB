@@ -1,0 +1,14 @@
+#                                                                                                                                                  --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name         accession   tlen query name                                                                                accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+# ------------------- ---------- -----                                                                      -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+monooxygenase_aligned -            598 PDBP0047|AAR31035.1|tfdB|2,4-dichlorophenol_hydroxylase|Cupriavidus_pinatubonensis_JMP134 -            598         0 1450.6   1.9   1   1         0         0 1450.5   1.9     1   598     1   598     1   598 1.00 -
+#
+# Program:         hmmscan
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SCAN
+# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS3455970/MS3455970_query.fasta
+# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm
+# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS3455970/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS3455970/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS3455970/MS3455970_query.fasta 
+# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Date:            Mon Jun 15 03:04:48 2026
+# [ok]

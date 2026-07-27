@@ -1,0 +1,14 @@
+#                                                                                                                                    --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name        accession  query name                                                                                accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+#------------------- ----------                                                                      -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+monooxygenase        -          PDBP0047|AAR31035.1|tfdB|2,4-dichlorophenol_hydroxylase|Cupriavidus_pinatubonensis_JMP134 -                  0 1254.2   1.1         0 1254.0   1.1   1.0   1   0   0   1   1   1   1 -
+#
+# Program:         hmmscan
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SCAN
+# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS8061972/MS8061972_query.fasta
+# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_validated_profiles.hmm
+# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS8061972/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS8061972/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_validated_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/media/annotation_jobs/MS8061972/MS8061972_query.fasta 
+# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Date:            Tue Jul 21 02:29:32 2026
+# [ok]

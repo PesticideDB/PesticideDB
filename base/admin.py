@@ -12,6 +12,7 @@ from .models import (
     PathwayEvidence,
     Pesticide,
     ProteinRecord,
+    SiteVisitCounter,
 )
 
 # Register your models here.
@@ -25,6 +26,18 @@ admin.site.register(DegradationPathwayStep)
 admin.site.register(Compound)
 admin.site.register(LiteratureReference)
 admin.site.register(PathwayEvidence)
+
+
+@admin.register(SiteVisitCounter)
+class SiteVisitCounterAdmin(admin.ModelAdmin):
+    list_display = ("key", "total_visits", "updated_at")
+    readonly_fields = ("key", "total_visits", "updated_at")
+
+    def has_add_permission(self, request):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
 
 
 @admin.register(DataSubmission)

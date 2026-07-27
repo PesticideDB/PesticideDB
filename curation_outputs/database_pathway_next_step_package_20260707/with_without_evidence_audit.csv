@@ -1,0 +1,10 @@
+check,result
+With-evidence unique pesticides used,117
+No-evidence unique pesticides checked/excluded,137
+Overlap between with-evidence and no-evidence lists,0
+Inventory rows generated from with-evidence list,117
+Evidence-positive folders with readable PDFs,25
+Evidence-positive folders blocked by placeholder PDFs,82
+Evidence-positive pesticides missing USB folder,8
+"Top review rows, max five per pesticide",98
+Database integration status,Not integrated; files are for manual pathway/evidence validation first.

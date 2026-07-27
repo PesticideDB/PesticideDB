@@ -1,0 +1,6 @@
+pesticide,decision,reason
+Chlorothalonil,Not integrated in this batch,"The downloaded open-access PDF did not yield a clear substrate-product transformation in text extraction. A pathway arrow should wait for a product table, figure, or readable paper text."
+Endosulfan,Not integrated in this batch,"The paper confirms fungal degradation of alpha-endosulfan, beta-endosulfan, and endosulfan sulfate, but the extracted text did not provide a clear directed compound-to-compound step."
+Malathion,Not integrated in this batch,"The downloaded papers provide enzyme or degradation context, but the extracted text did not identify a named malathion product suitable for a conservative pathway arrow."
+Dichlorvos,Not integrated in this batch,The downloaded open-access source did not provide an extractable named degradation product in the screening terms.
+Paraquat,Not integrated in this batch,"The paper reports paraquat anaerobic transformation and insoluble crystals, but the product identity was not resolved as a named pathway compound."

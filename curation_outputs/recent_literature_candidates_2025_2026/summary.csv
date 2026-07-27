@@ -1,0 +1,4 @@
+query_name,pubmed_count,exported_rows,file,query
+dehalogenase_pesticide_2025_2026,11,11,curation_outputs/recent_literature_candidates_2025_2026/dehalogenase_pesticide_2025_2026.csv,((pesticide degradation) AND dehalogenase) AND (2025:2026[pdat])
+gst_pesticide_degradation_2025_2026,364,100,curation_outputs/recent_literature_candidates_2025_2026/gst_pesticide_degradation_2025_2026.csv,"((""glutathione S-transferase"" OR GST) AND pesticide AND (degradation OR biodegradation OR metabolism OR detoxification) AND (2025:2026[pdat])) NOT review[pt]"
+microbial_pesticide_biodegradation_gene_enzyme_2025_2026,1484,100,curation_outputs/recent_literature_candidates_2025_2026/microbial_pesticide_biodegradation_gene_enzyme_2025_2026.csv,((pesticide biodegradation OR pesticide degradation) AND (microbial OR bacteria OR fungus OR fungi) AND (gene OR enzyme OR protein) AND (2025:2026[pdat])) NOT review[pt]

@@ -1,0 +1,118 @@
+acquisition_priority,pesticide,is_oa,download_status,count
+2,Metalaxyl,True,no_pdf_url,1
+2,Phosphonic acid,False,not_attempted,1
+3,Ethoprophos,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Fenhexamid,True,downloaded_open_access_pdf,1
+3,Fluazinam,False,not_attempted,1
+1,Dimethoate,False,not_attempted,5
+1,Dimethoate,True,no_pdf_url,1
+1,Fipronil,False,not_attempted,6
+1,Fipronil,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+1,Paraquat,False,not_attempted,1
+1,Paraquat,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+1,Paraquat,True,downloaded_open_access_pdf,1
+2,Acetochlor,,not_attempted,1
+2,Acetochlor,False,not_attempted,6
+2,Acetochlor,True,no_pdf_url,2
+2,Cyfluthrin/beta-cyfluthrin,False,not_attempted,1
+2,Cyfluthrin/beta-cyfluthrin,True,no_pdf_url,1
+2,Cypermethrin,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+2,Dithiocarbamate,False,not_attempted,1
+2,Endrin,False,not_attempted,2
+2,Endrin,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+2,Esfenvalerate,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+2,Esfenvalerate,True,no_pdf_url,1
+2,Fenamiphos,False,not_attempted,3
+2,Fenamiphos,True,no_pdf_url,1
+2,Fenvalerate,False,not_attempted,3
+2,Fenvalerate,True,downloaded_open_access_pdf,4
+2,Isoxaflutole,True,no_pdf_url,1
+2,Metalaxyl,False,not_attempted,2
+2,Metalaxyl,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",2
+2,Parathion-Methyl,False,not_attempted,9
+2,Phorate,False,not_attempted,7
+2,Phorate,True,downloaded_open_access_pdf,1
+2,Phosphonic acid,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",3
+2,Phosphonic acid,True,no_pdf_url,5
+2,Pinoxaden,True,downloaded_open_access_pdf,1
+2,Profenofos,,not_attempted,1
+2,Profenofos,False,not_attempted,8
+2,Profenofos,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+2,Quinclorac,False,not_attempted,4
+2,Quinclorac,True,no_pdf_url,4
+2,Sulfoxaflor,False,not_attempted,2
+3,Azinphos-Methyl,False,not_attempted,1
+3,Bentazone,True,downloaded_open_access_pdf,1
+3,Boscalid,False,not_attempted,1
+3,Buprofezin,False,not_attempted,4
+3,Buprofezin,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Cadusafos,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Captan,False,not_attempted,1
+3,Carbosulfan,False,not_attempted,1
+3,Chlorantraniliprole,False,not_attempted,1
+3,Chlorantraniliprole,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Chlordane,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Chlorpropham,False,not_attempted,1
+3,Clothianidin,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",2
+3,Cyprodinil,False,not_attempted,1
+3,Deltamethrin,False,not_attempted,5
+3,Deltamethrin,True,downloaded_open_access_pdf,1
+3,Dichlobenil,False,not_attempted,2
+3,Dicofol,False,not_attempted,2
+3,Difenoconazole,False,not_attempted,2
+3,Difenoconazole,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Difenoconazole,True,downloaded_open_access_pdf,1
+3,Dimethomorph,False,not_attempted,1
+3,Dinotefuran,True,no_pdf_url,2
+3,Diphenylamine,False,not_attempted,1
+3,Diphenylamine,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Diphenylamine,True,no_pdf_url,1
+3,Diquat,True,no_pdf_url,1
+3,Emamectin benzoate,True,downloaded_content_not_pdf,1
+3,Ethion,False,not_attempted,1
+3,Ethoprophos,False,not_attempted,1
+3,Etoxazole,False,not_attempted,1
+3,Fenitrothion,False,not_attempted,2
+3,Fenitrothion,True,no_pdf_url,1
+3,Fenpropathrin,False,not_attempted,6
+3,Flubendiamide,True,downloaded_open_access_pdf,2
+3,Fludioxonil,False,not_attempted,2
+3,Folpet,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Folpet,True,no_pdf_url,1
+3,Haloxyfop,False,not_attempted,1
+3,Heptachlor,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Imazethapyr,False,not_attempted,2
+3,Imazethapyr,True,downloaded_open_access_pdf,1
+3,Indoxacarb,True,no_pdf_url,1
+3,Mesotrione,False,not_attempted,3
+3,Mesotrione,True,no_pdf_url,1
+3,Methamidophos,False,not_attempted,4
+3,Methamidophos,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Methomyl,,not_attempted,1
+3,Methomyl,False,not_attempted,2
+3,Methomyl,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Pendimethalin,False,not_attempted,3
+3,Pendimethalin,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Pirimiphos-Methyl,False,not_attempted,1
+3,Pirimiphos-Methyl,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Prochloraz,False,not_attempted,1
+3,Prochloraz,True,downloaded_open_access_pdf,1
+3,Propiconazole,True,downloaded_open_access_pdf,2
+3,Propiconazole,True,no_pdf_url,1
+3,Propoxur,False,not_attempted,1
+3,Propylene oxide,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+3,Propylene oxide,True,no_pdf_url,2
+3,Prothioconazole,True,no_pdf_url,1
+3,Pyrimethanil,True,downloaded_open_access_pdf,1
+3,Tebuconazole,False,not_attempted,3
+3,Tebuconazole,True,downloaded_open_access_pdf,1
+3,Tebuconazole,True,no_pdf_url,1
+3,Thiabendazole,False,not_attempted,1
+3,Thiacloprid,False,not_attempted,1
+3,Thiacloprid,True,downloaded_open_access_pdf,1
+4,Acibenzolar-S-methyl,False,not_attempted,1
+4,Fluxapyroxad,True,downloaded_open_access_pdf,1
+4,Imazamox,False,not_attempted,1
+4,Penthiopyrad,True,"download_error: <urlopen error [Errno 8] nodename nor servname provided, or not known>",1
+4,Propamocarb,False,not_attempted,1
+4,Propargite,False,not_attempted,1

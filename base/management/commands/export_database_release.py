@@ -94,6 +94,21 @@ class Command(BaseCommand):
             settings.BASE_DIR / "PBDB_annotation" / "data" / "pbdb_validated_reference_proteins.faa",
             settings.BASE_DIR / "PBDB_annotation" / "data" / "supplemental_validated_proteins.faa",
             settings.BASE_DIR / "PBDB_annotation" / "hmmer_db" / "pbdb_validated_profiles.hmm",
+            settings.BASE_DIR / "data_files" / "core" / "pesticide_data.xlsx",
+            settings.BASE_DIR / "data_files" / "core" / "pesticide_data.csv",
+            settings.BASE_DIR / "data_files" / "core" / "additional_existing_curated_evidence.xlsx",
+            settings.BASE_DIR / "data_files" / "core" / "additional_2025-2026-search.xlsx",
+            settings.BASE_DIR / "data_files" / "core" / "pesticide_data_with_2025_2026.xlsx",
+            settings.BASE_DIR / "data_files" / "core" / "pesticide_data_with_2025_2026.csv",
+            settings.BASE_DIR / "data_files" / "core" / "no_evidence_pesticide.xlsx",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master.xlsx",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master.csv",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master_With_2025_2026.xlsx",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Proteins_Master_With_2025_2026.csv",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Protein_Gene_Records_2025_2026_Additions.xlsx",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Protein_Gene_Records_2025_2026_Additions.csv",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Protein_Structure_Curation_2025_2026.xlsx",
+            settings.BASE_DIR / "data_files" / "protein" / "PBDB_Protein_Structure_Curation_2025_2026.csv",
             settings.BASE_DIR / "curation_outputs" / "supplemented_validated_protein_evidence_15.xlsx",
             settings.BASE_DIR / "curation_outputs" / "supplemented_discovery_candidates_179.xlsx",
             settings.BASE_DIR / "data_files" / "pathway" / "PesticideDB_Pathway_Evidence_Master.xlsx",
@@ -207,6 +222,15 @@ class Command(BaseCommand):
         for asset in assets:
             if asset.exists():
                 shutil.copy2(asset, assets_dir / asset.name)
+
+        structure_dir = settings.MEDIA_ROOT / "protein_structures"
+        for subdir_name in ["pdb", "images", "metadata"]:
+            source_dir = structure_dir / subdir_name
+            target_dir = assets_dir / "protein_structures" / subdir_name
+            if source_dir.exists():
+                if target_dir.exists():
+                    shutil.rmtree(target_dir)
+                shutil.copytree(source_dir, target_dir)
 
         self.stdout.write(self.style.SUCCESS(f"Exported PesticideDB release bundle to {output_dir}"))
 

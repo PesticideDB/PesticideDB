@@ -2,6 +2,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 import pandas as pd
+from django.contrib import admin
 from django.test import TestCase
 from django.test import override_settings
 from django.urls import reverse
@@ -18,6 +19,7 @@ from .models import (
     NoEvidencePesticide,
     Pesticide,
     ProteinRecord,
+    SiteVisitCounter,
 )
 from .utils import microorganism_count, pesticide_counts
 
@@ -73,6 +75,20 @@ class PageSmokeTests(TestCase):
 
             self.assertEqual(gene_response.status_code, 200)
             self.assertEqual(genome_response.status_code, 200)
+
+    def test_site_visit_counter_counts_successful_html_pages(self):
+        self.client.get(reverse("home"))
+        self.client.get(reverse("about"))
+        self.client.get("/missing-page/")
+
+        counter = SiteVisitCounter.objects.get(key="site")
+        self.assertEqual(counter.total_visits, 2)
+
+        response = self.client.get(reverse("home"))
+        self.assertNotContains(response, "Website visits:")
+
+    def test_site_visit_counter_is_available_in_admin(self):
+        self.assertIn(SiteVisitCounter, admin.site._registry)
 
 
 class AnnotationUtilityTests(TestCase):
