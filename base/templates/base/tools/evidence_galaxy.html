@@ -399,11 +399,20 @@
       return balancedSupport(pooled).slice(0, visibleLimit);
     }
 
+    function pathwayContextForFocus(microbe, reference) {
+      const pathwayKinds = ["pathway", "metabolite"];
+      const pesticide = pesticideNode();
+      return uniqueById([
+        ...connectedNodes(reference, pathwayKinds),
+        ...connectedNodes(microbe, pathwayKinds),
+        ...(pesticide ? connectedNodes(pesticide, pathwayKinds) : []),
+      ]);
+    }
+
     function balancedSupport(nodes) {
       const buckets = {
         gene: nodes.filter(node => node.kind === "gene"),
         protein: nodes.filter(node => node.kind === "protein" || node.kind === "enzyme"),
-        pathway: nodes.filter(node => node.kind === "pathway" || node.kind === "metabolite"),
       };
       const selected = [];
       const take = (bucket, count) => {
@@ -411,11 +420,14 @@
           if (!selected.some(item => item.id === node.id)) selected.push(node);
         });
       };
-      take(buckets.gene, 4);
-      take(buckets.protein, 4);
-      take(buckets.pathway, 4);
+      take(buckets.gene, 6);
+      take(buckets.protein, 6);
       nodes.forEach(node => {
-        if (selected.length < visibleLimit && !selected.some(item => item.id === node.id)) selected.push(node);
+        if (
+          selected.length < visibleLimit &&
+          (node.kind === "gene" || node.kind === "protein" || node.kind === "enzyme") &&
+          !selected.some(item => item.id === node.id)
+        ) selected.push(node);
       });
       return selected;
     }
@@ -434,7 +446,7 @@
       `).join("");
       storyElement.innerHTML = `
         Start at the <strong>${escapeHtml(summary.pesticide || select.value)}</strong> sphere.
-        Enter microorganisms, then focus on a strain to see DOI evidence, then open DOI support for genes, proteins, and pathway records.
+        Enter microorganisms, then focus on a strain to see DOI evidence, then open DOI support for genes and proteins.
       `;
     }
 
@@ -702,7 +714,7 @@
       detailElement.innerHTML = `
         <h2>${escapeHtml(microbe.label)}</h2>
         <p><strong>Focused microorganism</strong> · DOI evidence layer</p>
-        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. Select one DOI to reveal gene, protein, and pathway support.</p>
+        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. Select one DOI to reveal gene and protein support.</p>
       `;
       listElement.innerHTML = references.map(node => `
         <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Reference")}</span></button>
@@ -717,6 +729,7 @@
 
     function renderSupportLayer(microbe, reference) {
       const support = supportForFocus(microbe, reference);
+      const pathwayContext = pathwayContextForFocus(microbe, reference);
       const points = spherePoints(Math.max(1, support.length), .012);
       const core = makeParticle(reference, { x: 0, y: 0, z: 0 }, {
         radius: 92,
@@ -725,23 +738,26 @@
         action: () => renderReferenceLayer(microbe),
       });
       const dots = support.map((node, index) => makeParticle(node, points[index], {
-        radius: node.kind === "pathway" || node.kind === "metabolite" ? 36 : 32,
+        radius: 32,
         color: colors[node.kind] || "#94a3b8",
         action: renderNodeDetail,
       }));
       setScene("support", core, dots, {
         edges: dots.map(dot => ({ node: dot.node, color: dot.color })),
-        caption: `<button type="button" id="back-doi">DOI layer</button><span>Gene, protein, and pathway support</span>`,
+        caption: `<button type="button" id="back-doi">DOI layer</button><span>Gene and protein support</span>`,
       });
       document.getElementById("back-doi").addEventListener("click", () => renderReferenceLayer(microbe));
       detailElement.innerHTML = `
         <h2>${escapeHtml(reference.label)}</h2>
         <p><strong>Focused DOI</strong> · support layer</p>
-        <p>Genes, proteins/enzymes, pathway steps, and products from the DOI, microorganism, and pesticide context are shown inside the sphere.</p>
+        <p>Genes and proteins/enzymes are shown as sphere particles. Pathway/products stay as compact context below.</p>
       `;
-      listElement.innerHTML = support.map(node => `
-        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "")}</span></button>
-      `).join("");
+      listElement.innerHTML = [
+        ...support.map(node => `
+          <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "")}</span></button>
+        `),
+        pathwayContext.length ? `<div class="galaxy-list-item"><strong>Pathway context</strong><span>${escapeHtml(pathwayContext.slice(0, 6).map(node => node.label).join("; "))}</span></div>` : "",
+      ].join("");
       listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
         item.addEventListener("click", () => {
           const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
