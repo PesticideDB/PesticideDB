@@ -40,7 +40,7 @@ PDBP0038,Phosphoesterase,Dichlorvos,Not specified,Whole-cell / Crude,CURATED,Pho
 PDBP0039,Phosphoesterase,Dichlorvos,Not specified,Whole-cell / Crude,CURATED,Phosphatase,mpd,Not available,,2019,10.1016/j.chemosphere.2019.01.058
 PDBP0040,Lignin peroxidases,Isoxaflutole,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),CURATED,Peroxidase,LiP (EC1.11.1.14),Not available,,2000,10.1021/jf000397q
 PDBP0041,Manganese-dependent peroxidases,Isoxaflutole,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),CURATED,Peroxidase,MnP,Not available,,2000,10.1021/jf000397q
-PDBP0042,Laccase,Isoxaflutole,Trametes versicolor,Purified (Activity),CURATED,Peroxidase,Lac (EC1.10.3.2),Not available,,2000,10.1021/jf000397q
+PDBP0042,Laccase,Isoxaflutole,Trametes versicolor,Purified (Activity),CURATED,Oxidoreductase,Lac (EC1.10.3.2),Not available,,2000,10.1021/jf000397q
 PDBP0043,Dicamba monooxygenase,Dicamba,Stenotrophomonas maltophilia DI-6,Structure Only,CURATED,Monooxygenase,dmo,AAV53699,Q5S3I3,2009,10.1016/j.jmb.2009.07.021
 PDBP0044,THF-dependent demethylase,Dicamba,Rhizorhabdus dicambivorans Ndbn-20,Purified (Kinetics),CURATED,Oxidoreductase,dmt06,ON828423,,2022,10.3389/fmicb.2022.978577
 PDBP0045,Dimethoate amidohydrolase,Dimethoate,Sphingomonas sp. DC-6,Purified (Kinetics),CURATED,Hydrolase,dmhA,KC432583,,2016,10.1007/s10529-015-2027-6

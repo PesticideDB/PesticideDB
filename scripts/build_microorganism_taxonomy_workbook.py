@@ -123,6 +123,50 @@ def name_candidates(name: str) -> list[str]:
     return unique
 
 
+def parsed_binomial(name: str) -> tuple[str, str]:
+    cleaned = clean(name)
+    cleaned = re.sub(r"^engineered\s+", "", cleaned, flags=re.IGNORECASE)
+    words = cleaned.split()
+    if not words:
+        return "", ""
+    genus = words[0].strip("()[],:;")
+    species = ""
+    if len(words) >= 2 and words[1].lower() not in {"sp.", "spp.", "species", "strain", "isolate"}:
+        species = words[1].strip("()[],:;")
+    if not re.fullmatch(r"[A-Z][A-Za-z-]+", genus):
+        return "", species
+    return genus, species
+
+
+def taxonomy_is_compatible(query_name: str, taxonomy: dict) -> bool:
+    expected_genus, expected_species = parsed_binomial(query_name)
+    if not expected_genus:
+        return True
+
+    lineage = clean(taxonomy.get("Taxonomy", ""))
+    genus = clean(taxonomy.get("Genus", ""))
+    species = clean(taxonomy.get("Species", ""))
+    matched_name = clean(taxonomy.get("Matched_name", ""))
+
+    if canonical(genus) == canonical(expected_genus):
+        return True
+
+    # Accept species-level synonym/reclassification only when the submitted
+    # species epithet is still present in the NCBI species or matched name.
+    if expected_species:
+        expected = canonical(expected_species)
+        species_tokens = {canonical(part) for part in species.split()}
+        matched_tokens = {canonical(part) for part in matched_name.split()}
+        if expected in species_tokens or expected in matched_tokens:
+            return True
+
+    # Generic "Pseudomonas sp." records should not silently become unrelated
+    # genera just because an arbitrary strain number matched elsewhere.
+    if f"; {expected_genus};" in f"{lineage};":
+        return True
+    return False
+
+
 def entrez_search_taxid(candidate: str) -> str:
     query = f'"{candidate}"[Scientific Name]'
     with Entrez.esearch(db="taxonomy", term=query, retmode="xml", retmax=5) as handle:
@@ -164,7 +208,11 @@ def entrez_fetch_taxonomy(taxid: str) -> dict:
 def lookup_taxonomy(name: str, cache: dict[str, dict]) -> dict:
     key = canonical(name)
     if key in cache:
-        return cache[key]
+        cached = cache[key]
+        if cached.get("Taxonomy_status") == "matched" and not taxonomy_is_compatible(name, cached):
+            del cache[key]
+        else:
+            return cached
 
     if key in AMBIGUOUS_TERMS:
         cache[key] = empty_taxonomy("ambiguous microorganism name")
@@ -177,6 +225,8 @@ def lookup_taxonomy(name: str, cache: dict[str, dict]) -> dict:
             if taxid:
                 taxonomy = entrez_fetch_taxonomy(taxid)
                 time.sleep(0.34)
+                if not taxonomy_is_compatible(candidate, taxonomy):
+                    continue
                 taxonomy["Lookup_name"] = candidate
                 taxonomy["Taxonomy_status"] = "matched"
                 cache[key] = taxonomy

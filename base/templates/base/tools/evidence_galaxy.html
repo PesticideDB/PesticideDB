@@ -1,14 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Evidence Galaxy - PesticideDB{% endblock %}
+{% block title %}Evidence Summary - PesticideDB{% endblock %}
 
 {% block content %}
 <div class="galaxy-page">
   <section class="galaxy-toolbar">
     <div>
-      <p class="galaxy-kicker">Experimental evidence overview</p>
-      <h1>Evidence Galaxy</h1>
+      <p class="galaxy-kicker">Database overview</p>
+      <h1>Evidence Summary</h1>
     </div>
     <form id="galaxy-form" class="galaxy-controls">
       <label for="pesticide-select">Pesticide</label>
@@ -25,6 +25,12 @@
     <div id="galaxy-stage" class="galaxy-stage">
       <div id="galaxy-loading" class="galaxy-loading">Loading evidence sphere...</div>
       <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+      <div class="galaxy-zoom-controls" aria-label="Evidence galaxy zoom controls">
+        <button type="button" id="galaxy-zoom-out" aria-label="Zoom out">-</button>
+        <span id="galaxy-zoom-level">100%</span>
+        <button type="button" id="galaxy-zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="galaxy-zoom-reset" aria-label="Reset zoom">Reset</button>
+      </div>
       <div id="sphere-caption" class="sphere-caption"></div>
     </div>
 
@@ -49,7 +55,7 @@
 
   .galaxy-toolbar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: end;
     gap: 1rem;
     margin-bottom: 1rem;
@@ -72,7 +78,7 @@
   }
 
   .galaxy-controls {
-    display: flex;
+    display: none;
     align-items: center;
     gap: .55rem;
     flex-wrap: wrap;
@@ -146,6 +152,7 @@
     width: 100%;
     height: 100%;
     cursor: grab;
+    touch-action: none;
   }
 
   .sphere-canvas:active {
@@ -155,12 +162,13 @@
   .sphere-caption {
     position: absolute;
     left: 50%;
-    bottom: 1rem;
+    bottom: .28rem;
     z-index: 8;
     display: flex;
     gap: .45rem;
     align-items: center;
     justify-content: center;
+    max-width: calc(100% - 1.25rem);
     padding: .42rem .7rem;
     border: 1px solid rgba(148, 163, 184, .22);
     border-radius: 999px;
@@ -168,6 +176,7 @@
     color: #dbeafe;
     font-size: .78rem;
     font-weight: 800;
+    white-space: nowrap;
     transform: translateX(-50%);
     backdrop-filter: blur(10px);
   }
@@ -180,6 +189,42 @@
     cursor: pointer;
     font: inherit;
     padding: .2rem .48rem;
+  }
+
+  .galaxy-zoom-controls {
+    position: absolute;
+    left: 1rem;
+    top: 1rem;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .36rem;
+    border: 1px solid rgba(148, 163, 184, .22);
+    border-radius: 999px;
+    background: rgba(2, 6, 23, .68);
+    color: #dbeafe;
+    font-size: .75rem;
+    font-weight: 900;
+    backdrop-filter: blur(10px);
+  }
+
+  .galaxy-zoom-controls button {
+    min-width: 1.7rem;
+    height: 1.7rem;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(96, 165, 250, .16);
+    color: #eff6ff;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .galaxy-zoom-controls button:last-child {
+    min-width: auto;
+    padding: 0 .55rem;
+    background: rgba(20, 184, 166, .18);
+    color: #99f6e4;
   }
 
   .galaxy-panel {
@@ -278,6 +323,20 @@
     font-size: .82rem;
   }
 
+  .galaxy-list-note {
+    padding: .35rem .1rem .08rem;
+    color: #bae6fd;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .galaxy-list-item[data-support-id] {
+    border-color: rgba(192, 132, 252, .32);
+    background: rgba(88, 28, 135, .2);
+  }
+
   .research-fortune,
   #research-fortune-card {
     display: none !important;
@@ -320,6 +379,10 @@
     const detailElement = document.getElementById("galaxy-detail");
     const listElement = document.getElementById("galaxy-list");
     const captionElement = document.getElementById("sphere-caption");
+    const zoomLevelElement = document.getElementById("galaxy-zoom-level");
+    const zoomInButton = document.getElementById("galaxy-zoom-in");
+    const zoomOutButton = document.getElementById("galaxy-zoom-out");
+    const zoomResetButton = document.getElementById("galaxy-zoom-reset");
     const form = document.getElementById("galaxy-form");
     const select = document.getElementById("pesticide-select");
     let currentData = { nodes: [], links: [], summary: {} };
@@ -327,16 +390,21 @@
     let particles = [];
     let coreParticle = null;
     let focusEdges = [];
-    let layer = "pesticide";
+    let pesticideCatalog = [];
+    let catalogSummary = {};
+    let selectedPesticideName = select.value;
+    let layer = "pesticide-selector";
     let rotation = { x: -0.18, y: 0.32 };
     let pointer = { x: 0, y: 0, down: false, moved: false };
     let hoverParticle = null;
     let animationFrame = null;
+    let zoomScale = 1;
     const visibleLimit = 12;
     const shellPoints = spherePoints(360, .002);
 
     const colors = {
       pesticide: "#f7c948",
+      noEvidence: "#94a3b8",
       microorganism: "#34d399",
       reference: "#60a5fa",
       gene: "#c084fc",
@@ -390,13 +458,37 @@
     }
 
     function supportForFocus(microbe, reference) {
-      const supportKinds = ["gene", "protein", "enzyme", "pathway", "metabolite"];
+      const supportKinds = ["gene", "protein", "enzyme"];
       const directReference = connectedNodes(reference, supportKinds);
       const directMicrobe = connectedNodes(microbe, supportKinds);
       const pesticide = pesticideNode();
       const pesticideSupport = pesticide ? connectedNodes(pesticide, supportKinds) : [];
       const pooled = uniqueById([...directReference, ...directMicrobe, ...pesticideSupport]);
       return balancedSupport(pooled).slice(0, visibleLimit);
+    }
+
+    function supportPreviewForMicrobe(microbe) {
+      const supportKinds = ["gene", "protein", "enzyme"];
+      const references = connectedNodes(microbe, ["reference"]);
+      const directMicrobe = connectedNodes(microbe, supportKinds);
+      const referenceSupport = references.flatMap(reference => connectedNodes(reference, supportKinds));
+      const pesticide = pesticideNode();
+      const pesticideSupport = pesticide ? connectedNodes(pesticide, supportKinds) : [];
+      return balancedSupport(uniqueById([...directMicrobe, ...referenceSupport, ...pesticideSupport])).slice(0, visibleLimit);
+    }
+
+    function compactSupportForMicrobe(microbe) {
+      const preview = supportPreviewForMicrobe(microbe);
+      const gene = preview.find(node => node.kind === "gene");
+      const protein = preview.find(node => node.kind === "protein" || node.kind === "enzyme");
+      return uniqueById([gene, protein, ...preview].filter(Boolean)).slice(0, 2);
+    }
+
+    function sharedReferenceCount(microbe, supportNode) {
+      const references = connectedNodes(microbe, ["reference"]);
+      return references.filter(reference => (
+        connectedNodes(reference, ["gene", "protein", "enzyme"]).some(node => node.id === supportNode.id)
+      )).length;
     }
 
     function pathwayContextForFocus(microbe, reference) {
@@ -446,7 +538,7 @@
       `).join("");
       storyElement.innerHTML = `
         Start at the <strong>${escapeHtml(summary.pesticide || select.value)}</strong> sphere.
-        Enter microorganisms, then focus on a strain to see DOI evidence, then open DOI support for genes and proteins.
+        Enter microorganisms, then focus on a strain to see DOI evidence plus linked gene and protein support.
       `;
     }
 
@@ -456,6 +548,15 @@
       canvas.width = Math.max(1, Math.floor(rect.width * ratio));
       canvas.height = Math.max(1, Math.floor(rect.height * ratio));
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function setZoom(nextZoom) {
+      zoomScale = clamp(nextZoom, .68, 2.25);
+      zoomLevelElement.textContent = `${Math.round(zoomScale * 100)}%`;
     }
 
     function spherePoints(count, jitter = 0) {
@@ -482,7 +583,32 @@
         label: options.label || node.label,
         kind: options.kind || node.kind,
         action: options.action || null,
+        noLabel: options.noLabel || false,
+        shape: options.shape || "circle",
       };
+    }
+
+    function rectMetrics(particle, projected, isHovered = false) {
+      const scale = projected.scale * (isHovered ? 1.08 : 1);
+      const text = shortLabel(particle.label, 34);
+      const width = clamp(text.length * 7.2 + 28, 110, 250) * scale;
+      const height = 34 * scale;
+      return { width, height, text, scale };
+    }
+
+    function roundedRectPath(x, y, width, height, radius) {
+      const right = x + width;
+      const bottom = y + height;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(right - radius, y);
+      ctx.quadraticCurveTo(right, y, right, y + radius);
+      ctx.lineTo(right, bottom - radius);
+      ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+      ctx.lineTo(x + radius, bottom);
+      ctx.quadraticCurveTo(x, bottom, x, bottom - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
     }
 
     function project(particle) {
@@ -495,8 +621,8 @@
       const y1 = particle.y * cosX - z1 * sinX;
       const z2 = particle.y * sinX + z1 * cosX;
       const rect = canvas.getBoundingClientRect();
-      const sphereRadius = Math.min(rect.width, rect.height) * (layer === "pesticide" ? .28 : .34);
-      const perspective = 1.85 / (2.45 - z2);
+      const sphereRadius = Math.min(rect.width, rect.height) * (layer === "pesticide-selector" ? .33 : .34) * zoomScale;
+      const perspective = 2.08 / (2.58 - z2);
       return {
         x: rect.width / 2 + x1 * sphereRadius * perspective,
         y: rect.height / 2 + y1 * sphereRadius * perspective,
@@ -506,7 +632,12 @@
     }
 
     function drawParticle(particle, projected, isCore = false) {
-      const radius = particle.radius * projected.scale;
+      const isHovered = particle === hoverParticle;
+      if (particle.shape === "rect") {
+        drawRectParticle(particle, projected, isCore, isHovered);
+        return;
+      }
+      const radius = particle.radius * projected.scale * (isHovered && !isCore ? 1.85 : 1);
       const gradient = ctx.createRadialGradient(
         projected.x - radius * .35,
         projected.y - radius * .4,
@@ -518,26 +649,86 @@
       gradient.addColorStop(0, "rgba(255,255,255,.72)");
       gradient.addColorStop(.18, particle.color);
       gradient.addColorStop(1, "rgba(2,6,23,.28)");
-      ctx.globalAlpha = isCore ? 1 : Math.max(.34, Math.min(1, .58 + projected.z * .22));
+      ctx.globalAlpha = isCore ? 1 : Math.max(.2, Math.min(1, .5 + projected.z * .34));
       ctx.fillStyle = gradient;
       ctx.beginPath();
       ctx.arc(projected.x, projected.y, radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.shadowColor = particle.color;
-      ctx.shadowBlur = isCore ? 30 : 16;
+      ctx.shadowBlur = isCore || isHovered ? 30 : 16;
       ctx.strokeStyle = "rgba(255,255,255,.24)";
       ctx.lineWidth = 1.2;
       ctx.stroke();
       ctx.shadowBlur = 0;
 
-      if (radius > 22 || particle === hoverParticle) {
+      if ((!particle.noLabel && radius > 22) || particle === hoverParticle) {
         ctx.globalAlpha = 1;
         ctx.fillStyle = isCore ? "#1f1300" : "#f8fafc";
-        ctx.font = `800 ${Math.max(10, Math.min(20, radius * .22))}px Arial`;
+        ctx.strokeStyle = isCore ? "rgba(255,255,255,.45)" : "rgba(2,6,23,.82)";
+        ctx.lineWidth = isCore ? 2.2 : 3.6;
+        ctx.font = `900 ${Math.max(12, Math.min(24, radius * .25))}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        wrapText(shortLabel(particle.label, isCore ? 28 : 22), projected.x, projected.y, radius * 1.35, Math.max(11, radius * .22));
+        wrapText(shortLabel(particle.label, isCore ? 28 : 24), projected.x, projected.y, radius * 1.55, Math.max(13, radius * .25));
       }
+    }
+
+    function drawRectParticle(particle, projected, isCore = false, isHovered = false) {
+      const metrics = rectMetrics(particle, projected, isHovered);
+      const width = metrics.width;
+      const height = metrics.height;
+      const x = projected.x - width / 2;
+      const y = projected.y - height / 2;
+      const depthAlpha = isCore ? 1 : Math.max(.34, Math.min(1, .62 + projected.z * .24));
+      const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+      gradient.addColorStop(0, "rgba(219,234,254,.96)");
+      gradient.addColorStop(.48, particle.color);
+      gradient.addColorStop(1, "rgba(15,23,42,.72)");
+
+      ctx.save();
+      ctx.globalAlpha = depthAlpha;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = isCore || isHovered ? 24 : 13;
+      ctx.fillStyle = gradient;
+      roundedRectPath(x, y, width, height, Math.min(11, height / 2));
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = isHovered ? "rgba(255,255,255,.72)" : "rgba(191,219,254,.38)";
+      ctx.lineWidth = isHovered ? 1.8 : 1.1;
+      ctx.stroke();
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#eff6ff";
+      ctx.strokeStyle = "rgba(2,6,23,.76)";
+      ctx.lineWidth = 3;
+      ctx.font = `900 ${Math.max(10, Math.min(14, height * .38))}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.strokeText(metrics.text, projected.x, projected.y);
+      ctx.fillText(metrics.text, projected.x, projected.y);
+      ctx.restore();
+    }
+
+    function drawCatalogBoundary() {
+      if (layer !== "pesticide-selector") return;
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const radius = Math.min(rect.width, rect.height) * .39 * zoomScale;
+      ctx.save();
+      ctx.globalAlpha = .44;
+      ctx.strokeStyle = "rgba(226,232,240,.72)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = .18;
+      ctx.strokeStyle = "rgba(255,255,255,.9)";
+      ctx.lineWidth = .8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 1.006, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
     }
 
     function wrapText(text, x, y, maxWidth, lineHeight) {
@@ -555,23 +746,29 @@
       });
       if (line) lines.push(line);
       const start = y - ((lines.length - 1) * lineHeight) / 2;
-      lines.slice(0, 3).forEach((entry, index) => ctx.fillText(entry, x, start + index * lineHeight));
+      lines.slice(0, 3).forEach((entry, index) => {
+        ctx.strokeText(entry, x, start + index * lineHeight);
+        ctx.fillText(entry, x, start + index * lineHeight);
+      });
     }
 
     function drawEdges(projectedCore, projectedParticles) {
       if (!focusEdges.length || !projectedCore) return;
       ctx.save();
       focusEdges.forEach(edge => {
-        const target = projectedParticles.get(edge.node.id);
-        if (!target) return;
-        const pulse = .55 + Math.sin(Date.now() / 420) * .22;
-        ctx.globalAlpha = pulse;
+        const sourceNode = edge.source || coreParticle?.node;
+        const targetNode = edge.target || edge.node;
+        const source = sourceNode ? projectedParticles.get(sourceNode.id) : projectedCore;
+        const target = targetNode ? projectedParticles.get(targetNode.id) : null;
+        if (!source || !target) return;
+        const pulse = (edge.alpha || .55) + Math.sin(Date.now() / 420) * (edge.pulse || .22);
+        ctx.globalAlpha = Math.max(.12, Math.min(.9, pulse));
         ctx.strokeStyle = edge.color;
-        ctx.lineWidth = 2.2;
+        ctx.lineWidth = edge.width || 2.2;
         ctx.shadowColor = edge.color;
-        ctx.shadowBlur = 11;
+        ctx.shadowBlur = edge.glow || 11;
         ctx.beginPath();
-        ctx.moveTo(projectedCore.x, projectedCore.y);
+        ctx.moveTo(source.x, source.y);
         ctx.lineTo(target.x, target.y);
         ctx.stroke();
       });
@@ -581,16 +778,20 @@
     function drawScene() {
       resizeCanvas();
       const rect = canvas.getBoundingClientRect();
+      if (!pointer.down) {
+        rotation.y += layer === "pesticide-selector" ? .001 : .0007;
+        rotation.x += Math.sin(Date.now() / 2400) * .00008;
+      }
       ctx.clearRect(0, 0, rect.width, rect.height);
       ctx.globalAlpha = 1;
 
       const cx = rect.width / 2;
       const cy = rect.height / 2;
-      const haloRadius = Math.min(rect.width, rect.height) * .37;
+      const haloRadius = Math.min(rect.width, rect.height) * .37 * zoomScale;
       const halo = ctx.createRadialGradient(cx, cy, haloRadius * .18, cx, cy, haloRadius * 1.25);
       halo.addColorStop(0, "rgba(96,165,250,.06)");
-      halo.addColorStop(.52, "rgba(96,165,250,.06)");
-      halo.addColorStop(.53, "rgba(148,163,184,.08)");
+      halo.addColorStop(.52, layer === "pesticide-selector" ? "rgba(96,165,250,.035)" : "rgba(96,165,250,.06)");
+      halo.addColorStop(.53, layer === "pesticide-selector" ? "rgba(96,165,250,.032)" : "rgba(148,163,184,.08)");
       halo.addColorStop(1, "rgba(2,6,23,0)");
       ctx.fillStyle = halo;
       ctx.beginPath();
@@ -602,7 +803,7 @@
       const projected = new Map();
       all.forEach(particle => projected.set(particle.node.id, project(particle)));
       const ordered = particles.slice().sort((a, b) => projected.get(a.node.id).z - projected.get(b.node.id).z);
-      if (layer === "pesticide") drawParticleShell(colors.pesticide);
+      drawCatalogBoundary();
       drawEdges(coreParticle ? projected.get(coreParticle.node.id) : null, projected);
       ordered.forEach(particle => drawParticle(particle, projected.get(particle.node.id)));
       if (coreParticle) drawParticle(coreParticle, projected.get(coreParticle.node.id), true);
@@ -638,50 +839,139 @@
       if (!animationFrame) drawScene();
     }
 
-    function renderPesticideSphere() {
+    function ensurePesticideOption(name) {
+      if (!name) return;
+      const existing = Array.from(select.options).some(option => option.value === name);
+      if (!existing) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      }
+      select.value = name;
+      selectedPesticideName = name;
+    }
+
+    function pesticideParticleNode(item, index) {
+      return {
+        id: `pesticide-choice-${index}`,
+        label: item.label,
+        kind: "pesticide",
+        layer: item.has_evidence ? "with evidence" : "no evidence yet",
+        detail: item.has_evidence
+          ? `${item.evidence_records} evidence record${item.evidence_records === 1 ? "" : "s"} | ${item.microorganisms} microorganism${item.microorganisms === 1 ? "" : "s"}`
+          : "No experimental biodegradation evidence currently curated",
+        hasEvidence: item.has_evidence,
+        evidenceRecords: item.evidence_records,
+        microorganisms: item.microorganisms,
+        references: item.references,
+      };
+    }
+
+    function renderPesticideSelector() {
       selectedMicrobe = null;
-      const pesticide = currentData.nodes.find(node => node.kind === "pesticide") || { id: "pesticide", label: currentData.summary?.pesticide || select.value, kind: "pesticide" };
-      setScene("pesticide", makeParticle(pesticide, { x: 0, y: 0, z: 0 }, {
-        radius: Math.min(360, Math.max(265, (canvas.getBoundingClientRect().width || 800) * .34)),
-        color: colors.pesticide,
-        action: renderMicrobeLayer,
-      }), [], {
-        caption: "Click the pesticide sphere to enter microorganisms",
+      const points = spherePoints(Math.max(1, pesticideCatalog.length), .018);
+      const dots = pesticideCatalog.map((item, index) => {
+        const node = pesticideParticleNode(item, index);
+        const sizeBoost = item.has_evidence ? Math.min(7, Math.sqrt(item.evidence_records || 1)) : 0;
+        return makeParticle(node, points[index], {
+          radius: 5.5 + sizeBoost,
+          color: item.has_evidence ? colors.pesticide : colors.noEvidence,
+          label: item.label,
+          noLabel: true,
+          action: pesticideNode => loadSphere(pesticideNode.label, true),
+        });
+      });
+      setScene("pesticide-selector", null, dots, {
+        caption: "Hover pesticide dots to identify them; click a dot to enter evidence",
       });
       detailElement.innerHTML = `
-        <h2>${escapeHtml(currentData.summary?.pesticide || select.value)}</h2>
-        <p><strong>Evidence sphere</strong> · first layer</p>
-        <p>Click the yellow pesticide sphere to move inside and view microorganisms reported for degradation evidence.</p>
+        <h2>Pesticide Dots</h2>
+        <p><strong>Pesticide selector sphere</strong> · first layer</p>
+        <p>Each small dot represents a pesticide. Yellow dots have curated evidence; gray dots are currently listed without experimental evidence.</p>
       `;
-      listElement.innerHTML = `<button type="button" class="galaxy-list-item" id="enter-microbes"><strong>Enter microorganisms</strong><span>${escapeHtml(currentData.summary?.microorganisms || 0)} curated microbe records</span></button>`;
-      document.getElementById("enter-microbes").addEventListener("click", renderMicrobeLayer);
+      summaryElement.innerHTML = `
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.total || 0)}</strong><span>Pesticides</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.with_evidence || 0)}</strong><span>With evidence</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.without_evidence || 0)}</strong><span>No evidence</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(pesticideCatalog.length || 0)}</strong><span>Visible dots</span></div>
+      `;
+      storyElement.innerHTML = `
+        Hover any pesticide dot to make it glow and show its name. Click a dot to load its microorganism evidence layer.
+      `;
+      listElement.innerHTML = pesticideCatalog.slice(0, 18).map(item => `
+        <button type="button" class="galaxy-list-item" data-pesticide="${escapeHtml(item.label)}"><strong>${escapeHtml(item.label)}</strong><span>${item.has_evidence ? `${escapeHtml(item.evidence_records)} records · ${escapeHtml(item.microorganisms)} microbes` : "No experimental evidence curated"}</span></button>
+      `).join("");
+      listElement.querySelectorAll(".galaxy-list-item[data-pesticide]").forEach(item => {
+        item.addEventListener("click", () => loadSphere(item.dataset.pesticide, true));
+      });
     }
 
     function renderMicrobeLayer() {
       const microbeNodes = currentData.nodes.filter(node => node.kind === "microorganism");
       const microbes = microbeNodes.slice(0, visibleLimit);
-      const points = spherePoints(microbes.length, .015);
+      const points = spherePoints(microbes.length, .025);
       const core = makeParticle({ id: "microbe-core", label: "Microorganisms", kind: "microorganism" }, { x: 0, y: 0, z: 0 }, {
-        radius: 92,
+        radius: 82,
         color: colors.microorganism,
-        action: renderPesticideSphere,
+        action: renderPesticideSelector,
       });
       const dots = microbes.map((node, index) => makeParticle(node, points[index], {
-        radius: Math.max(18, Math.min(34, 18 + (node.size || 5) * 1.2)),
+        radius: Math.max(30, Math.min(52, 30 + (node.size || 5) * 1.5)),
         color: colors.microorganism,
         action: renderReferenceLayer,
       }));
-      setScene("microbes", core, dots, {
-        caption: `<button type="button" id="back-pesticide">Pesticide</button><span>Microorganisms inside ${escapeHtml(currentData.summary?.pesticide || select.value)}</span>`,
+      const supportParticles = [];
+      const supportEdges = [];
+      const usedSupportIds = new Set();
+      microbes.forEach((microbe, microbeIndex) => {
+        const nearbySupport = compactSupportForMicrobe(microbe);
+        nearbySupport.forEach((supportNode, supportIndex) => {
+          const edgeKey = `${microbe.id}:${supportNode.id}`;
+          const point = points[microbeIndex] || { x: 0, y: 0, z: 0 };
+          const angle = (microbeIndex * 1.9) + (supportIndex * 2.25);
+          const supportPoint = {
+            x: point.x * .72 + Math.cos(angle) * .16,
+            y: point.y * .72 + Math.sin(angle) * .16,
+            z: point.z * .72 + Math.sin(angle * .7) * .18,
+          };
+          if (!usedSupportIds.has(supportNode.id)) {
+            supportParticles.push(makeParticle(supportNode, supportPoint, {
+              radius: supportNode.kind === "gene" ? 22 : 24,
+              color: colors[supportNode.kind] || colors.protein,
+              label: supportNode.label,
+              action: renderNodeDetail,
+            }));
+            usedSupportIds.add(supportNode.id);
+          }
+          const targetParticle = supportParticles.find(particle => particle.node.id === supportNode.id);
+          if (targetParticle && !supportEdges.some(edge => edge.key === edgeKey)) {
+            supportEdges.push({
+              key: edgeKey,
+              source: microbe,
+              target: supportNode,
+              color: sharedReferenceCount(microbe, supportNode) ? "#93c5fd" : "rgba(147,197,253,.62)",
+              width: 1.05,
+              alpha: .32,
+              pulse: .09,
+              glow: 8,
+            });
+          }
+        });
       });
-      document.getElementById("back-pesticide").addEventListener("click", renderPesticideSphere);
+      setScene("microbes", core, dots, {
+        edges: supportEdges,
+        caption: `<button type="button" id="back-pesticide">Pesticides</button><span>Microbes with gene/protein support inside ${escapeHtml(currentData.summary?.pesticide || select.value)}</span>`,
+      });
+      particles = [...dots, ...supportParticles];
+      document.getElementById("back-pesticide").addEventListener("click", renderPesticideSelector);
       detailElement.innerHTML = `
         <h2>Microorganisms</h2>
         <p><strong>${escapeHtml(currentData.summary?.microorganisms || microbeNodes.length)}</strong> records are linked to ${escapeHtml(currentData.summary?.pesticide || select.value)}.</p>
-        <p>Select a microorganism to focus its DOI evidence. Shiny edges appear only in that focused view.</p>
+        <p>Green nodes are microorganisms. Purple and pink nodes are linked genes and proteins/enzymes. Thin blue edges show DOI-backed evidence connections.</p>
       `;
       listElement.innerHTML = microbes.map(node => `
-        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Microorganism")}</span></button>
+        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Microorganism")} · ${escapeHtml(supportPreviewForMicrobe(node).length)} gene/protein links</span></button>
       `).join("");
       listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
         item.addEventListener("click", () => {
@@ -694,6 +984,7 @@
     function renderReferenceLayer(microbe) {
       selectedMicrobe = microbe;
       const references = connectedNodes(microbe, ["reference"]).slice(0, visibleLimit);
+      const preview = supportPreviewForMicrobe(microbe).slice(0, 8);
       const points = spherePoints(Math.max(1, references.length), .01);
       const core = makeParticle(microbe, { x: 0, y: 0, z: 0 }, {
         radius: 92,
@@ -704,6 +995,7 @@
       const dots = references.map((node, index) => makeParticle(node, points[index], {
         radius: 34,
         color: colors.reference,
+        shape: "rect",
         action: reference => renderSupportLayer(microbe, reference),
       }));
       setScene("references", core, dots, {
@@ -714,15 +1006,28 @@
       detailElement.innerHTML = `
         <h2>${escapeHtml(microbe.label)}</h2>
         <p><strong>Focused microorganism</strong> · DOI evidence layer</p>
-        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. Select one DOI to reveal gene and protein support.</p>
+        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. ${escapeHtml(preview.length)} gene/protein support item${preview.length === 1 ? "" : "s"} are available in the preview below.</p>
       `;
-      listElement.innerHTML = references.map(node => `
-        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Reference")}</span></button>
-      `).join("");
-      listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
+      listElement.innerHTML = [
+        preview.length ? `<div class="galaxy-list-note">Gene/protein preview</div>` : "",
+        ...preview.map(node => `
+          <button type="button" class="galaxy-list-item" data-support-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "support")}</span></button>
+        `),
+        references.length ? `<div class="galaxy-list-note">DOI evidence</div>` : "",
+        ...references.map(node => `
+          <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Reference")} · open focused support</span></button>
+        `),
+      ].join("");
+      listElement.querySelectorAll(".galaxy-list-item[data-node-id]").forEach(item => {
         item.addEventListener("click", () => {
           const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
           if (node) renderSupportLayer(microbe, node);
+        });
+      });
+      listElement.querySelectorAll(".galaxy-list-item[data-support-id]").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.supportId);
+          if (node) renderNodeDetail(node);
         });
       });
     }
@@ -735,6 +1040,7 @@
         radius: 92,
         color: colors.reference,
         label: reference.label,
+        shape: "rect",
         action: () => renderReferenceLayer(microbe),
       });
       const dots = support.map((node, index) => makeParticle(node, points[index], {
@@ -784,13 +1090,29 @@
       }).join("");
     }
 
-    async function loadSphere() {
+    async function loadSphere(pesticideName = select.value, enterMicrobes = false) {
       loadingElement.style.display = "flex";
-      const response = await fetch(`{% url 'evidence_galaxy_data' %}?pesticide=${encodeURIComponent(select.value)}`);
+      ensurePesticideOption(pesticideName);
+      const response = await fetch(`{% url 'evidence_galaxy_data' %}?pesticide=${encodeURIComponent(pesticideName)}`);
       currentData = await response.json();
       loadingElement.style.display = "none";
       renderSummary(currentData.summary || {});
-      renderPesticideSphere();
+      if (enterMicrobes) {
+        renderMicrobeLayer();
+      } else {
+        renderPesticideSelector();
+      }
+    }
+
+    async function loadPesticideCatalog() {
+      loadingElement.style.display = "flex";
+      const response = await fetch(`{% url 'evidence_galaxy_pesticides' %}`);
+      const payload = await response.json();
+      pesticideCatalog = payload.pesticides || [];
+      catalogSummary = payload.summary || {};
+      selectedPesticideName = select.value || pesticideCatalog[0]?.label || "";
+      loadingElement.style.display = "none";
+      renderPesticideSelector();
     }
 
     function canvasPoint(event) {
@@ -804,14 +1126,41 @@
       let bestDistance = Infinity;
       candidates.forEach(particle => {
         const projected = project(particle);
-        const radius = particle.radius * projected.scale;
-        const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
-        if (distance < radius * 1.18 && distance < bestDistance) {
-          best = particle;
-          bestDistance = distance;
+        if (particle.shape === "rect") {
+          const metrics = rectMetrics(particle, projected, false);
+          const halfWidth = metrics.width / 2;
+          const halfHeight = metrics.height / 2;
+          const inside = (
+            point.x >= projected.x - halfWidth &&
+            point.x <= projected.x + halfWidth &&
+            point.y >= projected.y - halfHeight &&
+            point.y <= projected.y + halfHeight
+          );
+          const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
+          if (inside && distance < bestDistance) {
+            best = particle;
+            bestDistance = distance;
+          }
+        } else {
+          const radius = particle.radius * projected.scale;
+          const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
+          if (distance < radius * 1.18 && distance < bestDistance) {
+            best = particle;
+            bestDistance = distance;
+          }
         }
       });
       return best;
+    }
+
+    function backFromEmptySpace() {
+      if (layer === "support" && selectedMicrobe) {
+        renderReferenceLayer(selectedMicrobe);
+      } else if (layer === "references") {
+        renderMicrobeLayer();
+      } else if (layer === "microbes") {
+        renderPesticideSelector();
+      }
     }
 
     canvas.addEventListener("pointerdown", event => {
@@ -838,17 +1187,32 @@
     canvas.addEventListener("pointerup", event => {
       const point = canvasPoint(event);
       const target = pickParticle(point);
-      if (!pointer.moved && target?.action) target.action(target.node);
+      if (!pointer.moved && target?.action) {
+        target.action(target.node);
+      } else if (!pointer.moved && !target) {
+        backFromEmptySpace();
+      }
       pointer.down = false;
     });
+
+    canvas.addEventListener("wheel", event => {
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? -.08 : .08;
+      setZoom(zoomScale + delta);
+    }, { passive: false });
+
+    zoomInButton.addEventListener("click", () => setZoom(zoomScale + .14));
+    zoomOutButton.addEventListener("click", () => setZoom(zoomScale - .14));
+    zoomResetButton.addEventListener("click", () => setZoom(1));
 
     window.addEventListener("resize", resizeCanvas);
     form.addEventListener("submit", event => {
       event.preventDefault();
-      loadSphere();
+      loadSphere(select.value, true);
     });
+    setZoom(1);
     drawScene();
-    loadSphere();
+    loadPesticideCatalog();
   })();
 </script>
 {% endblock %}

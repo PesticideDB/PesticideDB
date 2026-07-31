@@ -822,6 +822,68 @@ def evidence_galaxy(request):
     return render(request, "base/tools/evidence_galaxy.html", context)
 
 
+def evidence_galaxy_pesticides(request):
+    pesticides = {}
+
+    evidence_rows = (
+        Pesticide.objects
+        .exclude(pesticide__isnull=True)
+        .exclude(pesticide="")
+        .values("pesticide")
+        .annotate(
+            evidence_records=Count("id"),
+            microorganisms=Count("microorganism", distinct=True),
+            references=Count("doi", distinct=True),
+        )
+    )
+    for row in evidence_rows:
+        name = clean_pesticide_name(row["pesticide"])
+        if not name:
+            continue
+        key = name.casefold()
+        existing = pesticides.get(key)
+        if existing:
+            existing["evidence_records"] += row["evidence_records"]
+            existing["microorganisms"] += row["microorganisms"]
+            existing["references"] += row["references"]
+            existing["has_evidence"] = True
+        else:
+            pesticides[key] = {
+                "label": name,
+                "has_evidence": True,
+                "evidence_records": row["evidence_records"],
+                "microorganisms": row["microorganisms"],
+                "references": row["references"],
+            }
+
+    no_evidence_rows = (
+        NoEvidencePesticide.objects
+        .exclude(pesticide__isnull=True)
+        .exclude(pesticide="")
+        .values_list("pesticide", flat=True)
+    )
+    for value in no_evidence_rows:
+        name = clean_pesticide_name(value)
+        if not name:
+            continue
+        key = name.casefold()
+        pesticides.setdefault(key, {
+            "label": name,
+            "has_evidence": False,
+            "evidence_records": 0,
+            "microorganisms": 0,
+            "references": 0,
+        })
+
+    items = sorted(pesticides.values(), key=lambda item: item["label"].casefold())
+    summary = {
+        "total": len(items),
+        "with_evidence": sum(1 for item in items if item["has_evidence"]),
+        "without_evidence": sum(1 for item in items if not item["has_evidence"]),
+    }
+    return JsonResponse({"pesticides": items, "summary": summary})
+
+
 def evidence_galaxy_data(request):
     pesticide = request.GET.get("pesticide", "").strip()
     if not pesticide:
@@ -1026,11 +1088,21 @@ def _split_galaxy_terms(value):
     text = re.sub(r"\s+", " ", str(value or "")).strip()
     if not text or text in {"-", "Not linked", "Not specified", "None", "nan"}:
         return []
+    protected_commas = []
+
+    def protect_chemical_comma(match):
+        protected_commas.append(match.group(0))
+        return f"__CHEMICAL_COMMA_{len(protected_commas) - 1}__"
+
+    # Keep numeric chemical locants intact, e.g. 2,4-D and 2,4-dichlorophenol.
+    text = re.sub(r"\b\d+,\d+(?=[A-Za-z-])", protect_chemical_comma, text)
     parts = re.split(r"\s*(?:;|,|\||/|\band\b)\s*", text)
     cleaned = []
     seen = set()
     for part in parts:
         item = part.strip()
+        for index, original in enumerate(protected_commas):
+            item = item.replace(f"__CHEMICAL_COMMA_{index}__", original)
         if not item or item in {"-", "Not linked", "Not specified"}:
             continue
         key = item.casefold()

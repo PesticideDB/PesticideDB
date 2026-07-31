@@ -40,7 +40,7 @@ Dichlorvos,Not specified,Whole-cell / Crude,Phosphatase,Phosphoesterase,,opdA,No
 Dichlorvos,Not specified,Whole-cell / Crude,Phosphatase,Phosphoesterase,,mpd,Not available,2019,10.1016/j.chemosphere.2019.01.058,,,,
 Isoxaflutole ,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),Peroxidase,Lignin peroxidases,,LiP (EC1.11.1.14),Not available,2000,10.1021/jf000397q,,,,
 Isoxaflutole ,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),Peroxidase,Manganese-dependent peroxidases,,MnP,Not available,2000,10.1021/jf000397q,,,,
-Isoxaflutole ,Trametes versicolor,Purified (Activity),Peroxidase,Laccase,,Lac (EC1.10.3.2),Not available,2000,10.1021/jf000397q,,,,
+Isoxaflutole ,Trametes versicolor,Purified (Activity),Oxidoreductase,Laccase,,Lac (EC1.10.3.2),Not available,2000,10.1021/jf000397q,,,,
 Dicamba ,Stenotrophomonas maltophilia DI-6,Structure Only,Monooxygenase,Dicamba monooxygenase,,dmo,AAV53699,2009,10.1016/j.jmb.2009.07.021,,,,
 Dicamba ,Rhizorhabdus dicambivorans Ndbn-20 ,Purified (Kinetics),Oxidoreductase,THF-dependent demethylase,,dmt06,ON828423,2022,10.3389/fmicb.2022.978577,,,,
 Dimethoate,Sphingomonas sp. DC-6,Purified (Kinetics),Hydrolase,Dimethoate amidohydrolase,,dmhA,KC432583,2016,10.1007/s10529-015-2027-6,,,,

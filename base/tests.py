@@ -78,6 +78,35 @@ class PageSmokeTests(TestCase):
         self.assertIn("protein", kinds)
         self.assertGreaterEqual(len(payload["links"]), 4)
 
+    def test_evidence_galaxy_keeps_chemical_commas_in_enzyme_names(self):
+        Pesticide.objects.create(
+            pesticide="2,4-D",
+            microorganism="Alcaligenes eutrophus JMP134",
+            enzyme_name_reported="2,4-D monooxygenase",
+            enzyme="Monooxygenases",
+            publication_year=1987,
+            doi="10.1128/jb.169.7.2950-2955.1987",
+        )
+
+        response = self.client.get(reverse("evidence_galaxy_data"), {"pesticide": "2,4-D"})
+
+        self.assertEqual(response.status_code, 200)
+        labels = {node["label"] for node in response.json()["nodes"]}
+        self.assertIn("2,4-D monooxygenase", labels)
+        self.assertNotIn("2", labels)
+
+    def test_evidence_galaxy_pesticide_selector_includes_no_evidence_items(self):
+        Pesticide.objects.create(pesticide="Carbaryl", microorganism="Pseudomonas sp.")
+        NoEvidencePesticide.objects.create(pesticide="Imaginaryzine")
+
+        response = self.client.get(reverse("evidence_galaxy_pesticides"))
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        by_name = {item["label"]: item for item in payload["pesticides"]}
+        self.assertTrue(by_name["Carbaryl"]["has_evidence"])
+        self.assertFalse(by_name["Imaginaryzine"]["has_evidence"])
+
     def test_supplemental_download_assets_are_available(self):
         for asset_name in ["validated-supplemental-proteins", "discovery-candidates"]:
             response = self.client.get(

@@ -170,6 +170,22 @@ def structure_file_count():
     return sum(1 for _ in structure_dir.glob("*.pdb"))
 
 
+def curated_publication_count():
+    """
+    Count distinct curated publication labels in the biodegradation evidence table.
+    This is the publication-level denominator used by the evidence-profile figures.
+    """
+    return (
+        Pesticide.objects
+        .exclude(reference__isnull=True)
+        .exclude(reference="")
+        .annotate(r=Lower("reference"))
+        .values("r")
+        .distinct()
+        .count()
+    )
+
+
 def reference_count():
     references = set()
 
@@ -231,6 +247,7 @@ def database_summary():
         "release_date": DATABASE_RELEASE_DATE,
         "last_update_date": DATABASE_LAST_UPDATE,
         "structure_count": structure_file_count(),
+        "curated_publication_count": curated_publication_count(),
         "reference_count": reference_count(),
         **pathway_summary(),
         **supplemental_dataset_summary(),
