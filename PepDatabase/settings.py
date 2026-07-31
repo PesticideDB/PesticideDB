@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 from pathlib import Path
 import os
+from urllib.parse import urlparse, unquote
 from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -123,12 +124,39 @@ WSGI_APPLICATION = 'PepDatabase.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
+DATABASE_URL = os.environ.get('DATABASE_URL', '').strip()
+
+
+def database_from_url(database_url):
+    parsed = urlparse(database_url)
+    if parsed.scheme not in {'postgres', 'postgresql'}:
+        raise ImproperlyConfigured(
+            'DATABASE_URL must use the postgres:// or postgresql:// scheme.'
+        )
+    if not parsed.hostname or not parsed.path.strip('/'):
+        raise ImproperlyConfigured(
+            'DATABASE_URL must include a database host and database name.'
+        )
+    return {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(parsed.path.lstrip('/')),
+        'USER': unquote(parsed.username or ''),
+        'PASSWORD': unquote(parsed.password or ''),
+        'HOST': parsed.hostname,
+        'PORT': str(parsed.port or ''),
+        'OPTIONS': {'sslmode': os.environ.get('DATABASE_SSLMODE', 'require')},
+    }
+
+
+if DATABASE_URL:
+    DATABASES = {'default': database_from_url(DATABASE_URL)}
+else:
+    DATABASES = {
+        'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 
 # Password validation
