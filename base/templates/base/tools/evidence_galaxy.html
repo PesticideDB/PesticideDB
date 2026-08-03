@@ -11,13 +11,19 @@
       <h1>Evidence Summary</h1>
     </div>
     <form id="galaxy-form" class="galaxy-controls">
-      <label for="pesticide-select">Pesticide</label>
-      <select id="pesticide-select" name="pesticide">
+      <label for="pesticide-search">Pesticide</label>
+      <input id="pesticide-search" name="pesticide_search" type="search" list="pesticide-options" placeholder="Search pesticide" autocomplete="off" value="{{ selected_pesticide }}">
+      <datalist id="pesticide-options">
+        {% for pesticide in pesticide_names %}
+          <option value="{{ pesticide }}"></option>
+        {% endfor %}
+      </datalist>
+      <select id="pesticide-select" name="pesticide" aria-hidden="true" tabindex="-1">
         {% for pesticide in pesticide_names %}
           <option value="{{ pesticide }}" {% if pesticide == selected_pesticide %}selected{% endif %}>{{ pesticide }}</option>
         {% endfor %}
       </select>
-      <button type="submit">Load</button>
+      <button type="submit">Open</button>
     </form>
   </section>
 
@@ -48,14 +54,15 @@
 
 <style>
   .galaxy-page {
-    max-width: 1480px;
+    width: min(1900px, calc(100vw - 2.5rem));
+    max-width: none;
     margin: 0 auto;
-    padding: 1.25rem 1rem 2.4rem;
+    padding: 1.25rem 0 2.4rem;
   }
 
   .galaxy-toolbar {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: end;
     gap: 1rem;
     margin-bottom: 1rem;
@@ -78,10 +85,11 @@
   }
 
   .galaxy-controls {
-    display: none;
+    display: flex;
     align-items: center;
     gap: .55rem;
     flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .galaxy-controls label {
@@ -90,13 +98,17 @@
     font-weight: 800;
   }
 
-  .galaxy-controls select {
-    width: min(36rem, 58vw);
+  .galaxy-controls input {
+    width: min(28rem, 38vw);
     padding: .52rem .64rem;
     border: 1px solid #cbd5e1;
     border-radius: 7px;
     background: white;
     font-weight: 700;
+  }
+
+  .galaxy-controls select {
+    display: none;
   }
 
   .galaxy-controls button {
@@ -111,13 +123,13 @@
 
   .galaxy-shell {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) 340px;
-    height: clamp(620px, calc(100vh - 180px), 760px);
-    min-height: 620px;
-    border: 1px solid #111827;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    height: clamp(760px, calc(100vh - 160px), 980px);
+    min-height: 760px;
+    border: 1px solid #d7e0ea;
     border-radius: 8px;
     overflow: hidden;
-    background: #020617;
+    background: #ffffff;
     box-shadow: 0 22px 52px rgba(15, 23, 42, .2);
   }
 
@@ -127,10 +139,10 @@
     height: 100%;
     overflow: hidden;
     background:
-      radial-gradient(circle at 50% 45%, rgba(15, 23, 42, .1), transparent 0),
-      radial-gradient(circle at 22% 18%, rgba(96, 165, 250, .18), transparent 34%),
-      radial-gradient(circle at 75% 75%, rgba(251, 146, 60, .12), transparent 28%),
-      linear-gradient(145deg, #020617 0%, #0b1224 54%, #120820 100%);
+      radial-gradient(circle at 50% 48%, rgba(59, 130, 246, .12), transparent 38%),
+      radial-gradient(circle at 24% 16%, rgba(20, 184, 166, .13), transparent 34%),
+      radial-gradient(circle at 78% 78%, rgba(251, 191, 36, .12), transparent 30%),
+      linear-gradient(145deg, #ffffff 0%, #f8fbff 52%, #f5f8fc 100%);
   }
 
   .galaxy-loading {
@@ -140,9 +152,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #dbeafe;
+    color: #0f172a;
     font-weight: 900;
-    background: rgba(2, 6, 23, .7);
+    background: rgba(255, 255, 255, .86);
   }
 
   .sphere-canvas {
@@ -170,10 +182,10 @@
     justify-content: center;
     max-width: calc(100% - 1.25rem);
     padding: .42rem .7rem;
-    border: 1px solid rgba(148, 163, 184, .22);
+    border: 1px solid rgba(148, 163, 184, .34);
     border-radius: 999px;
-    background: rgba(2, 6, 23, .76);
-    color: #dbeafe;
+    background: rgba(255, 255, 255, .9);
+    color: #1f2937;
     font-size: .78rem;
     font-weight: 800;
     white-space: nowrap;
@@ -184,8 +196,8 @@
   .sphere-caption button {
     border: 0;
     border-radius: 999px;
-    background: rgba(20, 184, 166, .18);
-    color: #99f6e4;
+    background: rgba(20, 184, 166, .14);
+    color: #0f766e;
     cursor: pointer;
     font: inherit;
     padding: .2rem .48rem;
@@ -193,38 +205,39 @@
 
   .galaxy-zoom-controls {
     position: absolute;
-    left: 1rem;
-    top: 1rem;
+    left: 1.15rem;
+    top: 1.15rem;
     z-index: 9;
     display: flex;
     align-items: center;
-    gap: .35rem;
-    padding: .36rem;
-    border: 1px solid rgba(148, 163, 184, .22);
+    gap: .45rem;
+    padding: .5rem;
+    border: 1px solid rgba(71, 85, 105, .22);
     border-radius: 999px;
-    background: rgba(2, 6, 23, .68);
-    color: #dbeafe;
-    font-size: .75rem;
+    background: rgba(255, 255, 255, .94);
+    color: #0f172a;
+    font-size: .86rem;
     font-weight: 900;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
     backdrop-filter: blur(10px);
   }
 
   .galaxy-zoom-controls button {
-    min-width: 1.7rem;
-    height: 1.7rem;
+    min-width: 2.05rem;
+    height: 2.05rem;
     border: 0;
     border-radius: 999px;
-    background: rgba(96, 165, 250, .16);
-    color: #eff6ff;
+    background: #e0f2fe;
+    color: #1e3a8a;
     cursor: pointer;
     font: inherit;
   }
 
   .galaxy-zoom-controls button:last-child {
     min-width: auto;
-    padding: 0 .55rem;
-    background: rgba(20, 184, 166, .18);
-    color: #99f6e4;
+    padding: 0 .7rem;
+    background: #ccfbf1;
+    color: #0f766e;
   }
 
   .galaxy-panel {
@@ -232,9 +245,9 @@
     flex-direction: column;
     gap: .8rem;
     padding: 1rem;
-    background: rgba(15, 23, 42, .96);
-    border-left: 1px solid rgba(148, 163, 184, .22);
-    color: #e5e7eb;
+    background: #ffffff;
+    border-left: 1px solid #dbe3ee;
+    color: #111827;
     overflow-y: auto;
   }
 
@@ -254,53 +267,55 @@
 
   .galaxy-stat {
     padding: .55rem;
-    background: rgba(30, 41, 59, .72);
+    background: #f8fafc;
   }
 
   .galaxy-stat strong {
     display: block;
-    color: #fff;
+    color: #0f172a;
     font-size: 1.24rem;
   }
 
   .galaxy-stat span,
   .galaxy-list-item span {
-    color: #94a3b8;
+    color: #64748b;
     font-size: .75rem;
   }
 
   .galaxy-story {
     padding: .72rem;
-    background: rgba(13, 148, 136, .12);
-    color: #d1fae5;
+    border-color: #99f6e4;
+    background: #ecfdf5;
+    color: #134e4a;
     font-size: .84rem;
     line-height: 1.42;
   }
 
   .galaxy-story strong {
-    color: white;
+    color: #0f766e;
   }
 
   .galaxy-detail {
     min-height: 160px;
     padding: .85rem;
-    background: rgba(2, 6, 23, .54);
+    background: #ffffff;
+    border-color: #cbd5e1;
   }
 
   .galaxy-detail h2 {
     margin: 0 0 .45rem;
-    color: #f8fafc;
+    color: #0f172a;
     font-size: 1.05rem;
   }
 
   .galaxy-detail p {
     margin: 0 0 .44rem;
-    color: #cbd5e1;
+    color: #334155;
     font-size: .86rem;
   }
 
   .galaxy-detail a {
-    color: #93c5fd;
+    color: #0369a1;
     font-weight: 800;
   }
 
@@ -312,8 +327,8 @@
   .galaxy-list-item {
     width: 100%;
     padding: .5rem .58rem;
-    background: rgba(15, 23, 42, .58);
-    color: #f8fafc;
+    background: #f8fafc;
+    color: #111827;
     cursor: pointer;
     text-align: left;
   }
@@ -325,7 +340,7 @@
 
   .galaxy-list-note {
     padding: .35rem .1rem .08rem;
-    color: #bae6fd;
+    color: #0369a1;
     font-size: .72rem;
     font-weight: 900;
     letter-spacing: .06em;
@@ -333,8 +348,8 @@
   }
 
   .galaxy-list-item[data-support-id] {
-    border-color: rgba(192, 132, 252, .32);
-    background: rgba(88, 28, 135, .2);
+    border-color: #d8b4fe;
+    background: #faf5ff;
   }
 
   .research-fortune,
@@ -343,12 +358,18 @@
   }
 
   @media (max-width: 920px) {
+    .galaxy-page {
+      width: min(100% - 1rem, 100%);
+      padding-inline: .5rem;
+    }
+
     .galaxy-toolbar {
       align-items: stretch;
       flex-direction: column;
     }
 
-    .galaxy-controls select {
+    .galaxy-controls,
+    .galaxy-controls input {
       width: 100%;
     }
 
@@ -358,13 +379,13 @@
     }
 
     .galaxy-stage {
-      height: 500px;
-      min-height: 500px;
+      height: 560px;
+      min-height: 560px;
     }
 
     .galaxy-panel {
       border-left: 0;
-      border-top: 1px solid rgba(148, 163, 184, .22);
+      border-top: 1px solid #dbe3ee;
     }
   }
 </style>
@@ -385,6 +406,8 @@
     const zoomResetButton = document.getElementById("galaxy-zoom-reset");
     const form = document.getElementById("galaxy-form");
     const select = document.getElementById("pesticide-select");
+    const searchInput = document.getElementById("pesticide-search");
+    const pesticideOptions = document.getElementById("pesticide-options");
     let currentData = { nodes: [], links: [], summary: {} };
     let selectedMicrobe = null;
     let particles = [];
@@ -555,7 +578,7 @@
     }
 
     function setZoom(nextZoom) {
-      zoomScale = clamp(nextZoom, .68, 2.25);
+      zoomScale = clamp(nextZoom, .45, 3.6);
       zoomLevelElement.textContent = `${Math.round(zoomScale * 100)}%`;
     }
 
@@ -646,9 +669,9 @@
         projected.y,
         radius
       );
-      gradient.addColorStop(0, "rgba(255,255,255,.72)");
+      gradient.addColorStop(0, "rgba(255,255,255,.96)");
       gradient.addColorStop(.18, particle.color);
-      gradient.addColorStop(1, "rgba(2,6,23,.28)");
+      gradient.addColorStop(1, "rgba(71,85,105,.22)");
       ctx.globalAlpha = isCore ? 1 : Math.max(.2, Math.min(1, .5 + projected.z * .34));
       ctx.fillStyle = gradient;
       ctx.beginPath();
@@ -656,16 +679,16 @@
       ctx.fill();
       ctx.shadowColor = particle.color;
       ctx.shadowBlur = isCore || isHovered ? 30 : 16;
-      ctx.strokeStyle = "rgba(255,255,255,.24)";
+      ctx.strokeStyle = "rgba(15,23,42,.22)";
       ctx.lineWidth = 1.2;
       ctx.stroke();
       ctx.shadowBlur = 0;
 
       if ((!particle.noLabel && radius > 22) || particle === hoverParticle) {
         ctx.globalAlpha = 1;
-        ctx.fillStyle = isCore ? "#1f1300" : "#f8fafc";
-        ctx.strokeStyle = isCore ? "rgba(255,255,255,.45)" : "rgba(2,6,23,.82)";
-        ctx.lineWidth = isCore ? 2.2 : 3.6;
+        ctx.fillStyle = isCore ? "#1f1300" : "#111827";
+        ctx.strokeStyle = "rgba(255,255,255,.9)";
+        ctx.lineWidth = isCore ? 2.4 : 4;
         ctx.font = `900 ${Math.max(12, Math.min(24, radius * .25))}px Arial`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -681,9 +704,9 @@
       const y = projected.y - height / 2;
       const depthAlpha = isCore ? 1 : Math.max(.34, Math.min(1, .62 + projected.z * .24));
       const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
-      gradient.addColorStop(0, "rgba(219,234,254,.96)");
+      gradient.addColorStop(0, "rgba(255,255,255,.98)");
       gradient.addColorStop(.48, particle.color);
-      gradient.addColorStop(1, "rgba(15,23,42,.72)");
+      gradient.addColorStop(1, "rgba(219,234,254,.92)");
 
       ctx.save();
       ctx.globalAlpha = depthAlpha;
@@ -693,14 +716,14 @@
       roundedRectPath(x, y, width, height, Math.min(11, height / 2));
       ctx.fill();
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = isHovered ? "rgba(255,255,255,.72)" : "rgba(191,219,254,.38)";
+      ctx.strokeStyle = isHovered ? "rgba(15,23,42,.42)" : "rgba(71,85,105,.2)";
       ctx.lineWidth = isHovered ? 1.8 : 1.1;
       ctx.stroke();
 
       ctx.globalAlpha = 1;
-      ctx.fillStyle = "#eff6ff";
-      ctx.strokeStyle = "rgba(2,6,23,.76)";
-      ctx.lineWidth = 3;
+      ctx.fillStyle = "#0f172a";
+      ctx.strokeStyle = "rgba(255,255,255,.9)";
+      ctx.lineWidth = 3.4;
       ctx.font = `900 ${Math.max(10, Math.min(14, height * .38))}px Arial`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
@@ -717,13 +740,13 @@
       const radius = Math.min(rect.width, rect.height) * .39 * zoomScale;
       ctx.save();
       ctx.globalAlpha = .44;
-      ctx.strokeStyle = "rgba(226,232,240,.72)";
+      ctx.strokeStyle = "rgba(71,85,105,.36)";
       ctx.lineWidth = 1.5;
       ctx.beginPath();
       ctx.arc(cx, cy, radius, 0, Math.PI * 2);
       ctx.stroke();
       ctx.globalAlpha = .18;
-      ctx.strokeStyle = "rgba(255,255,255,.9)";
+      ctx.strokeStyle = "rgba(15,23,42,.18)";
       ctx.lineWidth = .8;
       ctx.beginPath();
       ctx.arc(cx, cy, radius * 1.006, 0, Math.PI * 2);
@@ -789,10 +812,10 @@
       const cy = rect.height / 2;
       const haloRadius = Math.min(rect.width, rect.height) * .37 * zoomScale;
       const halo = ctx.createRadialGradient(cx, cy, haloRadius * .18, cx, cy, haloRadius * 1.25);
-      halo.addColorStop(0, "rgba(96,165,250,.06)");
-      halo.addColorStop(.52, layer === "pesticide-selector" ? "rgba(96,165,250,.035)" : "rgba(96,165,250,.06)");
-      halo.addColorStop(.53, layer === "pesticide-selector" ? "rgba(96,165,250,.032)" : "rgba(148,163,184,.08)");
-      halo.addColorStop(1, "rgba(2,6,23,0)");
+      halo.addColorStop(0, "rgba(20,184,166,.13)");
+      halo.addColorStop(.52, layer === "pesticide-selector" ? "rgba(59,130,246,.075)" : "rgba(59,130,246,.1)");
+      halo.addColorStop(.53, layer === "pesticide-selector" ? "rgba(148,163,184,.08)" : "rgba(148,163,184,.12)");
+      halo.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = halo;
       ctx.beginPath();
       ctx.arc(cx, cy, haloRadius * 1.35, 0, Math.PI * 2);
@@ -849,6 +872,7 @@
         select.appendChild(option);
       }
       select.value = name;
+      searchInput.value = name;
       selectedPesticideName = name;
     }
 
@@ -1110,6 +1134,7 @@
       const payload = await response.json();
       pesticideCatalog = payload.pesticides || [];
       catalogSummary = payload.summary || {};
+      pesticideOptions.innerHTML = pesticideCatalog.map(item => `<option value="${escapeHtml(item.label)}"></option>`).join("");
       selectedPesticideName = select.value || pesticideCatalog[0]?.label || "";
       loadingElement.style.display = "none";
       renderPesticideSelector();
@@ -1201,14 +1226,15 @@
       setZoom(zoomScale + delta);
     }, { passive: false });
 
-    zoomInButton.addEventListener("click", () => setZoom(zoomScale + .14));
-    zoomOutButton.addEventListener("click", () => setZoom(zoomScale - .14));
+    zoomInButton.addEventListener("click", () => setZoom(zoomScale + .24));
+    zoomOutButton.addEventListener("click", () => setZoom(zoomScale - .24));
     zoomResetButton.addEventListener("click", () => setZoom(1));
 
     window.addEventListener("resize", resizeCanvas);
     form.addEventListener("submit", event => {
       event.preventDefault();
-      loadSphere(select.value, true);
+      const requested = searchInput.value.trim();
+      if (requested) loadSphere(requested, true);
     });
     setZoom(1);
     drawScene();

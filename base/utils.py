@@ -15,7 +15,7 @@ from base.models import (
 )
 
 
-DATABASE_VERSION = "1.1"
+DATABASE_VERSION = "1.0"
 DATABASE_RELEASE_DATE = "July 21, 2026"
 DATABASE_LAST_UPDATE = "July 21, 2026"
 
@@ -132,18 +132,19 @@ def pesticide_counts():
         .values_list("p", flat=True)
     )
 
-    no_evidence = set(
+    no_evidence_raw = set(
         NoEvidencePesticide.objects
         .exclude(pesticide="")
         .exclude(pesticide__isnull=True)
         .annotate(p=Lower("pesticide"))
         .values_list("p", flat=True)
     )
+    no_evidence = no_evidence_raw - with_evidence
 
     return {
         "with_evidence": len(with_evidence),
         "no_evidence": len(no_evidence),
-        "total": len(with_evidence | no_evidence),
+        "total": len(with_evidence | no_evidence_raw),
     }
 
 

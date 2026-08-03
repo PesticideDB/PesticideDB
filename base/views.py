@@ -43,6 +43,42 @@ from base.utils import (
     pesticide_counts,
 )
 
+
+EVIDENCE_TYPE_CATEGORIES = [
+    "Purified (Kinetics)",
+    "Purified (Activity)",
+    "Purified (Product ID)",
+    "Recombinant (Activity)",
+    "Genetic / Expression",
+    "Whole-cell / Crude",
+    "Gene Only",
+    "Structure Only",
+]
+
+
+def categorize_protein_evidence_type(value):
+    text = re.sub(r"\s+", " ", str(value or "")).strip()
+    lower = text.casefold()
+    if not text:
+        return ""
+    if "structure only" in lower:
+        return "Structure Only"
+    if "kinetic" in lower or "kinetics" in lower:
+        return "Purified (Kinetics)"
+    if "product id" in lower or "product identification" in lower:
+        return "Purified (Product ID)"
+    if "recombinant" in lower:
+        return "Recombinant (Activity)"
+    if "knockout" in lower or "expression" in lower or "genetic evidence" in lower or "experimental/genetic" in lower:
+        return "Genetic / Expression"
+    if lower == "gene only" or lower.startswith("gene only"):
+        return "Gene Only"
+    if "purified" in lower or "enzymatic evidence" in lower or "enzyme cleaved" in lower or "enzyme assay" in lower or "c-p lyase" in lower:
+        return "Purified (Activity)"
+    if "whole-cell" in lower or "whole cell" in lower or "crude" in lower or "experimental evidence" in lower or "experimental and enzymatic" in lower:
+        return "Whole-cell / Crude"
+    return "Whole-cell / Crude"
+
 def home(request):
     counts = pesticide_counts()
     summary = database_summary()
@@ -80,7 +116,15 @@ def contact(request):
 
 
 def help(request):
-    return render(request, "base/help.html", database_summary())
+    counts = pesticide_counts()
+    context = {
+        "total_pesticides": counts["total"],
+        "pesticides_with_evidence": counts["with_evidence"],
+        "pesticides_no_evidence": counts["no_evidence"],
+        "microorganisms_count": microorganism_count(),
+        **database_summary(),
+    }
+    return render(request, "base/help.html", context)
 
 
 def citation_download(request):
@@ -149,8 +193,20 @@ def download_pesticides_csv(request):
 
 def download_no_evidence_csv(request):
     fields = ["pesticide", "evidence_of_biodegradation"]
+    evidenced = {
+        name.casefold()
+        for name in Pesticide.objects
+        .exclude(pesticide="")
+        .exclude(pesticide__isnull=True)
+        .values_list("pesticide", flat=True)
+    }
+    records = [
+        row
+        for row in NoEvidencePesticide.objects.all().order_by("pesticide")
+        if (row.pesticide or "").strip().casefold() not in evidenced
+    ]
     return queryset_csv_response(
-        NoEvidencePesticide.objects.all().order_by("pesticide"),
+        records,
         fields,
         "pesticidedb_no_evidence_pesticides.csv",
     )
@@ -393,7 +449,11 @@ def proteins(request):
         qs = qs.filter(enzyme_class=selected_enzyme_class)
 
     if selected_evidence_type:
-        qs = qs.filter(evidence_type=selected_evidence_type)
+        matching_evidence_types = [
+            value for value in base_qs.values_list("evidence_type", flat=True).distinct()
+            if categorize_protein_evidence_type(value) == selected_evidence_type
+        ]
+        qs = qs.filter(evidence_type__in=matching_evidence_types)
 
     if selected_collection_category:
         qs = qs.filter(collection_category=selected_collection_category)
@@ -430,6 +490,7 @@ def proteins(request):
             display_id
             and (settings.MEDIA_ROOT / "protein_structures" / "pdb" / f"{display_id}.pdb").exists()
         )
+        protein.evidence_type_category = categorize_protein_evidence_type(protein.evidence_type)
 
     proteins_list = (
         qs.values_list("reported_protein_name", flat=True)
@@ -465,13 +526,19 @@ def proteins(request):
         .order_by("enzyme_class")
     )
 
-    evidence_type_list = (
+    evidence_values = (
         qs.values_list("evidence_type", flat=True)
         .exclude(evidence_type__isnull=True)
         .exclude(evidence_type="")
         .distinct()
-        .order_by("evidence_type")
     )
+    available_evidence_categories = {
+        categorize_protein_evidence_type(value) for value in evidence_values
+    }
+    evidence_type_list = [
+        category for category in EVIDENCE_TYPE_CATEGORIES
+        if category in available_evidence_categories
+    ]
 
     collection_category_list = (
         qs.values_list("collection_category", flat=True)
@@ -2115,6 +2182,30 @@ def _pathway_display_substrate(step, selected_pesticide):
     return substrate
 
 
+PATHWAY_DOI_RE = re.compile(r"\b(10\.\d{4,9}/[-._;()/:A-Z0-9]+)", re.IGNORECASE)
+
+
+def _pathway_reference_context(*values):
+    fallback = ""
+    for value in values:
+        text = str(value or "").strip()
+        if not text:
+            continue
+        if not fallback:
+            fallback = text
+        match = PATHWAY_DOI_RE.search(text)
+        if match:
+            doi = match.group(1).rstrip(".,;")
+            return {
+                "text": doi,
+                "url": f"https://doi.org/{doi}",
+            }
+    return {
+        "text": fallback,
+        "url": "",
+    }
+
+
 def request_path(route_name, *args):
     from django.urls import reverse
 
@@ -2184,6 +2275,17 @@ def pathwayanalysis(request):
         for step in pathway_steps:
             step.display_reaction_label = _concise_pathway_reaction_label(step, detailed=True)
             step.display_substrate = _pathway_display_substrate(step, selected_pesticide)
+            step.display_reference = _pathway_reference_context(
+                step.doi,
+                step.pathway.doi,
+                step.pathway.reference,
+            )
+        evidence_records = list(evidence_records)
+        for record in evidence_records:
+            record.display_reference = _pathway_reference_context(
+                record.doi,
+                record.reference,
+            )
         drawable_step_count = sum(1 for step in pathway_steps if not _is_unresolved_pathway_step(step))
         pathway_status = _pathway_confidence_status(pathway_steps, drawable_step_count)
         has_unresolved_only_graph = bool(graph_elements) and not pathway_steps

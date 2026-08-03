@@ -15,7 +15,7 @@
             <img src="{% static 'images/background01.jpeg' %}" class="d-block w-100" alt="Paper Describing PesticideDB">
             <div class="carousel-caption">
                 <h3>PesticideDB Web Application</h3>
-                <p>A curated database of microorganisms, genes, enzymes, proteins, and pathways linked to pesticide biodegradation.</p>
+                <p>PesticideDB: a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways.</p>
             </div>
         </div>
         <!-- Slide 2 -->
@@ -31,7 +31,7 @@
             <img src="{% static 'images/background03.jpeg' %}" class="d-block w-100" alt="Database Statistics">
             <div class="carousel-caption">
                 <h3>Database Statistics</h3>
-                <p>v{{ database_version }} released {{ release_date }}: {{ microorganisms_count }} microorganisms, {{ proteins_count }} proteins, and {{ structure_count }} structures.</p>
+                <p>v{{ database_version }}: {{ microorganisms_count }} microorganisms, {{ proteins_count }} proteins, and {{ structure_count }} structures.</p>
             </div>
         </div>
     </div>
@@ -49,7 +49,7 @@
     <div class="container">
         <p class="h2 text-center mb-4">About PesticideDB</p>
         <div class="home-about-copy">
-            <p>The Pesticide Biodegradation Database (PesticideDB) is a curated online platform related to the microbial biodegradation of pesticides. It centralizes pesticide degradation data to support sustainable agriculture, environmental health, and discovery of microbial genes, enzymes, proteins, and degradation pathways.</p>
+            <p>PesticideDB is a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways. It centralizes pesticide degradation data to support sustainable agriculture, environmental health, and discovery of microbial genes, enzymes, proteins, and degradation routes.</p>
             <p>PesticideDB organizes pesticide information into two complementary categories: pesticides with experimentally reported microbial degradation evidence and pesticides for which no validated microbial degradation evidence was identified during curation.</p>
             <p><strong>Protein reference tiers:</strong> the Protein section contains {{ curated_protein_count }} curated proteins and {{ supplemented_protein_count }} unique supplemented proteins supported by purified or recombinant protein evidence. The default annotation reference uses validated protein records only.</p>
         </div>
@@ -94,10 +94,6 @@
             <div class="home-metric-card">
                 <span>Database version</span>
                 <strong class="home-metric-date">v{{ database_version }}</strong>
-            </div>
-            <div class="home-metric-card">
-                <span>Last update</span>
-                <strong class="home-metric-date">{{ last_update_date }}</strong>
             </div>
         </div>
     </div>

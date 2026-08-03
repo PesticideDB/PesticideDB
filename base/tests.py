@@ -21,6 +21,7 @@ from .models import (
     ProteinRecord,
     SiteVisitCounter,
 )
+from .views import _pathway_reference_context
 from .utils import microorganism_count, pesticide_counts
 
 
@@ -35,7 +36,7 @@ class StatisticsTests(TestCase):
         counts = pesticide_counts()
 
         self.assertEqual(counts["with_evidence"], 2)
-        self.assertEqual(counts["no_evidence"], 2)
+        self.assertEqual(counts["no_evidence"], 1)
         self.assertEqual(counts["total"], 3)
         self.assertEqual(microorganism_count(), 2)
 
@@ -106,6 +107,12 @@ class PageSmokeTests(TestCase):
         by_name = {item["label"]: item for item in payload["pesticides"]}
         self.assertTrue(by_name["Carbaryl"]["has_evidence"])
         self.assertFalse(by_name["Imaginaryzine"]["has_evidence"])
+
+    def test_reference_text_containing_doi_links_to_doi_resolver(self):
+        reference = _pathway_reference_context("", "10.1128/jb.161.1.85-90.1985")
+
+        self.assertEqual(reference["url"], "https://doi.org/10.1128/jb.161.1.85-90.1985")
+        self.assertEqual(reference["text"], "10.1128/jb.161.1.85-90.1985")
 
     def test_supplemental_download_assets_are_available(self):
         for asset_name in ["validated-supplemental-proteins", "discovery-candidates"]:

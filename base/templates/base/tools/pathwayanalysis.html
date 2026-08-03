@@ -102,12 +102,12 @@
                 <td>{{ step.get_evidence_type_display }}</td>
                 <td>-</td>
                 <td>
-                  {% if step.doi %}
-                    <a href="https://doi.org/{{ step.doi }}" target="_blank" rel="noopener">{{ step.doi }}</a>
-                  {% elif step.pathway.doi %}
-                    <a href="https://doi.org/{{ step.pathway.doi }}" target="_blank" rel="noopener">{{ step.pathway.doi }}</a>
+                  {% if step.display_reference.url %}
+                    <a href="{{ step.display_reference.url }}" target="_blank" rel="noopener">{{ step.display_reference.text }}</a>
+                  {% elif step.display_reference.text %}
+                    {{ step.display_reference.text|truncatechars:90 }}
                   {% else %}
-                    {{ step.pathway.reference|default:"-"|truncatechars:90 }}
+                    -
                   {% endif %}
                 </td>
               </tr>
@@ -127,10 +127,12 @@
                 <td>{{ record.evidence_level|default:"-" }}</td>
                 <td>{{ record.publication_year|default:"-" }}</td>
                 <td>
-                  {% if record.doi %}
-                    <a href="https://doi.org/{{ record.doi }}" target="_blank" rel="noopener">{{ record.doi }}</a>
+                  {% if record.display_reference.url %}
+                    <a href="{{ record.display_reference.url }}" target="_blank" rel="noopener">{{ record.display_reference.text }}</a>
+                  {% elif record.display_reference.text %}
+                    {{ record.display_reference.text|truncatechars:90 }}
                   {% else %}
-                    {{ record.reference|default:"-"|truncatechars:90 }}
+                    -
                   {% endif %}
                 </td>
               </tr>
@@ -174,7 +176,8 @@
 {% endblock %}
 
 {% block extra_head %}
-<script src="https://unpkg.com/cytoscape@3.30.4/dist/cytoscape.min.js"></script>
+{% load static %}
+<script src="{% static 'base/vendor/cytoscape.min.js' %}?v=3.30.4"></script>
 <style>
   .pathway-cytoscape {
     width: 100%;
@@ -529,11 +532,12 @@
       return;
     }
 
-    const minNodeWidth = 106;
-    const comfortableNodeWidth = 150;
-    const maxNodeWidth = 250;
-    const minNodeHeight = 42;
-    const lineHeight = 15;
+    const minNodeWidth = 132;
+    const comfortableNodeWidth = 178;
+    const maxNodeWidth = 246;
+    const minNodeHeight = 52;
+    const maxNodeHeight = 88;
+    const lineHeight = 17;
 
     function clamp(value, min, max) {
       return Math.max(min, Math.min(max, value));
@@ -606,22 +610,22 @@
         .split(/\s+/)
         .reduce((longest, token) => Math.max(longest, token.length), 0);
       const initialWidth = clamp(
-        Math.max(7.2 * longestToken + 40, normalized.length > 34 ? 220 : minNodeWidth),
+        Math.max(7.1 * longestToken + 42, normalized.length > 34 ? 206 : minNodeWidth),
         minNodeWidth,
         maxNodeWidth
       );
-      const maxChars = clamp(Math.floor((initialWidth - 32) / 6.2), 12, 30);
+      const maxChars = clamp(Math.floor((initialWidth - 36) / 6.6), 11, 27);
       const displayLabel = wrapPathwayLabel(normalized, maxChars);
       const longestLine = displayLabel
         .split("\n")
         .reduce((longest, line) => Math.max(longest, line.length), 0);
       const width = clamp(
-        Math.max(7.2 * longestLine + 44, normalized.length > 26 ? comfortableNodeWidth : minNodeWidth),
+        Math.max(7.7 * longestLine + 46, normalized.length > 26 ? comfortableNodeWidth : minNodeWidth),
         minNodeWidth,
         maxNodeWidth
       );
       const lineCount = Math.max(1, displayLabel.split("\n").length);
-      const height = clamp(22 + lineCount * lineHeight, minNodeHeight, 86);
+      const height = clamp(26 + lineCount * lineHeight, minNodeHeight, maxNodeHeight);
       return {
         displayLabel,
         width,
@@ -688,10 +692,10 @@
       const spacingX = Math.max(
         typicalEdgeSpan + (
           hasVisibleEdgeLabels
-            ? (linearMap ? 118 : simpleMap ? 145 : denseMap ? 130 : 136)
+            ? (linearMap ? 92 : simpleMap ? 120 : denseMap ? 105 : 112)
             : (linearMap ? 38 : simpleMap ? 72 : denseMap ? 40 : 42)
         ),
-        hasVisibleEdgeLabels ? (simpleMap ? 330 : 300) : (simpleMap ? 230 : 150)
+        hasVisibleEdgeLabels ? (simpleMap ? 290 : 255) : (simpleMap ? 230 : 150)
       );
       const spacingY = Math.max(
         tallestNode + (
@@ -747,66 +751,87 @@
         }
       });
 
-      if (linearMap) {
-        positions.forEach((position, nodeId) => {
-          const row = Math.floor(position.depth / maxLinearColumns);
-          const depthInRow = position.depth % maxLinearColumns;
-          const col = row % 2 === 0 ? depthInRow : maxLinearColumns - 1 - depthInRow;
-          positions.set(nodeId, {
-            ...position,
-            x: originX + col * spacingX,
-            y: originY + row * spacingY
-          });
-        });
-      } else {
-        const depths = new Map();
-        const queue = [];
-        roots.forEach((root) => {
-          if (!depths.has(root.data.id)) {
-            depths.set(root.data.id, 0);
-            queue.push(root.data.id);
-          }
-        });
-
-        while (queue.length) {
-          const nodeId = queue.shift();
-          const nextDepth = (depths.get(nodeId) || 0) + 1;
-          (outgoing.get(nodeId) || []).forEach((edge) => {
-            const targetId = edge.data.target;
-            if (!nodeById.has(targetId) || depths.has(targetId)) {
-              return;
-            }
-            depths.set(targetId, nextDepth);
-            queue.push(targetId);
-          });
+      const depths = new Map();
+      const queue = [];
+      roots.forEach((root) => {
+        if (!depths.has(root.data.id)) {
+          depths.set(root.data.id, 0);
+          queue.push(root.data.id);
         }
+      });
 
-        nodes.forEach((node) => {
-          if (!depths.has(node.data.id)) {
-            depths.set(node.data.id, 0);
+      while (queue.length) {
+        const nodeId = queue.shift();
+        const nextDepth = (depths.get(nodeId) || 0) + 1;
+        (outgoing.get(nodeId) || []).forEach((edge) => {
+          const targetId = edge.data.target;
+          if (!nodeById.has(targetId) || depths.has(targetId)) {
+            return;
           }
-        });
-
-        const columns = new Map();
-        nodes.forEach((node) => {
-          const depth = depths.get(node.data.id) || 0;
-          if (!columns.has(depth)) {
-            columns.set(depth, []);
-          }
-          columns.get(depth).push(node);
-        });
-
-        columns.forEach((columnNodes, depth) => {
-          columnNodes.forEach((node, index) => {
-            positions.set(node.data.id, {
-              depth,
-              lane: index,
-              x: originX + depth * spacingX,
-              y: originY + index * spacingY
-            });
-          });
+          depths.set(targetId, nextDepth);
+          queue.push(targetId);
         });
       }
+
+      nodes.forEach((node) => {
+        if (!depths.has(node.data.id)) {
+          depths.set(node.data.id, positions.get(node.data.id)?.depth || 0);
+        }
+      });
+
+      const maxDepth = Math.max(...Array.from(depths.values()), 0);
+      const shouldWrap = maxDepth > 4 || nodes.length > 7;
+      const columnsPerRow = shouldWrap ? (nodes.length > 12 || maxDepth > 8 ? 4 : 5) : Math.max(1, maxDepth + 1);
+      const branchNodeGap = hasVisibleEdgeLabels ? 42 : 32;
+      const rowStackGap = hasVisibleEdgeLabels ? 84 : 64;
+      const columns = new Map();
+      nodes.forEach((node) => {
+        const depth = depths.get(node.data.id) || 0;
+        if (!columns.has(depth)) {
+          columns.set(depth, []);
+        }
+        columns.get(depth).push(node);
+      });
+
+      const columnStackHeight = (columnNodes) => columnNodes.reduce((total, node, index) => {
+        const height = metricsById.get(node.data.id)?.height || tallestNode;
+        return total + height + (index ? branchNodeGap : 0);
+      }, 0);
+      const rowHeights = new Map();
+      for (let row = 0; row <= Math.floor(maxDepth / columnsPerRow); row += 1) {
+        const rowDepths = Array.from({ length: columnsPerRow }, (_, offset) => row * columnsPerRow + offset);
+        const height = Math.max(
+          tallestNode,
+          ...rowDepths.map((rowDepth) => columnStackHeight(columns.get(rowDepth) || []))
+        );
+        rowHeights.set(row, height);
+      }
+      const rowOffsets = new Map();
+      let rowCursor = originY;
+      Array.from(rowHeights.keys()).sort((a, b) => a - b).forEach((row) => {
+        rowOffsets.set(row, rowCursor);
+        rowCursor += (rowHeights.get(row) || tallestNode) + rowStackGap;
+      });
+
+      columns.forEach((columnNodes, depth) => {
+        const row = Math.floor(depth / columnsPerRow);
+        const depthInRow = depth % columnsPerRow;
+        const col = shouldWrap && row % 2 === 1 ? columnsPerRow - 1 - depthInRow : depthInRow;
+        const stackHeight = columnStackHeight(columnNodes);
+        const rowHeight = rowHeights.get(row) || stackHeight;
+        let yCursor = (rowOffsets.get(row) || originY) + Math.max(0, (rowHeight - stackHeight) / 2);
+        columnNodes.forEach((node, index) => {
+          const nodeHeight = metricsById.get(node.data.id)?.height || tallestNode;
+          yCursor += index ? branchNodeGap : 0;
+          positions.set(node.data.id, {
+            depth,
+            lane: index,
+            x: originX + col * spacingX,
+            y: yCursor + nodeHeight / 2
+          });
+          yCursor += nodeHeight;
+        });
+      });
 
       const maxX = Math.max(...Array.from(positions.values()).map((position) => position.x), originX);
       const maxY = Math.max(...Array.from(positions.values()).map((position) => position.y), originY);
@@ -853,10 +878,10 @@
               ? 12
               : 10;
           const labelOffsetY = hasCanvasLabel && !isSteepArrow
-            ? directionOffset * (16 + labelLineCount * 5 + (laneIndex % 2) * 5)
+            ? directionOffset * (20 + labelLineCount * 6 + (laneIndex % 2) * 6)
             : 0;
           const labelOffsetX = hasCanvasLabel && isSteepArrow
-            ? sideOffsetDirection * (18 + labelLineCount * 5 + (laneIndex % 2) * 5)
+            ? sideOffsetDirection * (24 + labelLineCount * 6 + (laneIndex % 2) * 6)
             : 0;
           return {
             ...element,
@@ -906,7 +931,7 @@
             "border-color": "#1f1f1f",
             "border-width": 2,
             "color": "#212529",
-            "font-size": 11,
+            "font-size": 16,
             "font-family": "Arial, Helvetica, sans-serif",
             "font-weight": 700,
             "text-wrap": "wrap",
@@ -975,15 +1000,26 @@
       ]
     });
 
+    function fitPathwayView(padding) {
+      cy.fit(undefined, padding);
+      const maxReadableZoom = frame?.classList.contains("is-fullscreen") ? 1.18 : 1.05;
+      if (cy.zoom() > maxReadableZoom) {
+        cy.zoom(maxReadableZoom);
+        cy.center();
+      }
+    }
+
     cy.ready(function () {
-      cy.fit(undefined, 18);
+      cy.minZoom(0.05);
+      cy.maxZoom(2.4);
+      fitPathwayView(22);
       cy.center();
     });
 
     function refitPathway(delay) {
       window.setTimeout(() => {
         cy.resize();
-        cy.fit(undefined, frame?.classList.contains("is-fullscreen") ? 36 : 18);
+        fitPathwayView(frame?.classList.contains("is-fullscreen") ? 40 : 22);
         if (frame?.classList.contains("is-fullscreen")) {
           cy.minZoom(0.05);
           cy.maxZoom(2.2);

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load doi_links %}
 
 {% block title %}Proteins - PesticideDB{% endblock %}
 
@@ -192,7 +193,15 @@
           <tr>
             <td>{{ r.pesticide|default:"-" }}</td>
             <td>{{ r.microorganism|default:"-" }}</td>
-            <td>{{ r.evidence_type|default:"-" }}</td>
+            <td>
+              {% if r.evidence_type_category %}
+                <span title="{{ r.evidence_type|default:r.evidence_type_category }}">
+                  {{ r.evidence_type_category }}
+                </span>
+              {% else %}
+                -
+              {% endif %}
+            </td>
             <td>{{ r.collection_category|default:"-" }}</td>
             <td>{{ r.enzyme_class|default:"-" }}</td>
             <td>
@@ -243,12 +252,13 @@
 
             <td class="text-nowrap">
               {% if r.doi %}
-                {{ r.doi }}
-                <a target="_blank"
-                   href="https://scholar.google.com/scholar?q={{ r.doi|urlencode }}"
-                   style="white-space: nowrap;">
-                  (Google Scholar)
-                </a>
+                {% with doi_url=r.doi|doi_url doi_text=r.doi|doi_text %}
+                  {% if doi_url %}
+                    <a target="_blank" rel="noopener" href="{{ doi_url }}">{{ doi_text|default:r.doi }}</a>
+                  {% else %}
+                    {{ r.doi }}
+                  {% endif %}
+                {% endwith %}
               {% else %}
                 -
               {% endif %}

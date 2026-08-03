@@ -10,6 +10,57 @@
         PesticideDB annotation tools are designed for candidate discovery. A DIAMOND or HMMER hit suggests similarity to a curated pesticide-related protein or enzyme family, but it is not proof of pesticide degradation activity without experimental evidence.
     </div>
 
+    <h3>What PesticideDB Is</h3>
+    <p>
+        PesticideDB is a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways. It currently summarizes {{ total_pesticides }} pesticides, including {{ pesticides_with_evidence }} pesticides with curated biodegradation evidence and {{ pesticides_no_evidence }} pesticides listed without validated microbial biodegradation evidence from the curated search set.
+    </p>
+    <p>
+        The platform is designed for two connected tasks: finding curated literature evidence and using validated protein references to screen new gene, protein, or genome sequences. Database records should always be interpreted with their DOI/reference, evidence type, organism name, culture type, and available gene/protein/pathway support.
+    </p>
+
+    <h3>How to Use the Database</h3>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Task</th>
+                <th>Where to go</th>
+                <th>What to check</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Find known pesticide degraders</td>
+                <td>Microorganisms</td>
+                <td>Pesticide, microorganism/strain, culture type, metabolite/product, DOI, and publication year.</td>
+            </tr>
+            <tr>
+                <td>Review protein or gene evidence</td>
+                <td>Proteins</td>
+                <td>Evidence type, enzyme class, gene name, accession, sequence availability, and structure availability.</td>
+            </tr>
+            <tr>
+                <td>Inspect degradation routes</td>
+                <td>Tools → Pathway Analysis</td>
+                <td>Substrate, product, gene/enzyme labels, pathway evidence notes, and DOI support for each step.</td>
+            </tr>
+            <tr>
+                <td>Screen new sequences</td>
+                <td>Tools → Annotate Gene or Annotate Genome</td>
+                <td>DIAMOND match, HMMER family support, identity, coverage, E-value, and whether evidence is experimental or candidate-level.</td>
+            </tr>
+            <tr>
+                <td>Reuse data in a manuscript</td>
+                <td>Citation/Download</td>
+                <td>Database version, download/access date, citation text, and the matching Excel or CSV export.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>With Evidence vs Without Evidence</h3>
+    <p>
+        <strong>With evidence</strong> means that at least one curated record links the pesticide to experimentally reported microbial degradation, transformation, gene/protein evidence, or pathway support. <strong>Without evidence</strong> means no validated microbial biodegradation evidence was identified during curation. It should be read as a current reporting gap, not as proof that the pesticide cannot be biodegraded.
+    </p>
+
     <h3>Evidence Type Meaning</h3>
     <p>
         Evidence type describes the strongest support currently curated for a pesticide-associated gene, enzyme, protein, or microorganism. It helps users distinguish experimentally supported degradation from sequence-based candidate annotation.
@@ -42,6 +93,11 @@
                 <td>Recombinant (Activity)</td>
                 <td>Gene/protein was expressed in a recombinant system and activity was tested.</td>
                 <td>High to medium</td>
+            </tr>
+            <tr>
+                <td>Genetic / Expression</td>
+                <td>Gene knockout, expression, or genetic evidence supports the role of a gene or enzyme in pesticide transformation.</td>
+                <td>Medium to high when linked to chemical or activity evidence</td>
             </tr>
             <tr>
                 <td>Whole-cell / Crude</td>
@@ -77,7 +133,7 @@
             <tr>
                 <td>Curated proteins</td>
                 <td>{{ curated_protein_count }}</td>
-                <td>Original Protein records and validated annotation references.</td>
+                <td>Curated Protein section records and validated annotation references.</td>
             </tr>
             <tr>
                 <td>Supplemented validated proteins</td>
@@ -87,7 +143,7 @@
             <tr>
                 <td>Discovery candidates</td>
                 <td>{{ discovery_candidate_count }}</td>
-                <td>Kept in a separate downloadable dataset and excluded from the default validated Protein reference.</td>
+                <td>Kept outside the default validated Protein reference and used only for exploratory follow-up.</td>
             </tr>
         </tbody>
     </table>
@@ -133,7 +189,7 @@
     <h3>Reproducibility</h3>
     <p>
         PesticideDB is designed so users and reviewers can understand how the database contents and annotation outputs were produced.
-        Each database release should be interpreted together with its version number, release date, curated data files, and annotation settings.
+        Database contents should be interpreted together with the curated data files, download/access date, and annotation settings.
     </p>
     <table class="table table-bordered">
         <thead class="thead-dark">
@@ -149,7 +205,7 @@
             </tr>
             <tr>
                 <td>Protein records</td>
-                <td>Use the downloadable protein records CSV, original protein master XLSX, or separate validated supplemental protein XLSX. PesticideDB Protein IDs are stable internal identifiers.</td>
+                <td>Use the downloadable protein/gene workbook or protein records CSV. PesticideDB Protein IDs are stable internal identifiers.</td>
             </tr>
             <tr>
                 <td>Reference protein search database</td>
@@ -165,7 +221,7 @@
             </tr>
             <tr>
                 <td>Downloaded datasets</td>
-                <td>Report the database version, release date, and access/download date when using PesticideDB data in a manuscript.</td>
+                <td>Report the database version and access/download date when using PesticideDB data in a manuscript.</td>
             </tr>
         </tbody>
     </table>
@@ -242,7 +298,7 @@
         <li>Choose thresholds using sensitivity, specificity, precision, F1, and Matthews correlation coefficient (MCC), then confirm them on a second untouched test set.</li>
     </ol>
     <p>
-        Broad discovery settings should prioritize sensitivity, while high-confidence reporting should prioritize precision and specificity. Accuracy alone can be misleading when negatives greatly outnumber positives. PesticideDB should not publish a single accuracy percentage until this held-out benchmark has been completed.
+        Broad discovery settings should prioritize sensitivity, while high-confidence reporting should prioritize precision and specificity. Accuracy alone can be misleading when negatives greatly outnumber positives, so annotation performance should be reported with benchmark context rather than as a single standalone percentage.
     </p>
 
     <h3>PesticideDB Protein ID vs NCBI Accession</h3>

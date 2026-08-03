@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load doi_links %}
 
 {% block title %}PesticideDB - Annotate Gene{% endblock %}
 
@@ -173,10 +174,13 @@
 
                 <p><strong>DOI:</strong>
                     {% if r.doi %}
-                        {{ r.doi }}
-                        <a target="_blank" href="https://scholar.google.com/scholar?q={{ r.doi|urlencode }}">
-                            (Google Scholar)
-                        </a>
+                        {% with doi_url=r.doi|doi_url doi_text=r.doi|doi_text %}
+                            {% if doi_url %}
+                                <a target="_blank" rel="noopener" href="{{ doi_url }}">{{ doi_text|default:r.doi }}</a>
+                            {% else %}
+                                {{ r.doi }}
+                            {% endif %}
+                        {% endwith %}
                     {% else %}
                         -
                     {% endif %}

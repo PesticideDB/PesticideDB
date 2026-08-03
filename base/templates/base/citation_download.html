@@ -12,17 +12,13 @@
 
     <div class="card shadow-sm mb-4">
         <div class="card-header bg-dark text-white">
-            <strong>Database Release</strong>
+            <strong>Database Overview</strong>
         </div>
         <div class="card-body">
             <table class="table table-bordered mb-0">
                 <tr>
                     <th class="bg-light">Version</th>
                     <td>v{{ database_version }}</td>
-                </tr>
-                <tr>
-                    <th class="bg-light">Release date</th>
-                    <td>{{ release_date }}</td>
                 </tr>
                 <tr>
                     <th class="bg-light">Pesticides</th>
@@ -66,7 +62,7 @@
         </div>
         <div class="card-body">
             <p class="mb-2">
-                <strong>PesticideDB v{{ database_version }}</strong>: a curated database of pesticide biodegradation records, microorganisms, genes, enzymes, proteins, and predicted protein structures.
+                <strong>PesticideDB v{{ database_version }}</strong>: A curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways.
             </p>
         </div>
     </div>
@@ -113,9 +109,6 @@
                     </a>
                 </div>
             </div>
-            <p class="text-muted mb-0">
-                The current biodegradation and protein/gene workbooks include the 2025-2026 update. Ethiprole and Spinetoram are represented in the with-evidence section and removed from the no-evidence workbook. CSV exports remain available from the relevant database tables for programmatic use.
-            </p>
         </div>
     </div>
 </div>
