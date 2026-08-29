@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+env/
+.env
+
+# Database
+db.sqlite3
+
+# macOS junk
+.DS_Store
+
+# Excel data (optional – keeps repo clean)
+*.xlsx
+
+# Generated/local release artifacts
+backups/
+outputs/
+tmp/
+staticfiles/
+media/annotation_jobs/
+media/genome_jobs/

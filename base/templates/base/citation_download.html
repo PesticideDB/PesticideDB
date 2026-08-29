@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+
+{% block title %}Citation and Download - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h1 class="mb-4">Citation and Download</h1>
+
+    <div class="alert alert-info">
+        Please cite PesticideDB when using the curated database, protein records, structures, or annotation tools in publications.
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <strong>Database Overview</strong>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered mb-0">
+                <tr>
+                    <th class="bg-light">Version</th>
+                    <td>v{{ database_version }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Pesticides</th>
+                    <td>{{ total_pesticides }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Microorganisms</th>
+                    <td>{{ microorganisms_count }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Proteins</th>
+                    <td>{{ proteins_count }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Curated proteins</th>
+                    <td>{{ curated_protein_count }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Supplemented proteins</th>
+                    <td>{{ supplemented_protein_count }} unique records ({{ validated_supplemental_evidence_rows }} evidence rows)</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Separate discovery candidates</th>
+                    <td>{{ discovery_candidate_count }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">Protein structures</th>
+                    <td>{{ structure_count }}</td>
+                </tr>
+                <tr>
+                    <th class="bg-light">References</th>
+                    <td>{{ reference_count }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white">
+            <strong>Suggested Citation</strong>
+        </div>
+        <div class="card-body">
+            <p class="mb-2">
+                <strong>PesticideDB v{{ database_version }}</strong>: A curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways.
+            </p>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+            <strong>Downloads</strong>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-primary btn-block" href="{% url 'download_annotation_asset' 'biodegradation-master-xlsx' %}">
+                        Download biodegradation records XLSX
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-primary btn-block" href="{% url 'download_annotation_asset' 'protein-master-with-2025-2026' %}">
+                        Download protein/gene records XLSX
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'no-evidence-master' %}">
+                        Download no-evidence pesticides XLSX
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'reference-fasta' %}">
+                        Download validated reference protein FASTA
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'validated-supplemental-proteins' %}">
+                        Download validated supplemental proteins XLSX
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'discovery-candidates' %}">
+                        Download discovery candidates XLSX
+                    </a>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <a class="btn btn-outline-primary btn-block" href="{% url 'download_annotation_asset' 'structure-report' %}">
+                        Download structure report CSV
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

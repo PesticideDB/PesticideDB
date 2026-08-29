@@ -1,0 +1,15 @@
+#                                                                              --- full sequence --- -------------- this domain -------------   hmm coord   ali coord   env coord
+# target name          accession   tlen query name           accession   qlen   E-value  score  bias   #  of  c-Evalue  i-Evalue  score  bias  from    to  from    to  from    to  acc description of target
+#  ------------------- ---------- ----- -------------------- ---------- ----- --------- ------ ----- --- --- --------- --------- ------ ----- ----- ----- ----- ----- ----- ----- ---- ---------------------
+dehalogenase_aligned   -            273 ABE98170.1           -            346   9.9e-77  247.8   0.0   1   1   2.3e-77   1.1e-76  247.6   0.0    11   272     4   309     1   316 0.96 -
+oxidoreductase_aligned -            295 ABE98170.1           -            346   5.6e-55  176.4   0.0   1   1   1.3e-55   6.3e-55  176.3   0.0     1   295     1   338     1   338 0.93 -
+#
+# Program:         hmmscan
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SCAN
+# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta
+# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm
+# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta 
+# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Date:            Sat Jun 13 03:52:42 2026
+# [ok]

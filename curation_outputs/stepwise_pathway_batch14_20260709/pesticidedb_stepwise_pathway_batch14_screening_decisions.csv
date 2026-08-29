@@ -1,0 +1,4 @@
+pesticide,decision,reason
+Bentazone,Not integrated in this batch,"The downloaded paper identifies many transformation products and mechanisms, but a compact, named stepwise route needs manual table extraction before import."
+Fenvalerate / Permethrin / Deltamethrin / Bifenthrin,Not integrated in this batch,"Downloaded pyrethroid papers contain useful degradation/pathway evidence, but the exact pesticide-specific first products need manual separation to avoid merging similar pyrethroid routes."
+Paraquat / Endosulfan,Not integrated in this batch,The accessible PDFs were already screened; they support transformation/degradation but do not provide a clean named reaction arrow beyond prior decisions.

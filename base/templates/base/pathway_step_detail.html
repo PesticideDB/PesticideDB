@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+
+{% block title %}Pathway Reaction - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a href="{% url 'pathwayanalysis' %}?pesticide={{ step.pathway.pesticide|urlencode }}" class="btn btn-outline-secondary btn-sm mb-3">Back to pathway</a>
+
+  <h1>{{ step.substrate }} → {{ step.product }}</h1>
+  <p class="text-muted">{{ step.pathway.title }}</p>
+
+  <section class="border rounded p-3 mb-4">
+    <h3>Reaction Evidence</h3>
+    <dl class="row mb-0">
+      <dt class="col-md-3">Evidence type</dt>
+      <dd class="col-md-9">{{ step.get_evidence_type_display }}</dd>
+      <dt class="col-md-3">Substrate</dt>
+      <dd class="col-md-9">
+        {% if step.substrate_compound %}
+          <a href="{% url 'compound_detail' step.substrate_compound.id %}">{{ step.substrate_compound.name }}</a>
+        {% else %}
+          {{ step.substrate }}
+        {% endif %}
+      </dd>
+      <dt class="col-md-3">Product</dt>
+      <dd class="col-md-9">
+        {% if step.product_compound %}
+          <a href="{% url 'compound_detail' step.product_compound.id %}">{{ step.product_compound.name }}</a>
+        {% else %}
+          {{ step.product }}
+        {% endif %}
+      </dd>
+      <dt class="col-md-3">Gene</dt>
+      <dd class="col-md-9">{{ step.gene|default:"Not assigned" }}</dd>
+      <dt class="col-md-3">Enzyme</dt>
+      <dd class="col-md-9">{{ step.enzyme|default:"Not assigned" }}</dd>
+      <dt class="col-md-3">Protein</dt>
+      <dd class="col-md-9">
+        {% if step.protein %}
+          <a href="{% url 'protein_detail' step.protein.pesticidedb_protein_id %}">{{ step.protein.pesticidedb_protein_id }}</a>
+        {% else %}
+          Not linked
+        {% endif %}
+      </dd>
+      <dt class="col-md-3">Microorganism</dt>
+      <dd class="col-md-9">{{ step.microorganism|default:"Not assigned" }}</dd>
+      <dt class="col-md-3">Notes</dt>
+      <dd class="col-md-9">{{ step.notes|default:"-" }}</dd>
+    </dl>
+  </section>
+
+  <h3>References and Experimental Support</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm">
+      <thead class="thead-dark">
+        <tr>
+          <th>Evidence</th>
+          <th>Directness</th>
+          <th>Confidence</th>
+          <th>Method</th>
+          <th>Reference</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for evidence in evidence_links %}
+          <tr>
+            <td>{{ evidence.evidence_type|default:"-" }}</td>
+            <td>{{ evidence.get_directness_display }}</td>
+            <td>{{ evidence.confidence|default:"-" }}</td>
+            <td>{{ evidence.method|default:"-" }}</td>
+            <td>
+              {% if evidence.reference %}
+                {% if evidence.reference.doi_url %}
+                  <a href="{{ evidence.reference.doi_url }}" target="_blank" rel="noopener">{{ evidence.reference.doi }}</a>
+                {% else %}
+                  {{ evidence.reference }}
+                {% endif %}
+              {% elif step.doi %}
+                {{ step.doi }}
+              {% else %}
+                -
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          {% for reference in step.references.all %}
+            <tr>
+              <td>{{ step.get_evidence_type_display }}</td>
+              <td>-</td>
+              <td>-</td>
+              <td>-</td>
+              <td>
+                {% if reference.doi_url %}
+                  <a href="{{ reference.doi_url }}" target="_blank" rel="noopener">{{ reference.doi }}</a>
+                {% else %}
+                  {{ reference }}
+                {% endif %}
+              </td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="5">No detailed evidence links have been curated yet.</td></tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

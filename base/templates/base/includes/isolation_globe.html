@@ -1,0 +1,74 @@
+{% load static %}
+
+<section class="isolation-globe-section my-5">
+  <div class="row align-items-center">
+    <div class="col-lg-7 text-center mb-4 mb-lg-0">
+      <div class="isolation-globe-card">
+        <div class="isolation-globe"
+           data-isolation-globe
+           data-globe-data-url="{% static 'base/data/isolation_globe_data.json' %}">
+          <div class="echarts-globe" aria-label="Rotating Earth showing countries where pesticide-degrading microorganisms were reported"></div>
+          <div class="globe-tooltip" data-globe-tooltip hidden></div>
+        </div>
+        <p class="small text-muted mt-3 mb-0" data-globe-caption>
+          Loading country-level isolation data...
+        </p>
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <p class="h3">Global Distribution of Pesticide-Degrading Microorganism Isolates</p>
+      <p>
+        This rotating Earth summarizes the countries from which pesticide-degrading microorganisms
+        have been reported in PesticideDB. Dots are placed at country-level positions and dot size
+        reflects the number of curated microorganism records.
+      </p>
+      <div class="globe-top-list">
+        <strong>Highest represented countries</strong>
+        <ol data-globe-top-list></ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .isolation-globe-section {
+    padding: 2.5rem 0 3rem;
+  }
+  .isolation-globe-card {
+    display: inline-block;
+    width: min(100%, 620px);
+    padding: 1rem 1rem .75rem;
+    border: 1px solid #d9e2ec;
+    background: #fff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, .08);
+  }
+  .isolation-globe {
+    position: relative;
+    display: block;
+    max-width: 100%;
+  }
+  .echarts-globe {
+    width: min(100%, 620px);
+    height: 480px;
+    margin: 0 auto;
+  }
+  .globe-tooltip {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    padding: .4rem .6rem;
+    border-radius: 4px;
+    background: rgba(20, 31, 47, .94);
+    color: #fff;
+    font-size: .85rem;
+    white-space: nowrap;
+  }
+  .globe-top-list ol {
+    margin-top: .35rem;
+    padding-left: 1.25rem;
+  }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl@2/dist/echarts-gl.min.js"></script>
+<script src="{% static 'base/js/isolation_globe.js' %}"></script>

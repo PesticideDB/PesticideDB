@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container page-header">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <!-- Submit Card -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="mb-0">Submit your biodegradation evidence</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        Submitted records are stored in a curator review queue first. After superuser review,
+                        approved sections can be imported into the microorganism/evidence records, protein
+                        records, or pathway curation queue.
+                    </div>
+                    <form method="POST" action="{% url 'submit_your_data' %}">
+                        {% csrf_token %}
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="id_pesticide">Pesticide</label>
+                                {{ form.pesticide }}
+                                {% if form.pesticide.errors %}
+                                    <div class="text-danger">{{ form.pesticide.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="form-group col-md-6">
+                                <label for="id_microorganism_name">Microorganism name</label>
+                                {{ form.microorganism_name }}
+                                {% if form.microorganism_name.errors %}
+                                    <div class="text-danger">{{ form.microorganism_name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="id_protein">Protein (optional)</label>
+                                {{ form.protein }}
+                                {% if form.protein.errors %}
+                                    <div class="text-danger">{{ form.protein.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group col-md-6">
+                                <label for="id_gene">Gene (optional)</label>
+                                {{ form.gene }}
+                                {% if form.gene.errors %}
+                                    <div class="text-danger">{{ form.gene.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_evidence">Evidence of degradation</label>
+                            {{ form.evidence }}
+                            {% if form.evidence.errors %}
+                                <div class="text-danger">{{ form.evidence.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group col-md-7">
+                                <label for="id_doi">DOI</label>
+                                {{ form.doi }}
+                                {% if form.doi.errors %}
+                                    <div class="text-danger">{{ form.doi.errors }}</div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group col-md-5">
+                                <label for="id_email">Contact email</label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="text-danger">{{ form.email.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Recent Submissions Table -->
+            {% if recent_submissions %}
+            <div class="table-responsive">
+                <h4 class="mb-3">Recent Submissions</h4>
+                <table class="table table-hover table-striped">
+                    <thead class="thead-light">
+                        <tr>
+                            <th scope="col">Pesticide</th>
+                            <th scope="col">Microorganism</th>
+                            <th scope="col">Protein</th>
+                            <th scope="col">Review status</th>
+                            <th scope="col">Submitted</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for submission in recent_submissions %}
+                        <tr>
+                            <td>{{ submission.pesticide }}</td>
+                            <td>{{ submission.microorganism_name }}</td>
+                            <td>{{ submission.protein|default:"-" }}</td>
+                            <td>{{ submission.get_review_status_display }}</td>
+                            <td>{{ submission.submitted_at|date:"Y-m-d" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

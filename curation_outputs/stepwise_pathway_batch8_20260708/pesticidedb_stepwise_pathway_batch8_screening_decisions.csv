@@ -1,0 +1,12 @@
+pesticide,decision,reason
+Acibenzolar-S-methyl,Not integrated in this batch,Readable local papers reviewed in this pass did not provide a clear microbial substrate-to-product pathway arrow suitable for the database sketch.
+Fenamiphos,Not integrated in this batch,No high-confidence readable local paper was available in this pass with named microbial transformation products and pathway order.
+Fluxapyroxad,Not integrated in this batch,Readable local papers mainly reported residue/dissipation or broad degradation without enough named microbial product-pathway evidence for import.
+Imazamox,Not integrated in this batch,"Available by-product evidence found in this pass appeared mainly abiotic/photochemical, so it was not imported into the microbial pathway layer."
+Isopyrazam,Not integrated in this batch,Readable local papers did not yield a clear experimentally supported microbial substrate-to-product sequence.
+Penthiopyrad,Not integrated in this batch,Potential degradation papers need deeper review before importing pathway products; no conservative arrows were added in this batch.
+Pinoxaden,Not integrated in this batch,"Previous screening found degradation evidence and predicted genes, but no named transformation products suitable for a stepwise pathway arrow."
+Propamocarb,Not integrated in this batch,Previous screening did not identify a clear microbial product pathway for import.
+Propargite,Not integrated in this batch,"Previous screening found a study that explicitly did not characterize metabolites, so no pathway arrow was imported."
+Spirodiclofen,Not integrated in this batch,Readable local evidence was not yet specific enough for microbial product-pathway import.
+Kresoxim-Methyl,Not integrated in this batch,"A strong StrH strobilurin paper exists locally, but Kresoxim-Methyl is not currently present as a Pesticide record in the database."

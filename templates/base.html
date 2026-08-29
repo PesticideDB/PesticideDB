@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Bootstrap 4 -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+
+    <title>{% block title %}PesticideDB: a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways{% endblock %}</title>
+
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/layout.css' %}?v=12">
+    <link rel="shortcut icon" href="{% static 'images/favicon.ico' %}?v=2">
+
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-M6ZQRS3NJ0"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-M6ZQRS3NJ0');
+    </script>
+
+    <style>
+        .research-fortune {
+            position: fixed;
+            right: 1rem;
+            bottom: 1rem;
+            z-index: 1080;
+            width: min(310px, calc(100vw - 2rem));
+            color: #26313d;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+        .research-fortune-toggle {
+            display: flex;
+            gap: .55rem;
+            align-items: center;
+            margin-left: auto;
+            padding: .5rem .7rem;
+            border: 1px solid #d2b879;
+            border-radius: 999px;
+            background: #fff7df;
+            box-shadow: 0 12px 28px rgba(31, 41, 55, .16);
+            color: #3a2c12;
+            font-size: .86rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .research-fortune-cookie {
+            position: relative;
+            width: 44px;
+            height: 34px;
+            flex: 0 0 auto;
+            filter: drop-shadow(0 4px 4px rgba(82, 54, 17, .22));
+        }
+        .research-fortune-cookie::before {
+            content: "";
+            position: absolute;
+            inset: 2px 5px 4px 5px;
+            border: 1px solid #a66f20;
+            border-radius: 50% 50% 46% 48%;
+            background:
+                radial-gradient(circle at 34% 28%, rgba(255, 247, 205, .96) 0 18%, transparent 34%),
+                linear-gradient(135deg, #f9dfa4 0%, #efc066 58%, #bd7927 100%);
+            box-shadow:
+                inset 4px 4px 4px rgba(255, 255, 255, .34),
+                inset -5px -4px 7px rgba(102, 58, 16, .2);
+        }
+        .research-fortune-cookie::after {
+            content: "";
+            position: absolute;
+            right: 5px;
+            bottom: 4px;
+            width: 16px;
+            height: 22px;
+            background: #fff7df;
+            clip-path: polygon(100% 0, 18% 52%, 100% 100%);
+        }
+        .research-fortune-cookie span {
+            position: absolute;
+            left: 5px;
+            bottom: 2px;
+            z-index: 1;
+            width: 18px;
+            height: 10px;
+            border: 1px solid #e7e9ef;
+            border-radius: 2px;
+            background: #ffffff;
+            transform: rotate(-18deg);
+            box-shadow: -1px 2px 3px rgba(31, 41, 55, .1);
+        }
+        .research-fortune-card {
+            display: none;
+            position: relative;
+            margin-top: .65rem;
+            padding: 1rem;
+            border: 1px solid #e0d0a4;
+            border-radius: 8px;
+            background: #fffdf7;
+            box-shadow: 0 16px 38px rgba(31, 41, 55, .18);
+            overflow: hidden;
+        }
+        .research-fortune-card.is-open {
+            display: block;
+            animation: fortune-pop .24s ease-out;
+        }
+        .research-fortune-card.is-crumbling .fortune-slip {
+            animation: fortune-fade .55s ease forwards;
+        }
+        .research-fortune-card.is-combining {
+            animation: fortune-combine .75s ease-in forwards;
+        }
+        .research-fortune-card.is-bouquet {
+            width: 132px;
+            height: 150px;
+            margin-left: auto;
+            padding: 0;
+            border-color: transparent;
+            background: transparent;
+            box-shadow: none;
+            overflow: visible;
+            animation: plant-fade 1.55s ease-in 1.45s forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-cookie-break,
+        .research-fortune-card.is-bouquet .fortune-slip,
+        .research-fortune-card.is-bouquet .fortune-close {
+            display: none;
+        }
+        .fortune-cookie-break {
+            position: relative;
+            height: 118px;
+            margin-bottom: .2rem;
+        }
+        .fortune-half {
+            position: absolute;
+            top: 14px;
+            width: 104px;
+            height: 92px;
+            border: 1px solid #9b6b20;
+            background:
+                radial-gradient(circle at 34% 25%, rgba(255, 245, 198, .95) 0 16%, transparent 36%),
+                radial-gradient(circle at 70% 73%, rgba(128, 76, 21, .13) 0 13%, transparent 30%),
+                linear-gradient(135deg, #f9dfa6 0%, #efc166 58%, #b97526 100%);
+            box-shadow:
+                inset 9px 9px 12px rgba(255, 255, 255, .28),
+                inset -8px -8px 12px rgba(91, 52, 15, .2),
+                0 8px 14px rgba(93, 56, 15, .14);
+        }
+        .fortune-half-left {
+            left: 46px;
+            border-radius: 58% 28% 48% 52%;
+            transform: rotate(-18deg);
+            clip-path: polygon(0 0, 100% 0, 68% 100%, 0 82%);
+        }
+        .fortune-half-right {
+            right: 38px;
+            border-radius: 28% 58% 52% 48%;
+            transform: rotate(18deg);
+            clip-path: polygon(0 0, 100% 0, 100% 82%, 34% 100%);
+        }
+        .fortune-slip-peek {
+            position: absolute;
+            left: 12px;
+            bottom: 8px;
+            width: 96px;
+            height: 44px;
+            border: 1px solid #e6e8ee;
+            border-radius: 3px;
+            background: #ffffff;
+            box-shadow: 0 5px 8px rgba(31, 41, 55, .08);
+            transform: rotate(-18deg);
+        }
+        .fortune-slip-peek::before,
+        .fortune-slip-peek::after {
+            content: "";
+            position: absolute;
+            top: 14px;
+            width: 17px;
+            height: 17px;
+            background: #f687b3;
+            border-radius: 17px 17px 0 17px;
+        }
+        .fortune-slip-peek::before {
+            left: 38px;
+            transform: rotate(-45deg);
+        }
+        .fortune-slip-peek::after {
+            left: 48px;
+            transform: rotate(45deg);
+        }
+        .fortune-face {
+            position: absolute;
+            left: 116px;
+            top: 43px;
+            z-index: 2;
+            width: 72px;
+            height: 38px;
+            pointer-events: none;
+        }
+        .fortune-face::before,
+        .fortune-face::after {
+            content: "";
+            position: absolute;
+            top: 4px;
+            width: 16px;
+            height: 20px;
+            border-radius: 999px;
+            background: #111827;
+            box-shadow:
+                4px 4px 0 -1px rgba(255, 255, 255, .9) inset,
+                0 20px 10px -8px rgba(244, 114, 182, .45);
+        }
+        .fortune-face::before {
+            left: 0;
+        }
+        .fortune-face::after {
+            right: 0;
+        }
+        .fortune-smile {
+            position: absolute;
+            left: 28px;
+            top: 13px;
+            width: 22px;
+            height: 16px;
+            border-bottom: 5px solid #111827;
+            border-radius: 0 0 999px 999px;
+        }
+        .research-fortune-card.is-open .fortune-half-left {
+            animation: crack-left .62s ease-out forwards;
+        }
+        .research-fortune-card.is-open .fortune-half-right {
+            animation: crack-right .62s ease-out forwards;
+        }
+        .fortune-slip {
+            position: relative;
+            padding: .75rem .8rem;
+            border-left: 4px solid #b7791f;
+            background: #ffffff;
+        }
+        .fortune-slip p {
+            margin: 0;
+            font-size: .94rem;
+            line-height: 1.45;
+        }
+        .fortune-slip cite {
+            display: block;
+            margin-top: .45rem;
+            color: #667085;
+            font-size: .82rem;
+            font-style: normal;
+            font-weight: 700;
+        }
+        .fortune-close {
+            position: absolute;
+            top: .35rem;
+            right: .45rem;
+            border: 0;
+            background: transparent;
+            color: #667085;
+            font-size: 1.3rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .fortune-finale {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+        }
+        .fortune-seed,
+        .fortune-plant {
+            position: absolute;
+            opacity: 0;
+        }
+        .fortune-seed {
+            left: 50%;
+            top: 58%;
+            width: 18px;
+            height: 13px;
+            border-radius: 48% 52% 45% 55%;
+            background:
+                radial-gradient(circle at 30% 25%, #f8dea0 0 20%, transparent 33%),
+                linear-gradient(135deg, #d99b3c, #8f551b);
+            box-shadow: inset -4px -3px 5px rgba(75, 44, 13, .22);
+            transform: translate(-50%, -50%) scale(.35);
+        }
+        .fortune-plant {
+            left: 50%;
+            bottom: 2px;
+            width: 122px;
+            height: 140px;
+            transform: translateX(-50%) scale(.2);
+        }
+        .fortune-soil,
+        .fortune-stem,
+        .fortune-leaf,
+        .fortune-bloom,
+        .fortune-petal,
+        .fortune-center,
+        .fortune-center::before,
+        .fortune-center::after {
+            content: "";
+            position: absolute;
+        }
+        .fortune-soil {
+            left: 9px;
+            bottom: 0;
+            width: 104px;
+            height: 28px;
+            border-radius: 55% 45% 12px 12px;
+            background:
+                radial-gradient(circle at 18px 12px, #7b4b21 0 12px, transparent 13px),
+                radial-gradient(circle at 48px 8px, #5b3519 0 13px, transparent 14px),
+                radial-gradient(circle at 77px 14px, #7b4b21 0 12px, transparent 13px),
+                linear-gradient(#6b3f1d, #422512);
+            box-shadow:
+                -9px 5px 0 -1px #4b2c13,
+                11px 5px 0 -1px #4b2c13,
+                0 10px 14px rgba(31, 41, 55, .14);
+        }
+        .fortune-stem {
+            left: 59px;
+            bottom: 20px;
+            width: 7px;
+            height: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #496b23, #6f8f2d, #38551d);
+            transform-origin: bottom center;
+        }
+        .fortune-leaf {
+            width: 34px;
+            height: 18px;
+            border-radius: 100% 0 100% 0;
+            background:
+                linear-gradient(135deg, #a9d34a 0%, #79a81e 54%, #4f7c18 100%);
+            opacity: 0;
+            transform-origin: 8px 12px;
+        }
+        .fortune-leaf-left {
+            left: 28px;
+            bottom: 58px;
+            transform: rotate(24deg) scale(.2);
+        }
+        .fortune-leaf-right {
+            right: 24px;
+            bottom: 75px;
+            transform: rotate(-44deg) scale(.2);
+        }
+        .fortune-leaf::after {
+            content: "";
+            position: absolute;
+            left: 6px;
+            top: 8px;
+            width: 25px;
+            height: 2px;
+            border-radius: 999px;
+            background: rgba(43, 86, 24, .58);
+            transform: rotate(18deg);
+        }
+        .fortune-bloom {
+            left: 32px;
+            top: 3px;
+            width: 60px;
+            height: 60px;
+            opacity: 0;
+            transform: scale(.25) rotate(-8deg);
+        }
+        .fortune-petal {
+            left: 21px;
+            top: 4px;
+            width: 20px;
+            height: 30px;
+            border-radius: 60% 60% 46% 46%;
+            background: linear-gradient(135deg, #ffcc3d, #f47c00);
+            transform-origin: 50% 26px;
+            box-shadow: inset 4px 3px 4px rgba(255, 255, 255, .22);
+        }
+        .fortune-petal-1 { transform: rotate(0deg) translateY(-14px); }
+        .fortune-petal-2 { transform: rotate(72deg) translateY(-14px); }
+        .fortune-petal-3 { transform: rotate(144deg) translateY(-14px); }
+        .fortune-petal-4 { transform: rotate(216deg) translateY(-14px); }
+        .fortune-petal-5 { transform: rotate(288deg) translateY(-14px); }
+        .fortune-center {
+            left: 19px;
+            top: 19px;
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 36% 29%, rgba(255, 255, 255, .88) 0 13%, transparent 14%),
+                radial-gradient(circle at 64% 70%, rgba(194, 116, 16, .16) 0 28%, transparent 29%),
+                linear-gradient(135deg, #ffe66d, #d99b24);
+            box-shadow:
+                inset 0 -2px 3px rgba(130, 74, 14, .16),
+                0 0 0 1px rgba(118, 78, 24, .28);
+        }
+        .fortune-center::before,
+        .fortune-center::after {
+            top: 7px;
+            width: 4px;
+            height: 6px;
+            border: 0;
+            border-radius: 999px;
+            background:
+                radial-gradient(circle at 35% 25%, #ffffff 0 20%, transparent 21%),
+                #2d210f;
+            box-shadow: none;
+        }
+        .fortune-center::before {
+            left: 6px;
+        }
+        .fortune-center::after {
+            right: 6px;
+        }
+        .fortune-smile-plant {
+            position: absolute;
+            left: 6px;
+            top: 12px;
+            width: 12px;
+            height: 8px;
+            border-bottom: 2px solid #33240f;
+            border-radius: 0 0 999px 999px;
+        }
+        .research-fortune-card.is-combining .fortune-seed {
+            animation: seed-form .75s ease-in forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-seed {
+            opacity: 0;
+        }
+        .research-fortune-card.is-bouquet .fortune-plant {
+            animation: plant-pop .38s ease-out forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-stem {
+            animation: stem-grow .68s ease-out .18s forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-leaf-left {
+            animation: leaf-left-grow .45s ease-out .58s forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-leaf-right {
+            animation: leaf-right-grow .45s ease-out .72s forwards;
+        }
+        .research-fortune-card.is-bouquet .fortune-bloom {
+            animation: bloom-pop .62s cubic-bezier(.2, .9, .2, 1.2) 1.02s forwards;
+        }
+        @keyframes fortune-pop {
+            from { opacity: 0; transform: translateY(8px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes crack-left {
+            to { transform: translateX(-26px) rotate(-25deg); }
+        }
+        @keyframes crack-right {
+            to { transform: translateX(26px) rotate(25deg); }
+        }
+        @keyframes fortune-fade {
+            to { opacity: 0; transform: translateY(8px) scale(.98); }
+        }
+        @keyframes fortune-combine {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            65% { opacity: .9; transform: translateY(18px) scale(.28); }
+            100% { opacity: 0; transform: translateY(22px) scale(.08); }
+        }
+        @keyframes seed-form {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(.25) rotate(0deg); }
+            35% { opacity: 1; }
+            100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(360deg); }
+        }
+        @keyframes plant-pop {
+            from { opacity: 0; transform: translateX(-50%) scale(.25); }
+            to { opacity: 1; transform: translateX(-50%) scale(1); }
+        }
+        @keyframes stem-grow {
+            from { height: 0; }
+            to { height: 94px; }
+        }
+        @keyframes leaf-left-grow {
+            from { opacity: 0; transform: rotate(24deg) scale(.2); }
+            to { opacity: 1; transform: rotate(24deg) scale(1); }
+        }
+        @keyframes leaf-right-grow {
+            from { opacity: 0; transform: rotate(-44deg) scale(.2); }
+            to { opacity: 1; transform: rotate(-44deg) scale(1); }
+        }
+        @keyframes bloom-pop {
+            0% { opacity: 0; transform: scale(.25) rotate(-8deg); }
+            65% { opacity: 1; transform: scale(1.18) rotate(5deg); }
+            100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes plant-fade {
+            to { opacity: 0; transform: translateY(8px) scale(.86); }
+        }
+        @media (max-width: 576px) {
+            .research-fortune {
+                right: .65rem;
+                bottom: .65rem;
+            }
+            .research-fortune-toggle span:last-child {
+                max-width: 12rem;
+            }
+        }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<!-- ✅ Sticky footer setup (Bootstrap-friendly) -->
+<body class="d-flex flex-column min-vh-100">
+    <!-- Navigation -->
+    {% include 'navigation.html' %}
+
+    <!-- ✅ Main Content (flex-fill pushes footer to bottom when page is short) -->
+    <main class="flex-fill">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-dark bg-dark text-light mt-auto">
+        <br><br>
+        <div class="container-fluid padding">
+            <div class="row text-center">
+                <div class="col-md-12">
+                    <p class="h5 mb-1">PesticideDB v1.0</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <aside class="research-fortune" aria-label="Researcher fortune cookie">
+        <button id="research-fortune-toggle" class="research-fortune-toggle" type="button">
+            <span class="research-fortune-cookie" aria-hidden="true"><span></span></span>
+            <span>Lab Cookie</span>
+        </button>
+        <div id="research-fortune-card" class="research-fortune-card" aria-live="polite">
+            <button id="research-fortune-close" class="fortune-close" type="button" aria-label="Close fortune">&times;</button>
+            <div class="fortune-cookie-break" aria-hidden="true">
+                <span class="fortune-slip-peek"></span>
+                <span class="fortune-half fortune-half-left"></span>
+                <span class="fortune-half fortune-half-right"></span>
+                <span class="fortune-face"><span class="fortune-smile"></span></span>
+            </div>
+            <div class="fortune-slip">
+                <p id="research-fortune-text"></p>
+                <cite id="research-fortune-author"></cite>
+            </div>
+            <div class="fortune-finale" aria-hidden="true">
+                <span class="fortune-seed"></span>
+                <span class="fortune-plant">
+                    <span class="fortune-soil"></span>
+                    <span class="fortune-stem"></span>
+                    <span class="fortune-leaf fortune-leaf-left"></span>
+                    <span class="fortune-leaf fortune-leaf-right"></span>
+                    <span class="fortune-bloom">
+                        <span class="fortune-petal fortune-petal-1"></span>
+                        <span class="fortune-petal fortune-petal-2"></span>
+                        <span class="fortune-petal fortune-petal-3"></span>
+                        <span class="fortune-petal fortune-petal-4"></span>
+                        <span class="fortune-petal fortune-petal-5"></span>
+                        <span class="fortune-center"><span class="fortune-smile-plant"></span></span>
+                    </span>
+                </span>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.4.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+
+    <script>
+        (function () {
+            const fortunes = [
+                { text: "Somewhere, something incredible is waiting to be known.", author: "Carl Sagan" },
+                { text: "The important thing is not to stop questioning.", author: "Albert Einstein" },
+                { text: "Research is formalized curiosity with a purpose.", author: "Zora Neale Hurston" },
+                { text: "What we know is a drop; what we do not know is an ocean.", author: "Isaac Newton" },
+                { text: "The beginning of wisdom is wonder.", author: "Socrates" },
+                { text: "To invent, you need imagination and a pile of junk.", author: "Thomas Edison" },
+                { text: "Nothing in life is to be feared, only understood.", author: "Marie Curie" },
+                { text: "Improving things comes naturally to me.", author: "Hedy Lamarr" },
+                { text: "Science gives a partial explanation for life.", author: "Rosalind Franklin" },
+                { text: "There is no problem in science a woman cannot solve.", author: "Vera Rubin" },
+                { text: "I like to learn. That is an art and a science.", author: "Katherine Johnson" },
+                { text: "The most dangerous phrase is: we have always done it this way.", author: "Grace Hopper" },
+                { text: "Never be limited by other people's limited imaginations.", author: "Mae Jemison" },
+                { text: "Your experiment failed? Excellent. It answered something.", author: "Lab Cookie" },
+                { text: "A clean notebook is good; a brave question is better.", author: "Lab Cookie" },
+                { text: "Let data change your mind before pride gets comfortable.", author: "Lab Cookie" },
+                { text: "A small result is still a result with clean shoes.", author: "Lab Cookie" },
+                { text: "The next clue may be hiding in the control.", author: "Lab Cookie" },
+                { text: "Read the weird row twice. It may be the story.", author: "Lab Cookie" },
+                { text: "Patience is also a laboratory instrument.", author: "Lab Cookie" },
+                { text: "Great discoveries often enter quietly through side doors.", author: "Lab Cookie" },
+                { text: "The universe is under no obligation to make sense to you.", author: "Neil deGrasse Tyson" },
+                { text: "Science is a way of thinking much more than knowledge.", author: "Carl Sagan" },
+                { text: "If I have seen further, it is by standing on shoulders.", author: "Isaac Newton" },
+                { text: "I was taught that progress comes from asking better questions.", author: "Lab Cookie" },
+                { text: "The good thing about science is that it is true either way.", author: "Neil deGrasse Tyson" },
+                { text: "We are star stuff harvesting sunlight.", author: "Carl Sagan" },
+                { text: "The work matters, and so does the person doing it.", author: "Lab Cookie" },
+                { text: "Chance favors the prepared mind.", author: "Louis Pasteur" },
+                { text: "Equipped with senses, we explore the universe around us.", author: "Edwin Hubble" },
+                { text: "If you know you are on the right track, keep going.", author: "Barbara McClintock" },
+                { text: "Discovery consists of seeing what everybody has seen differently.", author: "Albert Szent-Gyorgyi" },
+                { text: "The future belongs to those who prepare for it today.", author: "Malcolm X" },
+                { text: "All sorts of things can happen when you are open to new ideas.", author: "Stephanie Kwolek" },
+                { text: "Do not fear hard problems. They are just questions with armor.", author: "Lab Cookie" },
+                { text: "A careful negative result can save someone a year.", author: "Lab Cookie" },
+                { text: "Your methods section is a love letter to future readers.", author: "Lab Cookie" },
+                { text: "Curiosity is the engine; skepticism is the steering wheel.", author: "Lab Cookie" },
+                { text: "Today's confusion may be tomorrow's figure legend.", author: "Lab Cookie" },
+                { text: "Every dataset deserves both kindness and suspicion.", author: "Lab Cookie" },
+                { text: "If the signal is faint, listen with better tools.", author: "Lab Cookie" },
+                { text: "Good science is slow magic with receipts.", author: "Lab Cookie" },
+                { text: "Measure carefully. Wonder generously.", author: "Lab Cookie" },
+                { text: "A repeated experiment is not boring; it is civilization.", author: "Lab Cookie" },
+                { text: "The best hypothesis still has to wash its own dishes.", author: "Lab Cookie" },
+                { text: "When stuck, make the smallest honest next move.", author: "Lab Cookie" },
+                { text: "Your uncertainty is not weakness; it is calibration.", author: "Lab Cookie" },
+                { text: "A good database is a garden with citations.", author: "Lab Cookie" },
+                { text: "Trust the evidence, but make it show its work.", author: "Lab Cookie" },
+                { text: "The quiet correction is often the heroic one.", author: "Lab Cookie" },
+                { text: "One careful paragraph can rescue a future reader.", author: "Lab Cookie" },
+                { text: "You are allowed to be tired and still be becoming excellent.", author: "Lab Cookie" },
+                { text: "The dataset is patient. Meet it one clean row at a time.", author: "Lab Cookie" },
+                { text: "A better question is already progress wearing a small lab coat.", author: "Lab Cookie" },
+                { text: "Keep the evidence close and the self-doubt on a short leash.", author: "Lab Cookie" },
+                { text: "Today, just make the next figure a little more honest.", author: "Lab Cookie" },
+                { text: "Your future reviewer will thank you for today's careful filename.", author: "Lab Cookie" },
+                { text: "Science is built by people who kept going after the first messy result.", author: "Lab Cookie" },
+                { text: "A small verification now is kindness to tomorrow's brain.", author: "Lab Cookie" },
+                { text: "If the pathway is tangled, you are still allowed to start with one arrow.", author: "Lab Cookie" },
+                { text: "Your work does not need to be loud to be useful.", author: "Lab Cookie" },
+                { text: "The cleanest answer often arrives after the third patient pass.", author: "Lab Cookie" },
+                { text: "A careful curator is a lighthouse for someone else's experiment.", author: "Lab Cookie" },
+                { text: "Rest is part of the protocol, even when the protocol forgot to say so.", author: "Lab Cookie" },
+                { text: "Keep going gently. The evidence is learning how to speak.", author: "Lab Cookie" }
+            ];
+            const toggle = document.getElementById("research-fortune-toggle");
+            const close = document.getElementById("research-fortune-close");
+            const card = document.getElementById("research-fortune-card");
+            const text = document.getElementById("research-fortune-text");
+            const author = document.getElementById("research-fortune-author");
+            let crumbleTimer = null;
+            let hideTimer = null;
+            let lastFortuneIndex = -1;
+            const recentFortuneIndexes = [];
+            const recentFortuneLimit = Math.min(20, Math.max(0, fortunes.length - 1));
+
+            function resetTimers() {
+                if (crumbleTimer) {
+                    window.clearTimeout(crumbleTimer);
+                }
+                if (hideTimer) {
+                    window.clearTimeout(hideTimer);
+                }
+            }
+
+            function hideFortune() {
+                resetTimers();
+                card.classList.remove("is-open", "is-crumbling", "is-combining", "is-bouquet");
+            }
+
+            function openFortune() {
+                resetTimers();
+                const availableIndexes = fortunes
+                    .map((_, index) => index)
+                    .filter((index) => !recentFortuneIndexes.includes(index));
+                const pool = availableIndexes.length ? availableIndexes : fortunes.map((_, index) => index);
+                let fortuneIndex = pool[Math.floor(Math.random() * pool.length)];
+                if (fortunes.length > 1 && fortuneIndex === lastFortuneIndex && pool.length > 1) {
+                    const currentPosition = pool.indexOf(fortuneIndex);
+                    fortuneIndex = pool[(currentPosition + 1) % pool.length];
+                }
+                lastFortuneIndex = fortuneIndex;
+                recentFortuneIndexes.push(fortuneIndex);
+                while (recentFortuneIndexes.length > recentFortuneLimit) {
+                    recentFortuneIndexes.shift();
+                }
+                const fortune = fortunes[fortuneIndex];
+                text.textContent = fortune.text;
+                author.textContent = fortune.author;
+                card.classList.remove("is-crumbling", "is-combining", "is-bouquet");
+                card.classList.add("is-open");
+                crumbleTimer = window.setTimeout(() => {
+                    card.classList.add("is-crumbling", "is-combining");
+                    hideTimer = window.setTimeout(() => {
+                        card.classList.remove("is-crumbling", "is-combining");
+                        card.classList.add("is-bouquet");
+                        hideTimer = window.setTimeout(hideFortune, 2300);
+                    }, 780);
+                }, 7000);
+            }
+
+            toggle?.addEventListener("click", openFortune);
+            close?.addEventListener("click", hideFortune);
+        })();
+    </script>
+
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Image Slider -->
+<div id="carouselExampleIndicators" class="carousel slide" data-ride="carousel" data-interval="4000">
+    <ol class="carousel-indicators">
+        <li data-target="#carouselExampleIndicators" data-slide-to="0" class="active"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="1"></li>
+        <li data-target="#carouselExampleIndicators" data-slide-to="2"></li>
+    </ol>
+    <div class="carousel-inner">
+        <!-- Slide 1 -->
+        <div class="carousel-item img-fluid active">
+            <img src="{% static 'images/background01.jpeg' %}" class="d-block w-100" alt="Paper Describing PesticideDB">
+            <div class="carousel-caption">
+                <h3>PesticideDB Web Application</h3>
+                <p>PesticideDB: a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways.</p>
+            </div>
+        </div>
+        <!-- Slide 2 -->
+        <div class="carousel-item img-fluid">
+            <img src="{% static 'images/background02.jpeg' %}" class="d-block w-100" alt="Annotation Tools">
+            <div class="carousel-caption">
+                <h3>Annotate Your Sequences</h3>
+                <p>Compare gene or genome sequences against validated pesticide-degradation protein references.</p>
+            </div>
+        </div>
+        <!-- Slide 3 -->
+        <div class="carousel-item img-fluid">
+            <img src="{% static 'images/background03.jpeg' %}" class="d-block w-100" alt="Database Statistics">
+            <div class="carousel-caption">
+                <h3>Database Statistics</h3>
+                <p>v{{ database_version }}: {{ microorganisms_count }} microorganisms, {{ proteins_count }} proteins, and {{ structure_count }} structures.</p>
+            </div>
+        </div>
+    </div>
+    <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="sr-only">Previous</span>
+    </a>
+    <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="sr-only">Next</span>
+    </a>
+</div>
+
+<section class="home-about-section">
+    <div class="container">
+        <p class="h2 text-center mb-4">About PesticideDB</p>
+        <div class="home-about-copy">
+            <p>PesticideDB is a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways. It centralizes pesticide degradation data to support sustainable agriculture, environmental health, and discovery of microbial genes, enzymes, proteins, and degradation routes.</p>
+            <p>PesticideDB organizes pesticide information into two complementary categories: pesticides with experimentally reported microbial degradation evidence and pesticides for which no validated microbial degradation evidence was identified during curation.</p>
+            <p><strong>Protein reference tiers:</strong> the Protein section contains {{ curated_protein_count }} curated proteins and {{ supplemented_protein_count }} unique supplemented proteins supported by purified or recombinant protein evidence. The default annotation reference uses validated protein records only.</p>
+        </div>
+
+        <div class="home-metric-strip" aria-label="PesticideDB database summary">
+            <a class="home-metric-card" href="{% url 'pesticideclassification' %}">
+                <span>Pesticides total</span>
+                <strong>{{ total_pesticides }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'pesticideclassification' %}">
+                <span>Pesticides with Biodegradation Evidence</span>
+                <strong>{{ pesticides_with_evidence }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'pesticideclassification' %}">
+                <span>Pesticides with No Biodegradation Evidence</span>
+                <strong>{{ pesticides_no_evidence }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'microorganisms' %}">
+                <span>Microorganisms</span>
+                <strong>{{ microorganisms_count }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'proteins' %}">
+                <span>Proteins</span>
+                <strong>{{ proteins_count }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'proteins' %}">
+                <span>Curated proteins</span>
+                <strong>{{ curated_protein_count }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'proteins' %}">
+                <span>Supplemented proteins</span>
+                <strong>{{ supplemented_protein_count }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'proteins' %}">
+                <span>Protein structures</span>
+                <strong>{{ structure_count }}</strong>
+            </a>
+            <a class="home-metric-card" href="{% url 'citation_download' %}">
+                <span>References</span>
+                <strong>{{ reference_count }}</strong>
+            </a>
+            <div class="home-metric-card">
+                <span>Database version</span>
+                <strong class="home-metric-date">v{{ database_version }}</strong>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% include 'base/includes/isolation_globe.html' %}
+
+<style>
+    .home-about-section {
+        padding: 3rem 0 1.5rem;
+    }
+    .home-about-copy {
+        max-width: 1120px;
+        margin: 0 auto 2rem;
+        font-size: 1.36rem;
+        line-height: 1.82;
+    }
+    .home-metric-strip {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+        border-top: 5px solid #0b58b5;
+        border-left: 1px solid #d9e2ec;
+        background: #fff;
+    }
+    .home-metric-card {
+        display: flex;
+        min-height: 132px;
+        flex-direction: column;
+        justify-content: center;
+        padding: 1.25rem 1.35rem;
+        border-right: 1px solid #d9e2ec;
+        border-bottom: 1px solid #d9e2ec;
+        color: #2a2f35;
+        text-decoration: none;
+        transition: background-color .18s ease, color .18s ease, transform .18s ease;
+    }
+    .home-metric-card span {
+        color: #5f666d;
+        font-size: 1.12rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    .home-metric-card strong {
+        font-size: 2.12rem;
+        line-height: 1;
+    }
+    .home-metric-date {
+        font-size: 1.28rem !important;
+        line-height: 1.2 !important;
+    }
+    .home-metric-card:hover,
+    .home-metric-card:focus {
+        background: #0b58b5;
+        color: #fff;
+        text-decoration: none;
+        transform: translateY(-2px);
+    }
+    .home-metric-card:hover span,
+    .home-metric-card:focus span {
+        color: #fff;
+    }
+    @media (max-width: 1200px) {
+        .home-metric-strip {
+            grid-template-columns: repeat(4, minmax(170px, 1fr));
+        }
+    }
+    @media (max-width: 768px) {
+        .home-metric-strip {
+            grid-template-columns: repeat(2, minmax(145px, 1fr));
+        }
+        .home-metric-card {
+            min-height: 112px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    $(document).ready(function(){
+        $('#carouselExampleIndicators').carousel({
+            interval: 5000,
+            pause: "hover"
+        });
+    });
+</script>
+{% endblock %}

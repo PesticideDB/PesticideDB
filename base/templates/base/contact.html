@@ -1,0 +1,508 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container contact-page py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-10">
+            <div class="contact-heading">
+                <span class="contact-kicker">Contact</span>
+                <h1>Curator Inbox</h1>
+            </div>
+            <p class="contact-intro">
+                Questions, corrections, collaborations, and suspiciously well-behaved pesticide-degradation evidence can all come here.
+            </p>
+
+            <div class="contact-grid my-4">
+                <article class="contact-card" data-email="gurungsaru634@gmail.com">
+                    <div>
+                        <span class="contact-label">Curator</span>
+                        <h2>Saru Gurung</h2>
+                    </div>
+                    <div class="contact-email">
+                        <span>Email</span>
+                        <a href="mailto:gurungsaru634@gmail.com">gurungsaru634@gmail.com</a>
+                    </div>
+                    <div class="contact-actions">
+                        <a class="btn btn-primary btn-sm" href="mailto:gurungsaru634@gmail.com">Email</a>
+                        <button class="btn btn-outline-primary btn-sm copy-email" type="button">Copy</button>
+                        <a class="btn btn-link btn-sm" href="https://www.researchgate.net/profile/Saru-Gurung-3?ev=hdr_xprf" target="_blank" rel="noopener">ResearchGate</a>
+                    </div>
+                </article>
+
+                <article class="contact-card" data-email="alstnrla2026@gmail.com">
+                    <div>
+                        <span class="contact-label">Curator</span>
+                        <h2>Min-Su Kim</h2>
+                    </div>
+                    <div class="contact-email">
+                        <span>Email</span>
+                        <a href="mailto:alstnrla2026@gmail.com">alstnrla2026@gmail.com</a>
+                    </div>
+                    <div class="contact-actions">
+                        <a class="btn btn-primary btn-sm" href="mailto:alstnrla2026@gmail.com">Email</a>
+                        <button class="btn btn-outline-primary btn-sm copy-email" type="button">Copy</button>
+                        <a class="btn btn-link btn-sm" href="https://www.researchgate.net/profile/Min-Su-Kim-17?ev=hdr_xprf" target="_blank" rel="noopener">ResearchGate</a>
+                    </div>
+                </article>
+            </div>
+
+            <section class="contact-console mt-5">
+                <div class="contact-console-copy">
+                    <span class="contact-label">Inbox Roulette</span>
+                    <h2>Need a subject? Roll once.</h2>
+                </div>
+                <div class="dice-stage" aria-live="polite">
+                    <button id="contact-dice" class="contact-dice" type="button" aria-label="Roll contact dice">
+                        <span id="dice-cube" class="dice-cube show-1">
+                            <span class="dice-side dice-side-1"><i></i></span>
+                            <span class="dice-side dice-side-2"><i></i><i></i></span>
+                            <span class="dice-side dice-side-3"><i></i><i></i><i></i></span>
+                            <span class="dice-side dice-side-4"><i></i><i></i><i></i><i></i></span>
+                            <span class="dice-side dice-side-5"><i></i><i></i><i></i><i></i><i></i></span>
+                            <span class="dice-side dice-side-6"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+                        </span>
+                    </button>
+                    <span id="dice-caption" class="dice-caption">Click the dice.</span>
+                </div>
+                <div class="contact-console-panel">
+                    <div class="subject-preview" aria-live="polite">
+                        <span>Rolled result</span>
+                        <strong id="contact-subject">PesticideDB correction</strong>
+                        <small id="contact-recipient">Suggested recipient: Saru Gurung</small>
+                    </div>
+                    <div class="contact-console-actions">
+                        <button id="contact-randomizer" class="contact-randomizer" type="button">
+                            Roll dice
+                        </button>
+                        <a id="mailto-selected" class="btn btn-primary btn-sm" href="mailto:gurungsaru634@gmail.com?subject=PesticideDB%20correction">
+                            Email selected curator
+                        </a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .contact-page {
+        color: #232a31;
+        min-height: calc(100vh - 210px);
+        padding-top: 5.5rem !important;
+    }
+    .contact-heading {
+        display: grid;
+        gap: .25rem;
+    }
+    .contact-kicker,
+    .contact-label {
+        color: #667085;
+        font-size: .78rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        text-transform: uppercase;
+    }
+    .contact-heading h1 {
+        margin: 0;
+        font-size: clamp(1.85rem, 3vw, 2.45rem);
+        line-height: 1.15;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+    .contact-intro {
+        max-width: 760px;
+        margin: .75rem 0 0;
+        color: #59636f;
+        font-size: .98rem;
+        line-height: 1.55;
+    }
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+    .contact-card,
+    .contact-console {
+        border: 1px solid #d7dde5;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 10px 28px rgba(31, 41, 55, .08);
+    }
+    .contact-card {
+        display: grid;
+        gap: 1.1rem;
+        min-height: 230px;
+        padding: 1.3rem;
+        transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+    }
+    .contact-card:hover {
+        transform: translateY(-3px);
+        border-color: #3d6fb6;
+        box-shadow: 0 16px 34px rgba(31, 41, 55, .13);
+    }
+    .contact-card h2,
+    .contact-console h2 {
+        margin: .2rem 0 0;
+        font-size: 1.15rem;
+        line-height: 1.2;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+    .contact-email {
+        display: grid;
+        gap: .12rem;
+    }
+    .contact-email span {
+        color: #6c757d;
+        font-size: .84rem;
+    }
+    .contact-email a {
+        overflow-wrap: anywhere;
+        font-weight: 650;
+    }
+    .contact-actions,
+    .contact-console-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .55rem;
+        align-items: center;
+    }
+    .contact-actions .btn-link {
+        padding-left: .15rem;
+        padding-right: .15rem;
+    }
+    .contact-console {
+        display: grid;
+        grid-template-columns: minmax(150px, .75fr) minmax(210px, 1fr) minmax(220px, .95fr);
+        gap: .7rem .9rem;
+        align-items: center;
+        max-width: 760px;
+        min-height: 92px;
+        margin-top: clamp(18rem, 28vh, 24rem) !important;
+        margin-bottom: 2rem;
+        margin-left: auto;
+        margin-right: auto;
+        padding: .65rem .8rem;
+        box-shadow: 0 4px 12px rgba(31, 41, 55, .045);
+    }
+    .contact-console-copy {
+        display: grid;
+        gap: .25rem;
+    }
+    .contact-console h2 {
+        max-width: 170px;
+        font-size: .72rem;
+        line-height: 1.32;
+        font-weight: 700;
+        color: #2f3843;
+    }
+    .dice-stage {
+        display: flex;
+        gap: .75rem;
+        align-items: center;
+        min-height: 68px;
+        padding: .3rem .45rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #fbfcfe;
+    }
+    .contact-dice {
+        position: relative;
+        display: inline-grid;
+        width: 62px;
+        height: 62px;
+        flex: 0 0 auto;
+        place-items: center;
+        border: 0;
+        background: transparent;
+        perspective: 760px;
+        cursor: pointer;
+    }
+    .contact-dice::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        width: 46px;
+        height: 12px;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, .22);
+        filter: blur(8px);
+        transform: translateY(16px) scaleX(1);
+        transition: transform .2s ease, opacity .2s ease;
+    }
+    .dice-cube {
+        position: relative;
+        z-index: 1;
+        width: 42px;
+        height: 42px;
+        transform-style: preserve-3d;
+        transform: rotateX(-18deg) rotateY(24deg);
+        transition: transform .52s cubic-bezier(.2, .84, .26, 1);
+    }
+    .dice-side {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+        gap: 3px;
+        padding: 7px;
+        border: 2px solid #111827;
+        border-radius: 10px;
+        background:
+            radial-gradient(circle at 28% 24%, rgba(255, 255, 255, .96), transparent 28%),
+            linear-gradient(135deg, #ffffff 0%, #f3f6fb 48%, #c9d5e4 100%);
+        box-shadow:
+            inset 6px 6px 9px rgba(255, 255, 255, .88),
+            inset -8px -9px 12px rgba(100, 116, 139, .22);
+        backface-visibility: hidden;
+    }
+    .dice-side i {
+        width: 6px;
+        height: 6px;
+        align-self: center;
+        justify-self: center;
+        border-radius: 999px;
+        background:
+            radial-gradient(circle at 32% 30%, #4b5563 0 18%, #111827 55%);
+        box-shadow: inset 0 1px 1px rgba(255, 255, 255, .34);
+    }
+    .dice-side-1 { transform: translateZ(21px); }
+    .dice-side-2 { transform: rotateY(90deg) translateZ(21px); }
+    .dice-side-3 { transform: rotateX(90deg) translateZ(21px); }
+    .dice-side-4 { transform: rotateX(-90deg) translateZ(21px); }
+    .dice-side-5 { transform: rotateY(-90deg) translateZ(21px); }
+    .dice-side-6 { transform: rotateY(180deg) translateZ(21px); }
+    .dice-side-1 i:nth-child(1) { grid-column: 2; grid-row: 2; }
+    .dice-side-2 i:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .dice-side-2 i:nth-child(2) { grid-column: 3; grid-row: 3; }
+    .dice-side-3 i:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .dice-side-3 i:nth-child(2) { grid-column: 2; grid-row: 2; }
+    .dice-side-3 i:nth-child(3) { grid-column: 3; grid-row: 3; }
+    .dice-side-4 i:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .dice-side-4 i:nth-child(2) { grid-column: 3; grid-row: 1; }
+    .dice-side-4 i:nth-child(3) { grid-column: 1; grid-row: 3; }
+    .dice-side-4 i:nth-child(4) { grid-column: 3; grid-row: 3; }
+    .dice-side-5 i:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .dice-side-5 i:nth-child(2) { grid-column: 3; grid-row: 1; }
+    .dice-side-5 i:nth-child(3) { grid-column: 2; grid-row: 2; }
+    .dice-side-5 i:nth-child(4) { grid-column: 1; grid-row: 3; }
+    .dice-side-5 i:nth-child(5) { grid-column: 3; grid-row: 3; }
+    .dice-side-6 i:nth-child(1) { grid-column: 1; grid-row: 1; }
+    .dice-side-6 i:nth-child(2) { grid-column: 3; grid-row: 1; }
+    .dice-side-6 i:nth-child(3) { grid-column: 1; grid-row: 2; }
+    .dice-side-6 i:nth-child(4) { grid-column: 3; grid-row: 2; }
+    .dice-side-6 i:nth-child(5) { grid-column: 1; grid-row: 3; }
+    .dice-side-6 i:nth-child(6) { grid-column: 3; grid-row: 3; }
+    .dice-cube.show-1 { transform: rotateX(-18deg) rotateY(24deg); }
+    .dice-cube.show-2 { transform: rotateX(-18deg) rotateY(-66deg); }
+    .dice-cube.show-3 { transform: rotateX(-108deg) rotateY(18deg); }
+    .dice-cube.show-4 { transform: rotateX(72deg) rotateY(18deg); }
+    .dice-cube.show-5 { transform: rotateX(-18deg) rotateY(114deg); }
+    .dice-cube.show-6 { transform: rotateX(-18deg) rotateY(204deg); }
+    .dice-cube.is-hidden-result {
+        transform: rotateX(-22deg) rotateY(38deg) rotateZ(8deg);
+    }
+    .contact-dice:hover .dice-cube {
+        transform: translateY(-6px) rotateX(-30deg) rotateY(38deg) rotateZ(-7deg);
+    }
+    .contact-dice:hover::after {
+        opacity: .72;
+        transform: translateY(20px) scaleX(1.2);
+    }
+    .contact-dice.is-rolling {
+        animation: dice-hop 1s ease-in-out;
+    }
+    .contact-dice.is-rolling .dice-cube {
+        animation: dice-tumble 1s cubic-bezier(.16, .84, .24, 1);
+    }
+    .contact-dice.is-rolling::after {
+        animation: dice-shadow 1s ease-in-out;
+    }
+    .dice-caption {
+        color: #59636f;
+        font-size: .72rem;
+        line-height: 1.35;
+    }
+    @keyframes dice-hop {
+        0% { transform: translate(0, 0); }
+        20% { transform: translate(22px, -24px); }
+        43% { transform: translate(-18px, -8px); }
+        66% { transform: translate(13px, -30px); }
+        86% { transform: translate(-5px, -4px); }
+        100% { transform: translate(0, 0); }
+    }
+    @keyframes dice-tumble {
+        0% { transform: rotateX(-18deg) rotateY(24deg) rotateZ(0deg); }
+        18% { transform: rotateX(142deg) rotateY(114deg) rotateZ(38deg); }
+        38% { transform: rotateX(322deg) rotateY(-166deg) rotateZ(-64deg); }
+        61% { transform: rotateX(512deg) rotateY(238deg) rotateZ(118deg); }
+        82% { transform: rotateX(706deg) rotateY(-296deg) rotateZ(190deg); }
+        100% { transform: rotateX(892deg) rotateY(384deg) rotateZ(236deg); }
+    }
+    @keyframes dice-shadow {
+        0% { opacity: .78; transform: translateY(16px) scaleX(1); }
+        20% { opacity: .28; transform: translateY(30px) scaleX(.6); }
+        43% { opacity: .58; transform: translateY(21px) scaleX(.85); }
+        66% { opacity: .22; transform: translateY(32px) scaleX(.55); }
+        86% { opacity: .66; transform: translateY(18px) scaleX(.95); }
+        100% { opacity: .78; transform: translateY(16px) scaleX(1); }
+    }
+    .subject-preview {
+        display: grid;
+        gap: .15rem;
+        min-height: 52px;
+        padding: .35rem .5rem;
+        border-left: 3px solid #255fae;
+        background: #f8fafc;
+    }
+    .subject-preview span {
+        color: #6c757d;
+        font-size: .68rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+    .subject-preview strong {
+        font-size: .78rem;
+    }
+    .subject-preview small {
+        color: #59636f;
+        font-size: .7rem;
+    }
+    .contact-console-panel {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: .55rem;
+        align-items: center;
+    }
+    .contact-randomizer {
+        min-height: 30px;
+        width: max-content;
+        padding: .24rem .52rem;
+        border: 1px solid #27313b;
+        border-radius: 6px;
+        background: #27313b;
+        color: #fff;
+        font-size: .74rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .contact-randomizer:active {
+        transform: translateY(1px);
+    }
+    .copy-email.was-copied {
+        border-color: #198754;
+        color: #198754;
+    }
+    .contact-console-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .45rem;
+    }
+    .contact-console-actions .btn {
+        font-size: .74rem;
+        padding: .22rem .44rem;
+    }
+    @media (max-width: 768px) {
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+        .contact-console,
+        .contact-console-panel {
+            grid-template-columns: 1fr;
+        }
+        .contact-console {
+            margin-top: 8rem !important;
+        }
+        .contact-heading h1 {
+            font-size: 1.85rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    (function () {
+        const subjectPreview = document.getElementById("contact-subject");
+        const recipientPreview = document.getElementById("contact-recipient");
+        const selectedLink = document.getElementById("mailto-selected");
+        const randomizer = document.getElementById("contact-randomizer");
+        const dice = document.getElementById("contact-dice");
+        const diceCube = document.getElementById("dice-cube");
+        const diceCaption = document.getElementById("dice-caption");
+        const recipients = {
+            saru: {
+                name: "Saru Gurung",
+                email: "gurungsaru634@gmail.com"
+            },
+            minsu: {
+                name: "Min-Su Kim",
+                email: "alstnrla2026@gmail.com"
+            }
+        };
+        const playfulSubjects = [
+            { face: "1", subject: "PesticideDB correction", recipient: "saru", caption: "Correction selected." },
+            { face: "2", subject: "PesticideDB collaboration", recipient: "saru", caption: "Collaboration selected." },
+            { face: "3", subject: "New biodegradation evidence for PesticideDB", recipient: "minsu", caption: "New evidence selected." },
+            { face: "4", subject: "Pathway note for PesticideDB", recipient: "saru", caption: "Pathway note selected." },
+            { face: "5", subject: "Protein/gene record check", recipient: "minsu", caption: "Protein/gene check selected." },
+            { face: "6", subject: "General PesticideDB question", recipient: "saru", caption: "General question selected." }
+        ];
+
+        function updateContactGame(subject, recipientKey) {
+            const recipient = recipients[recipientKey] || recipients.saru;
+            subjectPreview.textContent = subject;
+            recipientPreview.textContent = `Suggested recipient: ${recipient.name}`;
+            selectedLink.href = `mailto:${recipient.email}?subject=${encodeURIComponent(subject)}`;
+            selectedLink.textContent = `Email ${recipient.name}`;
+        }
+
+        function rollInboxDice() {
+            const choice = playfulSubjects[Math.floor(Math.random() * playfulSubjects.length)];
+            dice?.classList.remove("is-rolling");
+            diceCube?.classList.remove("show-1", "show-2", "show-3", "show-4", "show-5", "show-6");
+            diceCube?.classList.add("is-hidden-result");
+            void dice?.offsetWidth;
+            dice?.classList.add("is-rolling");
+            if (diceCaption) {
+                diceCaption.textContent = "Consulting the research spirits...";
+            }
+            window.setTimeout(() => {
+                diceCube?.classList.remove("is-hidden-result");
+                diceCube?.classList.add(`show-${choice.face}`);
+                if (diceCaption) {
+                    diceCaption.textContent = choice.caption;
+                }
+                updateContactGame(choice.subject, choice.recipient);
+                dice?.classList.remove("is-rolling");
+            }, 1000);
+        }
+
+        randomizer?.addEventListener("click", rollInboxDice);
+        dice?.addEventListener("click", rollInboxDice);
+
+        document.querySelectorAll(".copy-email").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const email = button.closest(".contact-card")?.dataset.email || "";
+                if (!email) {
+                    return;
+                }
+                try {
+                    await navigator.clipboard.writeText(email);
+                    button.textContent = "Copied";
+                    button.classList.add("was-copied");
+                    window.setTimeout(() => {
+                        button.textContent = "Copy";
+                        button.classList.remove("was-copied");
+                    }, 1400);
+                } catch (error) {
+                    window.location.href = `mailto:${email}`;
+                }
+            });
+        });
+    })();
+</script>
+{% endblock %}

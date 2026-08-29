@@ -1,0 +1,5 @@
+pesticide,decision,reason
+Paraquat,Not integrated in this batch,"The verified PDF reports paraquat anaerobic transformation and formation of insoluble crystals, but the product is not represented as a named pathway compound suitable for a KEGG-like arrow."
+Dichlorvos,Not integrated in this batch,The verified PDF focuses on Trichoderma tolerance and multi-omics response under dichlorvos stress; it does not provide a named dichlorvos transformation product for a pathway arrow.
+Endosulfan,Not integrated in this batch,"The verified PDF confirms fungal degradation of alpha-endosulfan, beta-endosulfan, and endosulfan sulfate, but extracted text does not provide a directed substrate-to-product step from the study."
+Chlorothalonil,Not integrated in this batch,"The verified PDF reports chlorothalonil dissipation by Stenotrophomonas acidaminiphila BJ1, but does not identify the degradation product in the study text."

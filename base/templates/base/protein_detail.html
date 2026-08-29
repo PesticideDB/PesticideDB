@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+{% load doi_links %}
+
+{% block title %}
+  Protein {{ p.pesticidedb_protein_id|default:p.pbdb_protein_id }} | PesticideDB
+{% endblock %}
+
+{% block content %}
+<br><br>
+<div class="container">
+
+  {# ================= HEADER ================= #}
+  <div class="card shadow-sm mb-4">
+    <div class="card-body">
+      {% with display_id=p.pesticidedb_protein_id|default:p.pbdb_protein_id %}
+        <h3 class="mb-1">
+          PesticideDB Protein ID:
+          <span class="text-primary">{{ display_id|default:"-" }}</span>
+        </h3>
+      {% endwith %}
+
+      <p class="text-muted mb-0">
+        {% if uniprot_url %}
+          <a target="_blank" href="{{ uniprot_url }}">
+            {{ p.reported_protein_name|default:p.uniprot_accession }}
+          </a>
+        {% else %}
+          {{ p.reported_protein_name|default:"Reported protein not specified" }}
+        {% endif %}
+      </p>
+    </div>
+  </div>
+
+  {# ================= BASIC METADATA ================= #}
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <table class="table table-sm table-bordered">
+        <tr>
+          <th class="bg-light">Microorganism</th>
+          <td>{{ p.microorganism|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Pesticide</th>
+            <td>
+              {% if p.pesticide %}
+                <a href="{% url 'pathwayanalysis' %}?pesticide={{ p.pesticide|urlencode }}">{{ p.pesticide }}</a>
+              {% else %}-{% endif %}
+            </td>
+        </tr>
+        <tr>
+          <th class="bg-light">Year</th>
+          <td>{{ p.year|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Gene name</th>
+          <td>{{ p.gene_name|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">NCBI protein accession</th>
+          <td>
+            {% if p.ncbi_protein_accession %}
+              <a target="_blank"
+                 href="https://www.ncbi.nlm.nih.gov/protein/{{ p.ncbi_protein_accession }}">
+                {{ p.ncbi_protein_accession }}
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="col-md-6">
+      <table class="table table-sm table-bordered">
+        <tr>
+          <th class="bg-light">Reference (DOI)</th>
+          <td>
+            {% if p.doi %}
+              {% with doi_url=p.doi|doi_url doi_text=p.doi|doi_text %}
+                {% if doi_url %}
+                  <a target="_blank" rel="noopener" href="{{ doi_url }}">{{ doi_text|default:p.doi }}</a>
+                {% else %}
+                  {{ p.doi }}
+                {% endif %}
+              {% endwith %}
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+        <tr>
+          <th class="bg-light">Enzyme class</th>
+          <td>{{ p.enzyme_class|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">Evidence type</th>
+          <td>{{ p.evidence_type|default:"-" }}</td>
+        </tr>
+        <tr>
+          <th class="bg-light">UniProt accession</th>
+          <td>
+            {% if uniprot_url %}
+              <a target="_blank" href="{{ uniprot_url }}">
+                {{ p.uniprot_accession }}
+              </a>
+            {% else %}
+              -
+            {% endif %}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  {# ================= PROTEIN STRUCTURE ================= #}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white">
+      <strong>3D Protein Structure</strong>
+    </div>
+    <div class="card-body">
+
+      <div class="row">
+        {# Interactive Structure Viewer #}
+        <div class="col-md-7">
+          {% if pdb_structure_url %}
+            <div id="protein-structure-viewer"
+                 class="border rounded bg-light"
+                 data-pdb-url="{{ pdb_structure_url }}"
+                 style="height: 460px; width: 100%; position: relative;">
+              {% if structure_image_url %}
+                <img src="{{ structure_image_url }}"
+                     class="img-fluid h-100 w-100"
+                     style="object-fit: contain;"
+                     alt="Protein Structure Preview">
+              {% else %}
+                <div class="p-4 text-muted text-center">
+                  Loading interactive 3D structure...
+                </div>
+              {% endif %}
+            </div>
+            <small class="text-muted d-block mt-2">
+              Interactive 3D viewer uses the local predicted PDB structure.
+              Drag to rotate, scroll to zoom.
+            </small>
+            <div class="alert alert-light border mt-3 mb-0">
+              <strong>How to read this view:</strong>
+              the colored backbone trace shows the predicted protein fold.
+              pLDDT estimates confidence in local residue positions. Low-confidence regions may
+              be flexible or incorrectly modeled, and predicted structure does not prove pesticide-degrading activity.
+            </div>
+          {% elif structure_image_url %}
+            <img src="{{ structure_image_url }}"
+                 class="img-fluid border rounded"
+                 alt="Protein Structure Preview">
+          {% else %}
+            <div class="border p-4 text-muted">
+              Protein structure not available
+            </div>
+          {% endif %}
+        </div>
+
+        {# Structure Info Table #}
+        <div class="col-md-5">
+          <h5 class="mb-3">Structure Summary</h5>
+          <table class="table table-sm table-bordered">
+            <tr>
+              <th class="bg-light">Model source</th>
+              <td>
+                {% if structure_summary.source_url %}
+                  <a href="{{ structure_summary.source_url }}" target="_blank">
+                    {{ structure_summary.model_source|default:"-" }}
+                  </a>
+                {% else %}
+                  {{ structure_summary.model_source|default:"-" }}
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">Prediction method</th>
+              <td>{{ prediction_software|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">AFDB model release</th>
+              <td>{{ structure_summary.database_model_version|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Mean pLDDT confidence</th>
+              <td>
+                {% if structure_summary.mean_plddt %}
+                  {{ structure_summary.mean_plddt }} / 100
+                  ({{ structure_summary.confidence_label }})
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">Resolution</th>
+              <td>{{ structure_summary.resolution|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">File format</th>
+              <td>{{ file_format|default:"PDB" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Molecule</th>
+              <td>{{ structure_summary.molecule|default:p.reported_protein_name|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Chain</th>
+              <td>{{ structure_summary.chain|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Organism</th>
+              <td>{{ structure_summary.organism|default:p.microorganism|default:"-" }}</td>
+            </tr>
+            <tr>
+              <th class="bg-light">Residues / atoms</th>
+              <td>
+                {% if structure_summary.residue_count %}
+                  {{ structure_summary.residue_count }} residues;
+                  {{ structure_summary.atom_count }} atoms
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">UniProt accession</th>
+              <td>
+                {% if uniprot_url %}
+                  <a target="_blank" href="{{ uniprot_url }}">
+                    {{ p.uniprot_accession }}
+                  </a>
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+            </tr>
+            <tr>
+              <th class="bg-light">Download structure</th>
+              <td>
+                {% if pdb_download_url %}
+                  <a class="btn btn-sm btn-outline-primary" href="{{ pdb_download_url }}">
+                    Download PDB
+                  </a>
+                {% else %}
+                  Not available
+                {% endif %}
+              </td>
+            </tr>
+          </table>
+          <small class="text-muted">
+            Predicted models are not equivalent to experimentally deposited PDB entries.
+            Resolution is shown as not applicable because these coordinates were predicted, not solved by X-ray, NMR, or cryo-EM.
+          </small>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+ {# ================= FASTA SEQUENCE ================= #}
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-secondary text-white">
+    <strong>FASTA Sequence</strong>
+  </div>
+  <div class="card-body">
+
+    {% with display_id=p.pesticidedb_protein_id|default:p.pbdb_protein_id %}
+      {% if p.fasta_sequence %}
+        <pre class="bg-light p-3" style="max-height: 300px; overflow-y: auto; white-space: pre-wrap;">
+>{{ display_id }}
+{{ p.fasta_sequence }}
+        </pre>
+
+        <a class="btn btn-sm btn-success"
+           href="{% url 'protein_fasta_download' display_id %}">
+          Download FASTA
+        </a>
+
+      {% else %}
+        <p class="text-muted mb-2">FASTA sequence not available.</p>
+
+        {# ✅ NEW: Fetch from NCBI button #}
+        {% if p.ncbi_protein_accession %}
+          <form method="post" action="{% url 'fetch_ncbi_fasta' display_id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-primary">
+              Fetch FASTA from NCBI
+            </button>
+          </form>
+        {% else %}
+          <small class="text-muted">
+            No NCBI protein accession available to fetch FASTA.
+          </small>
+        {% endif %}
+
+      {% endif %}
+    {% endwith %}
+
+  </div>
+</div>
+
+
+  <a class="btn btn-secondary" href="{% url 'proteins' %}">
+    ← Back to Proteins
+  </a>
+
+</div>
+<br><br>
+{% endblock %}
+
+{% block extra_scripts %}
+  {{ block.super }}
+  {% if pdb_structure_url %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const viewerElement = document.getElementById("protein-structure-viewer");
+        if (!viewerElement) {
+          return;
+        }
+
+        const pdbUrl = viewerElement.dataset.pdbUrl;
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        let points = [];
+        let rotationX = -0.5;
+        let rotationY = 0.7;
+        let zoom = 1;
+        let dragging = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        function resizeCanvas() {
+          const rect = viewerElement.getBoundingClientRect();
+          const ratio = window.devicePixelRatio || 1;
+          canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+          canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+          canvas.style.width = "100%";
+          canvas.style.height = "100%";
+          context.setTransform(ratio, 0, 0, ratio, 0, 0);
+          render();
+        }
+
+        function parsePdbBackbone(pdbText) {
+          const caPoints = [];
+          const fallbackPoints = [];
+          pdbText.split(/\r?\n/).forEach(function (line) {
+            if (!line.startsWith("ATOM")) {
+              return;
+            }
+
+            const atom = line.slice(12, 16).trim();
+            const x = Number.parseFloat(line.slice(30, 38));
+            const y = Number.parseFloat(line.slice(38, 46));
+            const z = Number.parseFloat(line.slice(46, 54));
+            if ([x, y, z].some(Number.isNaN)) {
+              return;
+            }
+
+            if (atom === "CA") {
+              caPoints.push({ x: x, y: y, z: z });
+            } else if (atom === "N" || atom === "C" || atom === "O") {
+              fallbackPoints.push({ x: x, y: y, z: z });
+            }
+          });
+          return caPoints.length > 1 ? caPoints : fallbackPoints;
+        }
+
+        function centerPoints(rawPoints) {
+          const center = rawPoints.reduce(function (sum, point) {
+            sum.x += point.x;
+            sum.y += point.y;
+            sum.z += point.z;
+            return sum;
+          }, { x: 0, y: 0, z: 0 });
+          center.x /= rawPoints.length;
+          center.y /= rawPoints.length;
+          center.z /= rawPoints.length;
+          return rawPoints.map(function (point) {
+            return {
+              x: point.x - center.x,
+              y: point.y - center.y,
+              z: point.z - center.z
+            };
+          });
+        }
+
+        function rotatePoint(point) {
+          const cosY = Math.cos(rotationY);
+          const sinY = Math.sin(rotationY);
+          const x1 = point.x * cosY + point.z * sinY;
+          const z1 = -point.x * sinY + point.z * cosY;
+
+          const cosX = Math.cos(rotationX);
+          const sinX = Math.sin(rotationX);
+          const y2 = point.y * cosX - z1 * sinX;
+          const z2 = point.y * sinX + z1 * cosX;
+
+          return { x: x1, y: y2, z: z2 };
+        }
+
+        function colorForDepth(depth, minDepth, maxDepth) {
+          const ratio = (depth - minDepth) / ((maxDepth - minDepth) || 1);
+          const start = [13, 148, 136];
+          const end = [37, 99, 235];
+          const color = start.map(function (value, index) {
+            return Math.round(value + (end[index] - value) * ratio);
+          });
+          return "rgb(" + color.join(",") + ")";
+        }
+
+        function render() {
+          if (!context || points.length < 2) {
+            return;
+          }
+
+          const width = viewerElement.clientWidth;
+          const height = viewerElement.clientHeight;
+          context.clearRect(0, 0, width, height);
+          context.fillStyle = "#f8fafc";
+          context.fillRect(0, 0, width, height);
+
+          const rotated = points.map(rotatePoint);
+          const maxRange = Math.max.apply(null, rotated.map(function (point) {
+            return Math.max(Math.abs(point.x), Math.abs(point.y));
+          })) || 1;
+          const scale = Math.min(width, height) * 0.38 * zoom / maxRange;
+          const projected = rotated.map(function (point, index) {
+            return {
+              x: width / 2 + point.x * scale,
+              y: height / 2 + point.y * scale,
+              z: point.z,
+              index: index
+            };
+          });
+          const depths = projected.map(function (point) { return point.z; });
+          const minDepth = Math.min.apply(null, depths);
+          const maxDepth = Math.max.apply(null, depths);
+
+          context.lineCap = "round";
+          context.lineJoin = "round";
+          for (let i = 1; i < projected.length; i += 1) {
+            const previous = projected[i - 1];
+            const current = projected[i];
+            const depth = (previous.z + current.z) / 2;
+            context.strokeStyle = colorForDepth(depth, minDepth, maxDepth);
+            context.lineWidth = 5;
+            context.globalAlpha = 0.78;
+            context.beginPath();
+            context.moveTo(previous.x, previous.y);
+            context.lineTo(current.x, current.y);
+            context.stroke();
+          }
+
+          const step = Math.max(Math.floor(projected.length / 90), 1);
+          context.globalAlpha = 0.95;
+          for (let i = 0; i < projected.length; i += step) {
+            const point = projected[i];
+            const ratio = (point.z - minDepth) / ((maxDepth - minDepth) || 1);
+            context.fillStyle = colorForDepth(point.z, minDepth, maxDepth);
+            context.beginPath();
+            context.arc(point.x, point.y, 3 + ratio * 2.2, 0, Math.PI * 2);
+            context.fill();
+          }
+
+          context.globalAlpha = 1;
+          context.fillStyle = "#334155";
+          context.font = "14px Arial, sans-serif";
+          context.fillText("Interactive 3D predicted structure", 18, 26);
+        }
+
+        function pointerPosition(event) {
+          const touch = event.touches && event.touches[0];
+          return {
+            x: touch ? touch.clientX : event.clientX,
+            y: touch ? touch.clientY : event.clientY
+          };
+        }
+
+        fetch(pdbUrl)
+          .then(function (response) {
+            if (!response.ok) {
+              throw new Error("Could not load local PDB file.");
+            }
+            return response.text();
+          })
+          .then(function (pdbText) {
+            viewerElement.innerHTML = "";
+            viewerElement.appendChild(canvas);
+            points = centerPoints(parsePdbBackbone(pdbText));
+            resizeCanvas();
+          })
+          .catch(function () {
+            viewerElement.classList.add("p-4", "text-muted", "text-center");
+            viewerElement.innerHTML = "Interactive 3D structure could not be loaded. Please use the Download PDB button.";
+          });
+
+        viewerElement.addEventListener("mousedown", function (event) {
+          dragging = true;
+          lastX = event.clientX;
+          lastY = event.clientY;
+        });
+        window.addEventListener("mouseup", function () {
+          dragging = false;
+        });
+        window.addEventListener("mousemove", function (event) {
+          if (!dragging) {
+            return;
+          }
+          rotationY += (event.clientX - lastX) * 0.01;
+          rotationX += (event.clientY - lastY) * 0.01;
+          lastX = event.clientX;
+          lastY = event.clientY;
+          render();
+        });
+        viewerElement.addEventListener("touchstart", function (event) {
+          dragging = true;
+          const position = pointerPosition(event);
+          lastX = position.x;
+          lastY = position.y;
+        }, { passive: true });
+        viewerElement.addEventListener("touchend", function () {
+          dragging = false;
+        });
+        viewerElement.addEventListener("touchmove", function (event) {
+          if (!dragging) {
+            return;
+          }
+          const position = pointerPosition(event);
+          rotationY += (position.x - lastX) * 0.01;
+          rotationX += (position.y - lastY) * 0.01;
+          lastX = position.x;
+          lastY = position.y;
+          render();
+        }, { passive: true });
+        viewerElement.addEventListener("wheel", function (event) {
+          event.preventDefault();
+          zoom *= event.deltaY < 0 ? 1.08 : 0.92;
+          zoom = Math.min(Math.max(zoom, 0.45), 4);
+          render();
+        });
+        window.addEventListener("resize", resizeCanvas);
+      });
+    </script>
+  {% endif %}
+{% endblock %}

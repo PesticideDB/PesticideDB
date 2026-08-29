@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}PesticideDB - Annotate Genome{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<div class="container">
+    <div class="alert alert-warning">
+        <strong>Annotation disclaimer:</strong>
+        This tool identifies candidate genes or proteins from genome/protein FASTA input.
+        A sequence hit is not proof that the uploaded organism degrades the pesticide without experimental confirmation.
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="container bg-secondary text-white rounded shadow-lg">
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Upload a file</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="fasta_file" name="fasta_file" required type="file">
+                <br>
+                <p>
+                    Please upload a FASTA file with genome, contig, scaffold, or predicted protein sequences.
+                    Nucleotide genome files will be translated into proteins before annotation.
+                    This tool searches genome proteins against PesticideDB reference proteins using DIAMOND
+                    and optionally confirms enzyme-family matches using HMMER.
+                </p>
+                <p class="mb-0">
+                    <strong>Interpretation:</strong> Genome hits identify candidate pesticide-degradation genes. They are not proof of degradation activity without experimental evidence.
+                </p>
+                <p class="mt-2 mb-0">
+                    <strong>Example:</strong>
+                    Test with a small JMP134 pathway FASTA containing cited pesticide-degradation proteins from
+                    <em>Cupriavidus pinatubonensis</em> JMP134. It is intentionally much smaller than a full genome so the demo runs quickly.
+                    <a class="text-white font-weight-bold" href="{% static 'base/examples/annotate_genome_jmp134_pathway_demo.faa' %}" download>
+                        Download example FASTA
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Search mode</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="blast_type" name="blast_type">
+                    <option value="auto">Auto detect input type</option>
+                    <option value="blastp">BLASTP / protein FASTA</option>
+                    <option value="blastx">BLASTX / nucleotide FASTA</option>
+                </select>
+                <br>
+                <p>
+                    Auto mode detects protein versus nucleotide FASTA. For nucleotide input, it first predicts proteins with Prodigal and uses DIAMOND BLASTP; if no hits are found, it retries with DIAMOND BLASTX. HMMER is available when protein query sequences are available.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Search type</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="search_type" name="search_type">
+                    <option value="diamond_hmmer">DIAMOND + HMMER</option>
+                    <option value="diamond_only">DIAMOND only</option>
+                </select>
+                <br>
+                <p>
+                    DIAMOND ranks all validated protein matches that pass your thresholds. HMMER adds enzyme-family support when the query is available as protein sequence.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">
+                <p>Review E-value 1e-x</p>
+            </div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="5">
+                <br>
+                <p>
+                    This value marks results that meet your preferred review criterion; it does not hide other detected alignments.
+                    For example, 5 means 1e-5.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Review identity</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="pident" max="100" min="0" name="pident" required type="number" value="35">
+                <p>
+                    Used to mark results for review, not to remove them. Default 35% is a moderate genome-review criterion.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Review query coverage</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="query_coverage" max="100" min="0" name="query_coverage" required type="number" value="30">
+                <p>
+                    Used to mark results for review, not to remove them. Default 30% keeps partial candidates visible; use 60-80% as a stricter full-length criterion.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-4 text-center">
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary px-4">
+                    Submit
+                </button>
+
+                <br><br>
+
+                <p class="mt-2" style="font-size: 14px;">
+                    <strong>Please wait!!</strong> Genome annotation may take some time.
+                </p>
+
+                <button type="reset" class="btn btn-link text-white" style="font-weight: 500;">
+                    Reset
+                </button>
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<br><br><br>
+
+{% if error %}
+<div class="container">
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}

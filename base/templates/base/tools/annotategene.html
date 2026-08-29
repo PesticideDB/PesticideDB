@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load doi_links %}
+
+{% block title %}PesticideDB - Annotate Gene{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<div class="container">
+    <div class="alert alert-warning">
+        <strong>Annotation disclaimer:</strong>
+        This tool reports candidate pesticide-related proteins based on DIAMOND/HMMER similarity.
+        Results should be validated with curated evidence or experiments before being interpreted as confirmed degradation activity.
+    </div>
+</div>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <div class="container bg-secondary text-white rounded shadow-lg">
+
+        <!-- Upload -->
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Upload a file</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="fasta_file" name="fasta_file" required type="file">
+                <br>
+                <p>
+                    Please upload a FASTA file containing protein sequences or nucleotide sequences. DNA sequences will be translated into proteins using Prodigal before annotation. Short DNA fragments may not produce results.
+                    File names should contain only letters and numbers (A-Z, 0-9). Avoid spaces and special characters. This tool searches your sequence against validated PesticideDB reference proteins using DIAMOND. Protein queries also receive HMMER enzyme-family support; nucleotide gene queries are translated directly with DIAMOND BLASTX.
+                </p>
+                <p class="mb-0">
+                    <strong>Interpretation:</strong> Results are candidate functional annotations based on sequence similarity and family profiles. They should not be treated as experimentally confirmed pesticide degradation unless the matched database record has supporting evidence.
+                </p>
+                <p class="mt-2 mb-0">
+                    <strong>Example:</strong>
+                    Test with <em>tfdB</em> / 2,4-dichlorophenol hydroxylase from
+                    <em>Cupriavidus pinatubonensis</em> JMP134, a cited PesticideDB protein record
+                    (<code>PDBP0047</code>, NCBI <code>AAR31035.1</code>).
+                    <a class="text-white font-weight-bold" href="{% static 'base/examples/annotate_gene_tfdB_AAR31035.fasta' %}" download>
+                        Download example FASTA
+                    </a>
+                </p>
+            </div>
+        </div>
+
+        <!-- Search type -->
+        <div class="row p-4">
+            <div class="col-2 align-self-center">Search type</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <select id="search_type" name="search_type">
+                    <option value="diamond_hmmer">DIAMOND + HMMER</option>
+                    <option value="diamond_only">DIAMOND only</option>
+                </select>
+                <br>
+                <p>
+                    DIAMOND identifies and ranks all validated protein matches that pass your thresholds. HMMER detects the broader enzyme-family profile.
+                    Choose DIAMOND only when HMMER is unavailable on your server or when you need a faster preliminary search.
+                </p>
+            </div>
+        </div>
+
+        <!-- Review E-value -->
+        <div class="row p-3">
+            <div class="col-2 align-self-center">
+                <p>Review E-value 1e-x</p>
+            </div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="evalue" max="100" min="0" name="evalue" required type="number" value="3">
+                <br>
+                <p>
+                    This value does not hide results. It marks which reported alignments meet your preferred review criterion.
+                    For example, 3 means 1e-3. Suggested values: 3 = broad review, 5 = medium, 20 = strict.
+                </p>
+            </div>
+        </div>
+
+        <!-- Percent identity -->
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Review identity</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="pident" max="100" min="0" name="pident" required type="number" value="25">
+                <p>
+                    Used to mark results for review, not to remove them. Default 25% is broad discovery.
+                </p>
+            </div>
+        </div>
+
+        <div class="row p-3">
+            <div class="col-2 align-self-center">Review query coverage</div>
+            <div class="col-9 border border-top-0 border-bottom-0 border-right-0 align-self-center">
+                <input id="query_coverage" max="100" min="0" name="query_coverage" required type="number" value="30">
+                <p>
+                    Used to mark results for review, not to remove them. Default 30% keeps partial candidates visible; 60-80% is a stricter full-length criterion.
+                </p>
+            </div>
+        </div>
+
+        <!-- Buttons -->
+        <div class="row p-4 text-center">
+            <div class="col-12">
+
+                <button type="submit" class="btn btn-primary px-4">
+                    Run annotation
+                </button>
+
+                <br><br>
+
+                <p class="mt-2" style="font-size: 14px;">
+                    <strong>Please wait!!</strong> Results will appear after processing.
+                </p>
+
+                <button type="reset" class="btn btn-link text-white" style="font-weight: 500;">
+                    Reset
+                </button>
+
+            </div>
+        </div>
+
+    </div>
+</form>
+
+<br><br><br>
+
+{% if error %}
+<div class="container">
+    <div class="alert alert-danger">
+        <strong>Error:</strong> {{ error }}
+    </div>
+</div>
+{% endif %}
+
+{% if results %}
+<div class="container">
+    <div class="alert alert-info text-center">
+        Found <strong>{{ results|length }}</strong> annotation result(s).
+    </div>
+
+    {% for r in results %}
+    <div class="container bg-light rounded shadow-lg mb-4 p-4">
+
+        <h4 class="text-center">Annotation result for {{ r.query }}</h4>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Database annotation</h5>
+
+                <p><strong>PesticideDB Protein ID:</strong>
+                    {% if r.pesticidedb_protein_id %}
+                        <a href="{% url 'protein_detail' r.pesticidedb_protein_id %}">
+                            {{ r.pesticidedb_protein_id }}
+                        </a>
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+
+                <p><strong>NCBI Protein Accession:</strong> {{ r.ncbi_protein_accession|default:"-" }}</p>
+                <p><strong>Reported Protein:</strong> {{ r.reported_protein_name|default:"-" }}</p>
+                <p><strong>Gene Name:</strong> {{ r.gene_name|default:"-" }}</p>
+                <p><strong>Enzyme Class:</strong> {{ r.enzyme_class|default:"-" }}</p>
+            </div>
+
+            <div class="col-md-6">
+                <h5>Biodegradation information</h5>
+
+                <p><strong>Pesticide:</strong> {{ r.pesticide|default:"-" }}</p>
+                <p><strong>Microorganism:</strong> {{ r.microorganism|default:"-" }}</p>
+                <p><strong>Evidence Type:</strong> {{ r.evidence_type|default:"-" }}</p>
+                <p><strong>Year:</strong> {{ r.year|default:"-" }}</p>
+
+                <p><strong>DOI:</strong>
+                    {% if r.doi %}
+                        {% with doi_url=r.doi|doi_url doi_text=r.doi|doi_text %}
+                            {% if doi_url %}
+                                <a target="_blank" rel="noopener" href="{{ doi_url }}">{{ doi_text|default:r.doi }}</a>
+                            {% else %}
+                                {{ r.doi }}
+                            {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<br><br><br>
+
+{% endblock %}

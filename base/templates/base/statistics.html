@@ -1,0 +1,509 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Statistics - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Database Statistics</h1>
+    
+    <div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_pesticides }}</h1>
+                <h5>Total Pesticides</h5>
+                 <small class="text-muted">Unique pesticides (with + no evidence)</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ pesticides_with_evidence }}</h1>
+                <h5>Pesticides with Biodegradation Evidence</h5>
+                <small class="text-muted">Unique pesticides in evidence table</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ pesticides_no_evidence }}</h1>
+                <h5>Pesticides with No Biodegradation Evidence</h5>
+                <small class="text-muted">Unique pesticides lacking experimental data</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_proteins }}</h1>
+                <h5>Total Proteins</h5>
+                <small class="text-muted">Curated + supplemented Protein records</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ curated_protein_count }}</h1>
+                <h5>Curated Proteins</h5>
+                <small class="text-muted">Original experimentally supported Protein records</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ supplemented_protein_count }}</h1>
+                <h5>Supplemented Proteins</h5>
+                <small class="text-muted">Validated purified or recombinant protein records</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
+                <h5>Microorganisms</h5>
+                <small class="text-muted">Distinct microorganism labels across {{ microorganism_record_count }} reported microorganism records</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ structure_count }}</h1>
+                <h5>Protein Structures</h5>
+                <small class="text-muted">Local predicted PDB models</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4 mb-4">
+        <div class="card text-center">
+            <div class="card-body">
+                <h1 class="display-4 text-primary">{{ curated_publication_count }}</h1>
+                <h5>Curated Publications</h5>
+                <small class="text-muted">Distinct publication labels in biodegradation records</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        Counts on this page reflect the current local database.
+    </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Global microbial distribution for pesticide-degrading microorganism species </strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/map.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      The size of each circle indicates the number of pesticide-degrading microorganisms isolated from a given country. All isolates reported from the same country are grouped into a single circle positioned at the country’s center. The two largest circles correspond to China and India. Countries without red circles indicate regions where no published studies on pesticide-degrading isolates were found.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Isolation Environments</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/isolation_env.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      This analysis summarizes the environments from which pesticide-degrading microorganisms were isolated. The figure is record-level, so repeated microorganism labels may appear more than once when they are reported for different pesticides, publications, or curated records. This differs from the distinct microorganism-label count shown in the statistics summary above.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Trends in pesticide-degrading microbes and publications
+</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/no_of_publication.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Trends in pesticide-degrading microbes and publications">
+    <p class="text-muted mt-2 mb-0">
+      This analysis summarizes the number of publications published each year that reported pesticide-degrading microorganisms, as well as the cumulative number of putative pesticide-degrading species identified from 1966 to 2026. When a microorganism already known to degrade pesticides was later shown to degrade an additional pesticide, this finding was counted as a new publication but was not included as a newly identified pesticide-degrading species.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Techniques utilized to evaluate pesticide biodegradation across all compiled publications</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/techniques_used.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Bar plot showing the numbers of the most commonly used techniques for measuring biodegradation across compiled publications. Others includes a range of less frequently applied molecular, genetic, and biochemical approaches (e.g., gene knockout, DNase footprinting).
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Relative abundance of taxa reported as putative pesticide degraders</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/domain_phylum.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) domain and (Right) phylum.
+  </div>
+
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/class_order.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) class and (Right) order.
+  </div>
+
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/family_genus.jpeg' %}?v=20260724"
+         class="img-fluid border rounded statistics-figure"
+         alt="Isolation environments">
+    <p class="text-muted mt-2 mb-0">
+      Relative abundance of all taxa reported to degrade pesticides at the levels of (Left) family and (Right) genus.
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>From database coverage to biological questions</strong>
+  </div>
+  <div class="card-body">
+    <p class="text-muted mb-0" style="text-align: justify; text-justify: inter-word;">
+      The figures above summarize what is currently represented in PesticideDB: records, taxa, isolation sources, locations, publications, and broad taxonomic coverage. The figures below use the curated records to ask biological questions: which microorganisms and enzymes are repeatedly linked to pesticide degradation, how pesticide-degrading traits are distributed across microbial evolution, which gene families and transformation routes are best supported, and where reporting gaps point to opportunities for discovering new degraders.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: genus-pesticide associations</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/pesticide_microbe_heatmap.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Genus-pesticide heatmap">
+    <p class="text-muted mt-2 mb-0">
+      Genus-pesticide heatmap showing how curated biodegradation reports connect the 30 most represented microbial genera with selected highly represented pesticides in PesticideDB. Each cell counts distinct reported microorganism labels for a genus-pesticide pair; darker colors indicate more records. This view helps identify well-supported degrader-pesticide relationships, broad-spectrum candidate genera, and pesticides with sparse microbial coverage. Blank cells indicate that no association was identified in the curated literature, not confirmed biological absence.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: pesticide-degrading traits across microbial evolution</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/phylogenetic2.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Circular taxonomic tree of reported pesticide-degrading microorganisms">
+    <p class="text-muted mt-2 mb-0">
+      Circular taxonomic tree of reported pesticide-degrading microorganisms, with relationships defined by NCBI taxonomy. Leaf colors identify phyla, and 15 external rings mark reported pesticide associations. This view asks how pesticide-degrading traits are distributed across microbial evolution: clustered rings highlight lineages repeatedly reported for particular pesticides, while associations appearing across distant branches point to convergent degradation capacity, enzyme promiscuity, or possible horizontal gene transfer. Unresolved species-level TaxIDs were excluded to keep the evolutionary placement interpretable. An interactive version is available through <a href="https://itol.embl.de/export/203230418789731785293522" target="_blank" rel="noopener">iTOL</a>.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: enzyme functions linked to pesticide transformation</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/figure_enzyme_class_pesticide_bipartite_top15.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Enzyme-pesticide association network">
+    <p class="text-muted mt-2 mb-0">
+      Enzyme-pesticide association network connecting enzyme classes and pesticides reported together in at least one curated publication. Larger nodes have more connections, revealing enzyme functions that are repeatedly reused across pesticide biodegradation records as well as pesticides linked to narrower, more specific transformations. This mechanistic view helps move from “which organisms degrade pesticides?” to “which biochemical functions should be prioritized when searching for new degraders or annotating candidate genomes?”
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: gene-family evidence across microbial phyla</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_4A_gene_family_phylum1.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Gene-family distribution across microbial phyla">
+    <p class="text-muted mt-2 mb-0">
+      Gene-family distribution across microbial phyla based on curated pesticide-biodegradation evidence. Bubble size represents the number of distinct species-level TaxIDs linked to each gene-family-phylum association, and color represents the number of independent publications supporting that association. This view helps identify gene families that are concentrated in particular microbial lineages, gene families reported across multiple phyla, and underexplored phylum-gene combinations that may guide future degrader discovery. Empty positions indicate unreported associations in the curated literature, not confirmed biological absence.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: taxonomic breadth of major degradation gene families</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_4C_taxonomic_breadth_gene_families.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Taxonomic breadth of major pesticide-degradation gene families">
+    <p class="text-muted mt-2 mb-0">
+      Taxonomic breadth of major pesticide-degradation gene families in curated PesticideDB records. Bar length shows the number of associated species-level TaxIDs, while color shows the number of independent publications supporting each gene family. Broadly distributed families highlight reusable biochemical strategies that may be useful for discovering new degraders across diverse taxa, whereas narrowly distributed families may indicate specialized transformations or limited study. The pattern should be interpreted as both biological distribution and accumulated research effort.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: reported gene evidence across microbial phyla</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_4D_phylum_distribution_literature_panels.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Gene representation across microbial phyla">
+    <p class="text-muted mt-2 mb-0">
+      Gene representation across microbial phyla in curated pesticide-degradation records. Separate panels compare distinct gene families, species-level TaxIDs, and independent publications using separate horizontal scales, allowing taxonomic breadth and literature support to be read together without forcing them onto a single axis. Pseudomonadota dominate the reported literature, indicating both strong experimental representation and many curated gene-family links; however, this should not be interpreted as greater intrinsic pesticide-degradation capacity. Underrepresented phyla may reflect limited sampling, fewer genome-linked studies, or less targeted biodegradation research rather than true absence of degradation potential.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: gene-family associations across major genera</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Supplementary_Fig1_gene_family_by_top25_genera_bubble_heatmap.jpeg' %}?v=20260803"
+         class="img-fluid border rounded statistics-figure"
+         alt="Gene-family associations across the 25 most represented microbial genera">
+    <p class="text-muted mt-2 mb-0">
+      Gene-family associations across the 25 most represented microbial genera in curated pesticide-degradation records. Bubble size shows the number of distinct species linked to each genus-gene family pair, and color shows the number of independent publications supporting the association. This genus-level view helps identify well-studied degrader groups, gene families repeatedly observed within particular genera, and candidate genera where related degradation genes may be worth searching in new genomes. Blank cells denote associations not identified in the curated dataset, not confirmed biological absence.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: evidence strength for gene-taxon observations</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_4B_evidence_tiers.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Evidence tiers supporting distinct gene-taxon observations">
+    <p class="text-muted mt-2 mb-0">
+      Evidence supporting 402 distinct gene-taxon observations in curated pesticide-degradation records. Evidence tiers range from direct functional validation to sequence-based or annotation-based support, while unclassified records lacked sufficient gene-specific information for confident tier assignment. This figure shows which parts of the gene-family landscape are supported by stronger mechanistic evidence and which remain literature-reported but weakly resolved. The large unclassified fraction identifies a major reporting gap and highlights the need for future studies to connect pesticide degradation phenotypes with explicit genes, enzymes, sequences, and validation assays.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: verified evidence components across publications</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_5A_evidence_components.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Verified evidence components across curated publications">
+    <p class="text-muted mt-2 mb-0">
+      Verified evidence components across 597 curated publications in PesticideDB. Bars show the percentage and number of publications in which each evidence component was positively verified, such as microorganism identity, pesticide transformation, metabolite detection, gene or enzyme evidence, and pathway-level support. This publication-level audit shows which biological claims are most consistently documented and which evidence types remain sparse. Unreported or unverifiable information was treated as NR, not as confirmed absence, so low values should be interpreted as reporting or verification gaps rather than proof that a component was biologically missing.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: experimental control reporting across publications</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_5B_experimental_controls.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Verified reporting of experimental controls across curated publications">
+    <p class="text-muted mt-2 mb-0">
+      Verified reporting of experimental controls across 597 curated pesticide-biodegradation publications. Control categories are non-mutually exclusive because a single study may report several controls, such as abiotic, killed-cell, uninoculated, substrate-free, or analytical controls. This view helps evaluate how strongly reported degradation phenotypes can be interpreted as biological activity rather than chemical loss, adsorption, evaporation, or analytical uncertainty. NR or unverifiable information was not counted as explicit absence, so low reporting should be read as a transparency and verification gap rather than proof that controls were not performed.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: minimum verified support across publications</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_5C_minimum_verified.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Minimum verified-support categories across curated publications">
+    <p class="text-muted mt-2 mb-0">
+      Minimum verified-support categories for 597 curated pesticide-biodegradation publications. Scores of 0-2, 3-4, 5-6, 7-8, and 9-10 represent a gradient from very limited to very strong verified reporting support, based on the evidence components that could be confirmed during curation. This summary helps users judge how much confidence to place in different parts of the database when selecting records for pathway analysis, gene discovery, or experimental follow-up. These are conservative reporting-based categories, not definitive judgments of study quality.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: verified support across publication periods</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_5D_verified_support_by_publication_period.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Minimum verified-support scores across publication periods">
+    <p class="text-muted mt-2 mb-0">
+      Minimum verified-support scores across publication periods for curated pesticide-biodegradation publications. Boxplots show medians, interquartile ranges, and individual publications, with sample sizes displayed above each period. This temporal view helps users see whether stronger verified support is concentrated in particular eras of the literature. The pattern may reflect reporting practices, source availability, curation-access limits, and methodological change, so shifts over time should be interpreted as changes in documented evidence rather than definitive changes in study quality.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: evidence profiles for frequently studied pesticides</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Supplementary_Figure_S1_evidence_profiles_pesticides.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Evidence profiles for the most frequently studied pesticides">
+    <p class="text-muted mt-2 mb-0">
+      Evidence profiles for the most frequently studied pesticides in curated PesticideDB publications. Bubble size represents the number of independent publications linked to each pesticide, and color represents the percentage of those publications with verified evidence components. This view helps separate pesticides that are heavily studied from pesticides whose records are strongly supported by verifiable experimental detail, guiding users toward better-supported case studies and highlighting compounds where additional validation or reporting may be needed. Estimates for pesticides supported by few publications should be interpreted cautiously because percentages can shift strongly with a small number of records.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: evidence profiles across microbial phyla</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Supplementary_Figure_S2_evidence_profiles_phyla.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Verified evidence profiles across microbial phyla">
+    <p class="text-muted mt-2 mb-0">
+      Verified evidence profiles across microbial phyla represented by at least five curated publications. Bubble size shows the number of independent publications associated with each phylum, and color shows the percentage of publications with each verified evidence component. Publications spanning multiple phyla contribute once to each relevant phylum. This view helps identify where evidence is rich enough to support taxon-level interpretation and where phylum-level patterns may mainly reflect reporting depth, study design, or literature availability rather than intrinsic biodegradation capacity.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: biochemical transformation families in pathway evidence</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_6_transformation_family_distribution.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Prevalence of biochemical transformation families in the source-reviewed pathway subset">
+    <p class="text-muted mt-2 mb-0">
+      Prevalence of biochemical transformation families in the source-reviewed pathway subset of PesticideDB. Bars show the number and percentage of independent publications reporting each transformation family. This view summarizes the reaction logic most often documented in curated pesticide-degradation pathways, helping users identify common biochemical routes such as hydrolysis, oxidation, dealkylation, dehalogenation, or ring cleavage when comparing known pathways and searching for new degrader functions. Transformation families are non-mutually exclusive, so a single publication may contribute to more than one family and percentages do not sum to 100%.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: support status of reported transformation families</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_6_Pathway_support_status.jpeg' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Evidence status of reported transformation families">
+    <p class="text-muted mt-2 mb-0">
+      Evidence status of reported transformation families in the source-reviewed pathway subset. Stacked bars count distinct publication-pesticide reports classified as proposed, partially supported, or experimentally supported. This figure complements the preceding transformation-family prevalence plot by asking whether commonly reported reaction families are backed by direct experimental evidence or mainly by proposed pathway interpretation. The counting unit here is the publication-pesticide report, which differs from the independent-publication counts used in the preceding figure.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">
+    <strong>Curated biological insight: pesticide-transformation profiles in pathway evidence</strong>
+  </div>
+  <div class="card-body text-center">
+    <img src="{% static 'base/statistics/Figure_6_pesticide_transformation_profiles.png' %}?v=20260731"
+         class="img-fluid border rounded statistics-figure"
+         alt="Evidence-supported pesticide-transformation profiles in the curated pathway subset">
+    <p class="text-muted mt-2 mb-0">
+      Evidence-supported pesticide-transformation profiles in the curated pathway subset. Each point marks a reported pesticide-transformation family association, and color shows the highest evidence status assigned to that association: proposed, partially supported, or experimentally supported. This view helps users compare the reaction logic documented for individual pesticides and identify where pathway evidence is experimentally strong versus still proposed. Blank cells mean the transformation was not identified in the reviewed subset, not that it is biologically absent.
+    </p>
+  </div>
+</div>
+
+<hr class="my-4">
+
+<style>
+  .statistics-figure {
+    transition: transform 0.28s ease, box-shadow 0.28s ease, filter 0.28s ease;
+    will-change: transform;
+  }
+
+  .statistics-figure + .text-muted {
+    text-align: justify;
+    text-justify: inter-word;
+  }
+
+  .statistics-figure:hover {
+    transform: translateY(-6px) scale(1.012);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.16);
+    filter: saturate(1.03);
+  }
+</style>
+{% endblock %}

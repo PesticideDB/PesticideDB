@@ -1,0 +1,242 @@
+pesticidedb_protein_id,reported_protein_name,pesticide,microorganism,evidence_type,collection_category,enzyme_class,gene_name,ncbi_protein_accession,uniprot_accession,year,doi
+PDBP0001,Nitrile hydratase,Flonicamid,Ensifer adhaerens CGMCC 6315,Purified (Kinetics),CURATED,Hydrolase,pnhA,MH998512,,2021,10.1186/s12934-021-01620-4
+PDBP0002,Nitrile hydratase,Flonicamid,Ensifer adhaerens CGMCC 6315,Purified (Kinetics),CURATED,Hydrolase,CnhA,MH998512,,2021,10.1186/s12934-021-01620-4
+PDBP0003,Nitrilase,Flonicamid,Variovorax boronicumulans CGMCC 4969,Purified (Activity),CURATED,Amidase,NitA,ATA54505.1,,2022,10.1111/jam.15561
+PDBP0004,Nitrilase,Flonicamid,Variovorax boronicumulans CGMCC 4969,Purified (Activity),CURATED,Amidase,NitB,ATA55581.1,,2022,10.1111/jam.15561
+PDBP0005,Amidase,Flonicamid,Variovorax boronicumulans CGMCC 4969,Purified (Activity),CURATED,Amidase,AmiD,ATA52963,,2024,10.1016/j.scitotenv.2024.172479
+PDBP0006,Amidase,Flonicamid,Variovorax boronicumulans CGMCC 4969,Purified (Activity),CURATED,Amidase,AmiE,ATA52070,,2024,10.1016/j.scitotenv.2024.172479
+PDBP0007,Amidase,Flonicamid,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Amidase,PsAmiA,OL978580,,2023,10.1016/j.jhazmat.2022.129952
+PDBP0008,Nitrilase,Flonicamid,Alcaligenes faecalis CGMCC 17553,Purified (Kinetics),CURATED,Amidase,NitA,MK888683,,2019,10.1021/acs.jafc.9b04245
+PDBP0009,Nitrilase,Flonicamid,Alcaligenes faecalis CGMCC 17553,Purified (Kinetics),CURATED,Amidase,NitD,MK926979,,2019,10.1021/acs.jafc.9b04245
+PDBP0010,Amidase,Flonicamid,Microvirga flocculans CGMCC 1.16731,Purified (Kinetics),CURATED,Amidase,AmiA,MT610907,,2021,10.1016/j.ecoenv.2021.112384
+PDBP0011,Amidase,Flonicamid,Microvirga flocculans CGMCC 1.16731,Purified (Kinetics),CURATED,Amidase,AmiB,MT610908,,2021,10.1016/j.ecoenv.2021.112384
+PDBP0012,Amidase,Acetochlor,Sphingobium quisquiliarum DC-2,Purified (Kinetics),CURATED,Amidase,cmeH,KF294465,,2013,10.1016/j.biortech.2013.09.038
+PDBP0013,Nitrile hydratase,Sulfoxaflor,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Hydrolase,nhaseA,MN381727,,2020,10.1021/acs.jafc.9b06668
+PDBP0014,Nitrile hydratase,Sulfoxaflor,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Hydrolase,nhaseB,MN381728,,2020,10.1021/acs.jafc.9b06668
+PDBP0015,IpaH amidase,Iprodione,Paenarthrobacter sp. YJN-5,Purified (Kinetics),CURATED,Amidase,ipaH,MG601459,,2018,10.1128/AEM.01150-18
+PDBP0016,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhD,MH921423,,2019,10.1021/acs.jafc.8b06513
+PDBP0017,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhE,MH921424,,2019,10.1021/acs.jafc.8b06513
+PDBP0018,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhA,MH921425,,2019,10.1021/acs.jafc.8b06513
+PDBP0019,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase α-subunit,KF601242,,2014,10.1021/jf503557t
+PDBP0020,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase β-subunit,KF601243,,2014,10.1021/jf503557t
+PDBP0021,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase-accessory,KF601244,,2014,10.1021/jf503557t
+PDBP0022,Nitrile hydratase,Acetamiprid,Ensifer adhaerens CGMCC 6315,Purified (Activity),CURATED,Hydrolase,pnhA-α-subunit,MH998515,,2019,10.1021/acs.jafc.8b06154
+PDBP0023,Nitrile hydratase,Acetamiprid,Ensifer adhaerens CGMCC 6315,Purified (Activity),CURATED,Hydrolase,pnhA-β-subunit,MH998516,,2019,10.1021/acs.jafc.8b06154
+PDBP0024,Amidase,Acetamiprid,Pigmentiphaga sp. D-2,Purified (Product ID),CURATED,Amidase,AceAB,MK424478,,2020,10.1128/AEM.02425-19
+PDBP0025,Hydrolytic dehalogenase,Chlorothalonil,Ochrobactrum sp. CTN-11,Whole-cell / Crude,CURATED,Dehalogenase,gst-like gene,FJ769803,,2010,10.1007/s00284-010-9603-8
+PDBP0026,Hydrolytic dehalogenase,Chlorothalonil,Paracoccus sp. XF-3,Purified (Activity),CURATED,Dehalogenase,Chd,KM051531,,2015,10.1016/j.jbiosc.2015.03.013
+PDBP0027,Hydrolytic Dehalogenase,Chlorothalonil,Pseudomonas sp. CTN-3,Purified (Activity),CURATED,Dehalogenase,Chd,GQ292539,,2010,10.1128/JB.01547-09
+PDBP0028,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linX and linA1,AY150579,,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0029,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linA2,AY150580,,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0030,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linB,AY150581,,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0031,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linC,AY150582,,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0032,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linD,AY150583,,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0033,Haloalkane Dehalogenase,Lindane,Sphingobium sp. D4,Gene Only,CURATED,Dehalogenase,linB,Not available,,2022,10.1016/j.jhazmat.2022.128764
+PDBP0034,"1,3,4,6-tetrachloro-1,4-cyclohexadiene halidohydrolase",Lindane,Sphingomonas paucimobilis UT26,Purified (Kinetics),CURATED,Dehalogenase,linB,Not available,,1999,10.1128/JB.181.17.5409-5413.1999
+PDBP0035,HCH dehydrochlorinase,Lindane,Sphingobium sp. D4,Gene Only,CURATED,Dehalogenase,linA,OK601307,,2022,10.1016/j.jhazmat.2022.128764
+PDBP0036,Haloalkane Dehalogenase,Lindane,Sphingobium sp. D4,Gene Only,CURATED,Dehalogenase,linB,OK601308,,2022,10.1016/j.jhazmat.2022.128764
+PDBP0037,HCH dehydrochlorinase,Lindane,Sphingomonas sp. γ-1-7,Whole-cell / Crude,CURATED,Dehalogenase,linA,Not available,,2006,10.1128/AEM.72.1.622-627.2006
+PDBP0038,Phosphoesterase,Dichlorvos,Not specified,Whole-cell / Crude,CURATED,Phosphatase,opdA,Not available,,2019,10.1016/j.chemosphere.2019.01.058
+PDBP0039,Phosphoesterase,Dichlorvos,Not specified,Whole-cell / Crude,CURATED,Phosphatase,mpd,Not available,,2019,10.1016/j.chemosphere.2019.01.058
+PDBP0040,Lignin peroxidases,Isoxaflutole,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),CURATED,Peroxidase,LiP (EC1.11.1.14),Not available,,2000,10.1021/jf000397q
+PDBP0041,Manganese-dependent peroxidases,Isoxaflutole,Phanerochaete chrysosporium (ATCC 24725),Purified (Activity),CURATED,Peroxidase,MnP,Not available,,2000,10.1021/jf000397q
+PDBP0042,Laccase,Isoxaflutole,Trametes versicolor,Purified (Activity),CURATED,Oxidoreductase,Lac (EC1.10.3.2),Not available,,2000,10.1021/jf000397q
+PDBP0043,Dicamba monooxygenase,Dicamba,Stenotrophomonas maltophilia DI-6,Structure Only,CURATED,Monooxygenase,dmo,AAV53699,Q5S3I3,2009,10.1016/j.jmb.2009.07.021
+PDBP0044,THF-dependent demethylase,Dicamba,Rhizorhabdus dicambivorans Ndbn-20,Purified (Kinetics),CURATED,Oxidoreductase,dmt06,ON828423,,2022,10.3389/fmicb.2022.978577
+PDBP0045,Dimethoate amidohydrolase,Dimethoate,Sphingomonas sp. DC-6,Purified (Kinetics),CURATED,Hydrolase,dmhA,KC432583,,2016,10.1007/s10529-015-2027-6
+PDBP0046,"2,4-dichlorophenoxyacetate dioxygenase","2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Dioxygenase,tfdA,AAR31052.1,P10088,2023,10.1016/j.jhazmat.2023.131099
+PDBP0047,"2,4-dichlorophenol 6-monooxygenase","2,4-D",Cupriavidus pinatubonensis JMP134,Whole-cell / Crude,CURATED,Monooxygenase,tfdB,AAR31035.1,P27138,2023,10.1016/j.jhazmat.2023.131099
+PDBP0048,"Chlorocatechol-1,2-dioxygenase","2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Dioxygenase,tfdC,AAR31039.1,P0A396,2023,10.1016/j.jhazmat.2023.131099
+PDBP0049,Chloromuconate cycloisomerase,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Isomerase,tfdD,AAR31038.1,P05404,2023,10.1016/j.jhazmat.2023.131099
+PDBP0050,Dienelactone hydrolase,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Hydrolase,tfdE,AAR31037.1,P27136,2023,10.1016/j.jhazmat.2023.131099
+PDBP0051,Maleylacetate reductase,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Oxidoreductase,tfdF,AAR31036.1,P27137,2023,10.1016/j.jhazmat.2023.131099
+PDBP0052,Succinyl CoA: 3-oxoadipate CoA transferase alpha Subunit,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Transferase,pcaI,ABD14379.1,,2023,10.1016/j.jhazmat.2023.131099
+PDBP0053,Succinyl CoA: 3-oxoadipate CoA transferase betasubunit,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Transferase,pcaJ,ABD14378.1,,2023,10.1016/j.jhazmat.2023.131099
+PDBP0054,Beta-ketoadipyl-CoA thiolase,"2,4-D",Engineered Escherichia coli strain BL-3164,Whole-cell / Crude,CURATED,Hydrolase,pcaF,AMY25797.1,A0A143QTM9,2023,10.1016/j.jhazmat.2023.131099
+PDBP0055,Biphenyl dioxygenase,DDT,Pandoraea pnomenusa B356,Purified (Activity),CURATED,Dioxygenase,bphA,AAC44526,Q46372,2011,10.1016/j.abb.2011.09.016
+PDBP0056,Biphenyl dioxygenase,DDT,Burkholderia xenovorans LB400,Purified (Activity),CURATED,Dioxygenase,bphA,YP_556409,,2011,10.1016/j.abb.2011.09.016
+PDBP0057,Organophosphorus hydrolase,Methamidophos,Enterobacter sp. Z1,Recombinant (Activity),CURATED,Hydrolase,Oph,Not available,,2020,10.1016/j.chemosphere.2020.128054
+PDBP0058,Organophosphorus hydrolase variant,Phosmet,Agrobacterium radiobacter P230,Purified (Kinetics),CURATED,Hydrolase,opdA,AY043245,,2002,10.1128/AEM.68.7.3371-3376.2002
+PDBP0059,Phosphatidylserine decarboxylase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Lyase,psd,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0060,tRNA ribosyltransferase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Transferase,tgt,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0061,Adenylate 5'-phosphate decarboxylase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Lyase,pyrF,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0062,Uroporphyrinogen decarboxylase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Lyase,hemF,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0063,Acetal-dehyde phosphate hydrolase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Hydrolase,phnX,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0064,GTP cyclohydrolase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Hydrolase,folE,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0065,Metal dependent hydrolase,Pinoxaden,Acinetobacter pittobacter strain T4P20-1,Whole-cell / Crude,CURATED,Hydrolase,BCG9842\U B0515,Not available,,2022,10.21203/rs.3.rs-1375498/v1
+PDBP0066,Pyridine Nucleotide-Disulfide Oxidoreductase,Propylene oxide,Xanthobacter Strain Py2,Purified (Activity),CURATED,Oxidoreductase,X.ORF3,Not available,,1996,10.1128/jb.178.22.6644-6646.1996
+PDBP0067,"Chlorocatechol 1,2-dioxygenase",Quinclorac,Burkholderia cepacia WZ1,Whole-cell / Crude,CURATED,Oxidoreductase,PDR,Not available,,2009,10.1016/j.soilbio.2008.10.026
+PDBP0068,Phthalate dioxygenase reductase,Quinclorac,Burkholderia cepacia WZ1,Whole-cell / Crude,CURATED,Oxidoreductase,"1,2-CCD",Not available,,2009,10.1016/j.soilbio.2008.10.026
+PDBP0069,"Benzoate 1,2-dioxygenase reductase component",Azoxystrobin,Pseudomonas kermanshahensis MK113,Gene Only,CURATED,Oxidoreductase,benC,Not available,,2023,10.1016/j.scitotenv.2023.164375
+PDBP0070,"Protocatechuate 3,4-dioxygenase beta subunit",Azoxystrobin,Pseudomonas kermanshahensis MK113,Gene Only,CURATED,Oxidoreductase,pcaH,Not available,,2023,10.1016/j.scitotenv.2023.164375
+PDBP0071,"Protocatechuate 3,4-dioxygenase alpha subunit",Azoxystrobin,Rhodococcus fascians MK144,Gene Only,CURATED,Oxidoreductase,pcaG,Not available,,2023,10.1016/j.scitotenv.2023.164375
+PDBP0072,"Protocatechuate 3,4-dioxygenase beta subunit",Azoxystrobin,Rhodococcus fascians MK144,Gene Only,CURATED,Oxidoreductase,pcaH,Not available,,2023,10.1016/j.scitotenv.2023.164375
+PDBP0073,Subtilisin-like proteases,Azoxystrobin,Bacillus subtilis MK101,Gene Only,CURATED,Hydrolase,Not available,Not available,,2023,10.1016/j.scitotenv.2023.164375
+PDBP0074,Carbendazim hydrolase,Carbendazim,Mycobacterium sp. SD-4,Purified (Activity),CURATED,Hydrolase,mheI,KX698097,,2017,10.1016/j.jhazmat.2017.02.007
+PDBP0075,Serine hydrolase,Carbendazim,Nocardioides sp. strain SG-4G,Purified (Kinetics),CURATED,Hydrolase,mhel,GQ454794,,2010,10.1128/AEM.02990-09
+PDBP0076,Amidase,Iprodione,Paenarthrobacter sp. YJN-5,Recombinant (Activity),CURATED,Amidase,IpaH,AXF48699,,2021,10.1111/1462-2920.15308
+PDBP0077,Peptidoglycan deacetylase,Iprodione,Paenarthrobacter sp. YJN-5,Recombinant (Activity),CURATED,Hydrolase,ddaH,B5ZA76,,2021,10.1111/1462-2920.15308
+PDBP0078,Thermostable carboxypeptidase 1,Iprodione,Paenarthrobacter sp. YJN-5,Recombinant (Activity),CURATED,Hydrolase,duaH,P80092,,2021,10.1111/1462-2920.15308
+PDBP0079,Amidase,Iprodione,Paenarthrobacter sp. YJN-5,Purified (Kinetics),CURATED,Amidase,IpaH,MG601458,,2018,10.1128/AEM.01150-18
+PDBP0080,Not mentioned,Iprodione,Azospirillum sp. A1-3,Gene Only,CURATED,Not mentioned,IpaH,MG733131,,2022,10.3389/fmicb.2022.1057030
+PDBP0081,Phosphatase,Phosphonic acid,Aspergillus flavus,Whole-cell / Crude,CURATED,Phosphatase,Not available,Not available,,2008,10.1007/BF02816226
+PDBP0082,Phosphatase,Phosphonic acid,Aspergillus sydowii,Whole-cell / Crude,CURATED,Phosphatase,Not available,Not available,,2008,10.1007/BF02816226
+PDBP0083,Phosphatase,Phosphonic acid,Fusarium oxysporura,Whole-cell / Crude,CURATED,Phosphatase,Not available,Not available,,2008,10.1007/BF02816226
+PDBP0084,C–P lyase,Phosphonic acid,Ochrobactrum sp. BTU1,Whole-cell / Crude,CURATED,Lyase,phn operon,Not available,,2009,10.1016/j.micres.2024.127600
+PDBP0085,Nitrile hydratase,Thiacloprid,Ensifer adhaerens TMX-23,Purified (Kinetics),CURATED,Hydrolase,NhpA,Not available,,2021,10.1111/jam.15172
+PDBP0086,Nitrile hydratase,Thiacloprid,Ensifer adhaerens TMX-23,Purified (Kinetics),CURATED,Hydrolase,NhcA,Not available,,2021,10.1111/jam.15172
+PDBP0087,Organophosphorus hydrolase,Triazophos,Enterobacter sp. Z1,Recombinant (Activity),CURATED,Hydrolase,oph,Not available,,2020,10.1016/j.chemosphere.2020.128054
+PDBP0088,3-hydroxyacyl-CoA dehydrogenase,Triazophos,Enterobacter sp. Z1,Recombinant (Activity),CURATED,Oxidoreductase,paaC,Not available,,2020,10.1016/j.chemosphere.2020.128054
+PDBP0089,γ-HCH dehydrochlorinase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Dehalogenase,linA,Not available,,2010,10.1128/JB.00961-10
+PDBP0090,Haloalkane dehalogenase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Dehalogenase,linB,Not available,,2010,10.1128/JB.00961-10
+PDBP0091,Dehydrogenase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Oxidoreductase,linC,Not available,,2010,10.1128/JB.00961-10
+PDBP0092,Reductive dechlorinase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Oxidoreductase,linD,Not available,,2010,10.1128/JB.00961-10
+PDBP0093,Ring-cleavage dioxygenase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Oxidoreductase,linE,Not available,,2010,10.1128/JB.00961-10
+PDBP0094,Maleylacetate reductase,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Oxidoreductase,linF,Not available,,2010,10.1128/JB.00961-10
+PDBP0095,β-ketoadipate pathway,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Not mentioned,linG,Not available,,2010,10.1128/JB.00961-10
+PDBP0096,β-ketoadipate pathway,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Not mentioned,linH,Not available,,2010,10.1128/JB.00961-10
+PDBP0097,β-ketoadipate pathway,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Not mentioned,linI,Not available,,2010,10.1128/JB.00961-10
+PDBP0098,β-ketoadipate pathway,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Not mentioned,linJ,Not available,,2010,10.1128/JB.00961-10
+PDBP0099,ABC transporter proteins,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Translocases,linK,Not available,,2010,10.1128/JB.00961-10
+PDBP0100,ABC transporter proteins,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Translocases,linL,Not available,,2010,10.1128/JB.00961-10
+PDBP0101,ABC transporter proteins,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Translocases,linM,Not available,,2010,10.1128/JB.00961-10
+PDBP0102,ABC transporter proteins,Lindane,Sphingobium japonicum UT26,Gene Only,CURATED,Translocases,linN,Not available,,2010,10.1128/JB.00961-10
+PDBP0103,Dehydrochlorinase,Lindane,Bacillus cereus SJPS-2,Whole-cell / Crude,CURATED,Dehalogenase,linA,Not available,,2023,10.1016/j.envpol.2022.120867
+PDBP0104,Haloalkane dehalogenase,Lindane,Bacillus cereus SJPS-2,Whole-cell / Crude,CURATED,Dehalogenase,linB,Not available,,2023,10.1016/j.envpol.2022.120867
+PDBP0105,Dehydrogenase,Lindane,Bacillus cereus SJPS-2,Whole-cell / Crude,CURATED,Oxidoreductase,linC/linX,Not available,,2023,10.1016/j.envpol.2022.120867
+PDBP0106,Dechlorinase,Lindane,Bacillus cereus SJPS-2,Whole-cell / Crude,CURATED,Oxidoreductase,linD,Not available,,2023,10.1016/j.envpol.2022.120867
+PDBP0107,Dioxygenase,Lindane,Bacillus cereus SJPS-2,Whole-cell / Crude,CURATED,Oxidoreductase,linE,Not available,,2023,10.1016/j.envpol.2022.120867
+PDBP0108,Dehydrodehalogenase,Lindane,Xanthomonas sp. ICH12,Whole-cell / Crude,CURATED,Lyase,linA,DQ910544,,2007,10.1111/j.1365-2672.2006.03209.x
+PDBP0109,Hydrolytic dehalogenase,Lindane,Xanthomonas sp. ICH12,Whole-cell / Crude,CURATED,Dehalogenase,linB,DQ910545,,2007,10.1111/j.1365-2672.2006.03209.x
+PDBP0110,Dehydrochlorinase,Lindane,Sphingopyxis sp. MC4,Whole-cell / Crude,CURATED,Dehalogenase,linA,Not available,,2024,10.1016/j.jhazmat.2023.132545
+PDBP0111,Haloalkane dehalogenase,Lindane,Sphingopyxis sp. MC4,Whole-cell / Crude,CURATED,Dehalogenase,linB,Not available,,2024,10.1016/j.jhazmat.2023.132545
+PDBP0112,Dehydrochlorinase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Dehalogenase,linA,DQ372106,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0113,Halidohydrolase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Dehalogenase,linB,DQ246619,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0114,Dehydrogenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linC,DQ462464,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0115,Reductive dechlorinase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linD,DQ480725,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0116,Dioxygenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linE,DQ399709,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0117,Reductase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linF,DQ399710,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0118,LysR-type transcriptional regulator,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Not mentioned,linR,DQ399711,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0119,Dehydrogenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linX,DQ486136,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0120,Dehydrochlorinase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Dehalogenase,linA,Not available,,2006,10.1271/bbb.70.1029
+PDBP0121,Haloalkane dehalogenase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Dehalogenase,linB,Not available,,2006,10.1271/bbb.70.1029
+PDBP0122,Dehydrogenase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linC,Not available,,2006,10.1271/bbb.70.1029
+PDBP0123,Dechlorinase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linD,Not available,,2006,10.1271/bbb.70.1029
+PDBP0124,Dioxygenase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linE,Not available,,2006,10.1271/bbb.70.1029
+PDBP0125,Reductase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linF,Not available,,2006,10.1271/bbb.70.1029
+PDBP0126,Dehydrochlorinase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Dehalogenase,linA mutant,Not available,,2006,10.1271/bbb.70.1029
+PDBP0127,Haloalkane dehalogenase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Dehalogenase,linB mutant,Not available,,2006,10.1271/bbb.70.1029
+PDBP0128,Dehydrogenase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linC mutant,Not available,,2006,10.1271/bbb.70.1029
+PDBP0129,Dechlorinase,Lindane,Sphingobium japonicum UT26,Whole-cell / Crude,CURATED,Oxidoreductase,linD mutant,Not available,,2006,10.1271/bbb.70.1029
+PDBP0130,Dehydrochlorinase,Lindane,Sphingobium indicum B90A,Whole-cell / Crude,CURATED,Dehalogenase,linA,Not available,,2021,10.1007/s11356-021-13073-8
+PDBP0131,Haloalkane dehalogenase,Lindane,Sphingobium indicum B90A,Whole-cell / Crude,CURATED,Dehalogenase,linB,Not available,,2021,10.1007/s11356-021-13073-8
+PDBP0132,Dehydrogenase,Lindane,Sphingobium indicum B90A,Whole-cell / Crude,CURATED,Oxidoreductase,linC,Not available,,2021,10.1007/s11356-021-13073-8
+PDBP0133,Reductive dechlorinase,Lindane,Sphingobium indicum B90A,Gene Only,CURATED,Oxidoreductase,linD,Not available,,2021,10.1007/s11356-021-13073-8
+PDBP0134,Maleylacetate reductase,Lindane,Sphingobium indicum B90A,Gene Only,CURATED,Oxidoreductase,linF,Not available,,2021,10.1007/s11356-021-13073-8
+PDBP0135,"Chlorocatechol 1,2-dioxygenase","2,4-D",Sphingomonas sp. TFD44,Purified (Kinetics),CURATED,Oxidoreductase,TfdC,Not available,,2005,10.1016/j.bbrc.2005.05.045
+PDBP0136,"Chlorocatechol 1,2-dioxygenase","2,4-D",Sphingomonas sp. TFD44,Purified (Kinetics),CURATED,Oxidoreductase,TfdC2,AAT99373,Q5YB91,2005,10.1016/j.bbrc.2005.05.045
+PDBP0137,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Cupriavidus campinensis BJ71,Gene Only + whole-cell/ Crude,CURATED,Oxidoreductase,tfdA,Not available,,2014,10.1007/s11274-014-1680-6
+PDBP0138,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Ochrobactrum anthropi,Gene Only + whole-cell/ Crude,CURATED,Oxidoreductase,tfdA,Not available,,2014,10.1007/s11274-014-1680-6
+PDBP0139,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Bacillus spp.,Gene Only + whole-cell/ Crude,CURATED,Oxidoreductase,tfdA,Not available,,2014,10.1007/s11274-014-1680-6
+PDBP0140,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Stenotrophomonas sp.,Gene Only + whole-cell/ Crude,CURATED,Oxidoreductase,tfdA,Not available,,2014,10.1007/s11274-014-1680-6
+PDBP0141,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Pseudomonas sp.,Gene Only + whole-cell/ Crude,CURATED,Oxidoreductase,tfdA,Not available,,2014,10.1007/s11274-014-1680-6
+PDBP0142,Dichlorophenol hydroxylase,"2,4-D",Pseudomonas putida SM1443,Whole-cell / Crude,CURATED,Oxidoreductase,tfdB,Not available,,2010,10.1016/j.jhazmat.2010.04.002
+PDBP0143,α-ketoglutarate-dependent dioxygenase,"2,4-D",Novosphingobium sp. DY4,Gene Only,CURATED,Oxidoreductase,tfdAa,Not available,,2015,10.1007/s10532-015-9724-7
+PDBP0144,α-ketoglutarate-dependent dioxygenase,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Oxidoreductase,tfdA,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0145,Chlorophenol hydroxylase,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Oxidoreductase,tfdB,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0146,Dioxygenase,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Oxidoreductase,tfdC,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0147,Not mentioned,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Not mentioned,tfdD,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0148,Not mentioned,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Not mentioned,tfdE,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0149,Not mentioned,"2,4-D",Cupriavidus oxalaticus X32,Gene Only,CURATED,Not mentioned,tfdF,Not available,,2020,10.1021/acs.jafc.9b05061
+PDBP0150,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,TfdA,AY078159,,2003,10.1099/mic.0.26260-0
+PDBP0151,"2,4-dichlorophenol hydroxylase","2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,tfdB,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0152,"Chlorocatechol 1,2-dioxygenase","2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,tfdC,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0153,Chloromuconate cycloisomerase,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Isomerase,tfdD,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0154,Dienelactone hydrolase,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Hydrolase,tfdE,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0155,Maleylacetate reductase,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,tfdF,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0156,LysR-type transcriptional regulator,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Not mentioned,tfdR,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0157,Transport protein,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Not mentioned,tfdK,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0158,"Chlorocatechol 1,2-dioxygenase","2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,tfdCII,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0159,Dienelactone hydrolase,"2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Hydrolase,tfdEII,Not available,,2003,10.1099/mic.0.26260-0
+PDBP0160,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Not specified,Whole-cell / Crude,CURATED,Oxidoreductase,TfdA,Not available,,1996,10.1128/aem.62.7.2470-2476.1996
+PDBP0161,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Pseudomonas putida SM1443,Whole-cell / Crude,CURATED,Oxidoreductase,TfdA,Not available,,2005,10.1016/j.femsec.2005.04.007
+PDBP0162,Organophosphorus hydrolase variant,Phosmet,Agrobacterium radiobacter P230,Purified (Kinetics),CURATED,Hydrolase,opdA,AAK85308.1,Q93LD7,2002,10.1128/AEM.68.7.3371-3376.2002
+PDBP0163,"2,4-D / α-ketoglutarate dioxygenase","2,4-D",Delftia acidovorans P4a,Gene Only,CURATED,Oxidoreductase,TfdA,AAM76772.1,Q8KN30,2003,10.1099/mic.0.26260-0
+PDBP0164,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linX,AAN64237.1,A0A1L5BU05,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0165,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linA1,AAN64239.1,P59766,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0166,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linA2,AAN64240.2,P59767,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0167,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linB,AAN64241.1,A0A1L5BTC1,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0168,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linC,AAN64242.1,A0A1L5BUG8,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0169,HCH dehydrochlorinase,Lindane,Sphingomonas paucimobilis B90,Recombinant (Activity),CURATED,Dehalogenase,linD,AAN64243.1,A0A1L5BUX8,2002,10.1128/AEM.68.12.6021-6028.2002
+PDBP0170,Halidohydrolase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Dehalogenase,linB,ABB45872.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0171,Dehydrochlorinase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Dehalogenase,linA,ABD14407.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0172,Dioxygenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linE,ABD66585.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0173,Reductase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linF,ABD66586.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0174,LysR-type transcriptional regulator,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Not mentioned,linR,ABD66587.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0175,Dehydrogenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linC,ABE98169.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0176,Reductive dechlorinase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linD,ABE98170.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0177,Dehydrogenase,Lindane,Sphingobium sp. BHC-A,Purified (Activity),CURATED,Oxidoreductase,linX,ABE98171.1,,2006,10.1111/j.1462-2920.2007.01350.x
+PDBP0178,Hydrolytic dehalogenase,Lindane,Xanthomonas sp. ICH12,Whole-cell / Crude,CURATED,Dehalogenase,linB,ABI93216.1,Q06DE6,2007,10.1111/j.1365-2672.2006.03209.x
+PDBP0179,Dehydrodehalogenase,Lindane,Xanthomonas sp. ICH12,Whole-cell / Crude,CURATED,Lyase,linA,ABI93217.1,Q06DE5,2007,10.1111/j.1365-2672.2006.03209.x
+PDBP0180,Hydrolytic dehalogenase,Chlorothalonil,Ochrobactrum sp. CTN-11,Whole-cell / Crude,CURATED,Dehalogenase,gst-like gene,ACO52489.1,C1JZX6,2010,10.1007/s00284-010-9603-8
+PDBP0181,Hydrolytic Dehalogenase,Chlorothalonil,Pseudomonas sp. CTN-3,Purified (Activity),CURATED,Dehalogenase,Chd,ACT85192.1,C7EW69,2010,10.1128/JB.01547-09
+PDBP0182,Serine hydrolase,Carbendazim,Nocardioides sp. strain SG-4G,Purified (Kinetics),CURATED,Hydrolase,mhel,ACV42482.1,C8CP46,2010,10.1128/AEM.02990-09
+PDBP0183,Dimethoate amidohydrolase,Dimethoate,Sphingomonas sp. DC-6,Purified (Kinetics),CURATED,Hydrolase,dmhA,AGC74206.1,A0A067XIQ6,2016,10.1007/s10529-015-2027-6
+PDBP0184,Amidase,Acetochlor,Sphingobium quisquiliarum DC-2,Purified (Kinetics),CURATED,Amidase,cmeH,AGR84269.1,,2013,10.1016/j.biortech.2013.09.038
+PDBP0185,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase α-subunit,AHB33637.1,V5RFK1,2014,10.1021/jf503557t
+PDBP0186,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase β-subunit,AHB33638.1,V5RE14,2014,10.1021/jf503557t
+PDBP0187,Nitrile hydratase,Acetamiprid,Ensifer meliloti CGMCC 7333,Whole-cell / Crude,CURATED,Hydrolase,Nhase-accessory,AHB33639.1,V5REL3,2014,10.1021/jf503557t
+PDBP0188,Hydrolytic dehalogenase,Chlorothalonil,Paracoccus sp. XF-3,Purified (Activity),CURATED,Dehalogenase,Chd,AIQ78389.1,,2015,10.1016/j.jbiosc.2015.03.013
+PDBP0189,Carbendazim hydrolase,Carbendazim,Mycobacterium sp. SD-4,Purified (Activity),CURATED,Hydrolase,mheI,AOW37542.2,,2017,10.1016/j.jhazmat.2017.02.007
+PDBP0190,Amidase,Iprodione,Paenarthrobacter sp. YJN-5,Purified (Kinetics),CURATED,Amidase,IpaH,AXF48699.1,,2018,10.1128/AEM.01150-18
+PDBP0191,IpaH amidase,Iprodione,Paenarthrobacter sp. YJN-5,Purified (Kinetics),CURATED,Amidase,ipaH,AXF48700.1,,2018,10.1128/AEM.01150-18
+PDBP0192,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhD,QCE31168.1,,2019,10.1021/acs.jafc.8b06513
+PDBP0193,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhE,QCE31169.1,,2019,10.1021/acs.jafc.8b06513
+PDBP0194,Nitrile hydratase,Acetamiprid,Streptomyces canus CGMCC 13662,Purified (Kinetics),CURATED,Hydrolase,AnhA,QCE31170.1,,2019,10.1021/acs.jafc.8b06513
+PDBP0195,Nitrile hydratase,Flonicamid,Ensifer adhaerens CGMCC 6315,Purified (Kinetics),CURATED,Hydrolase,CnhA,QCG69013.1,,2021,10.1186/s12934-021-01620-4
+PDBP0196,Nitrile hydratase,Acetamiprid,Ensifer adhaerens CGMCC 6315,Purified (Activity),CURATED,Hydrolase,pnhA-α-subunit,QCG69014.1,,2019,10.1021/acs.jafc.8b06154
+PDBP0197,Nitrile hydratase,Acetamiprid,Ensifer adhaerens CGMCC 6315,Purified (Activity),CURATED,Hydrolase,pnhA-β-subunit,QCG69015.1,,2019,10.1021/acs.jafc.8b06154
+PDBP0198,Nitrile hydratase,Flonicamid,Ensifer adhaerens CGMCC 6315,Purified (Kinetics),CURATED,Hydrolase,pnhA,QCG69016.1,,2021,10.1186/s12934-021-01620-4
+PDBP0199,Amidase,Acetamiprid,Pigmentiphaga sp. D-2,Purified (Product ID),CURATED,Amidase,AceAB,QED08901.1,,2020,10.1128/AEM.02425-19
+PDBP0200,Nitrilase,Flonicamid,Alcaligenes faecalis CGMCC 17553,Purified (Kinetics),CURATED,Amidase,NitA,QGN75354.1,A0A650APE9,2019,10.1021/acs.jafc.9b04245
+PDBP0201,Nitrilase,Flonicamid,Alcaligenes faecalis CGMCC 17553,Purified (Kinetics),CURATED,Amidase,NitD,QHD56029.1,A0A6B9PUU8,2019,10.1021/acs.jafc.9b04245
+PDBP0202,Nitrile hydratase,Sulfoxaflor,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Hydrolase,nhaseA,QIZ15376.1,,2020,10.1021/acs.jafc.9b06668
+PDBP0203,Nitrile hydratase,Sulfoxaflor,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Hydrolase,nhaseB,QIZ15377.1,,2020,10.1021/acs.jafc.9b06668
+PDBP0204,Amidase,Flonicamid,Microvirga flocculans CGMCC 1.16731,Purified (Kinetics),CURATED,Amidase,AmiA,QNH86248.1,,2021,10.1016/j.ecoenv.2021.112384
+PDBP0205,Amidase,Flonicamid,Microvirga flocculans CGMCC 1.16731,Purified (Kinetics),CURATED,Amidase,AmiB,QNH86249.1,,2021,10.1016/j.ecoenv.2021.112384
+PDBP0206,Amidase,Flonicamid,Aminobacter sp. CGMCC 1.17253,Whole-cell / Crude,CURATED,Amidase,PsAmiA,UOU03443.1,,2023,10.1016/j.jhazmat.2022.129952
+PDBP0207,THF-dependent demethylase,Dicamba,Rhizorhabdus dicambivorans Ndbn-20,Purified (Kinetics),CURATED,Oxidoreductase,dmt06,UUJ74874.1,,2022,10.3389/fmicb.2022.978577
+PDBP0208,Biphenyl dioxygenase,DDT,Burkholderia xenovorans LB400,Purified (Activity),CURATED,Dioxygenase,bphA,WP_011494299.1,P37333,2011,10.1016/j.abb.2011.09.016
+PDBP0209,Pyrethroid hydrolase,Pyrethroids,Sphingobium wenxiniae JZ-1,Recombinant (Activity),SUPPLEMENTED,Hydrolase,pytH,,C0LA90,2009,10.1007/s00128-007-9314-4
+PDBP0210,Methyl parathion hydrolase,Chlorpyrifos / methyl parathion,Stutzerimonas stutzeri,Recombinant (Activity),SUPPLEMENTED,Hydrolase,mpd,,H9ZVH5,2014,10.1111/lam.12155
+PDBP0211,N-isopropylammelide isopropylaminohydrolase,Atrazine,Pseudomonas sp. strain ADP,Purified (Activity),SUPPLEMENTED,Hydrolase,atzC,WP_011117177.1,O52063,1998,10.1128/JB.180.1.152-158.1998
+PDBP0212,Parathion hydrolase / phosphotriesterase,Parathion / organophosphates,Sphingobium fuliginis ATCC 27551,Recombinant (Activity),SUPPLEMENTED,Hydrolase,opd,,P0A433,1989,10.1128/jb.171.12.6740-6746.1989
+PDBP0213,Parathion hydrolase / phosphotriesterase,Parathion / organophosphates,Brevundimonas diminuta,Recombinant (Activity),SUPPLEMENTED,Hydrolase,opd,,P0A434,1988,10.1128/jb.170.5.2306-2311.1988
+PDBP0214,Atrazine chlorohydrolase,Atrazine,Pseudomonas sp. strain ADP,Purified (Activity),SUPPLEMENTED,Hydrolase,atzA,WP_011117157.1,P72156,1996,10.1128/jb.178.16.4894-4900.1996
+PDBP0215,(S)-phenoxypropionate/alpha-ketoglutarate-dioxygenase (SdpA) (EC 1.14.11.43) ((S)-dichlorprop/(S)-mecoprop dioxygenase) (Alpha-ketoglutarate-dependent dioxygenase) (Dichlorprop/alpha-ketoglutarate-dioxygenase) (Mecoprop/alpha-ketoglutarate-dioxygenase),"2,4-D / chlorophenoxy herbicides",Delftia acidovorans (Pseudomonas acidovorans) (Comamonas acidovorans),Purified (Activity),SUPPLEMENTED,Oxidoreductase,sdpA,,P83309,2004,10.1128/AEM.70.9.5357-5365.2004
+PDBP0216,(R)-phenoxypropionate/alpha-ketoglutarate-dioxygenase (RdpA) (EC 1.14.11.44) ((R)-dichlorprop/(R)-mecoprop dioxygenase) (Alpha-ketoglutarate-dependent dioxygenase) (Dichlorprop/alpha-ketoglutarate-dioxygenase) (Mecoprop/alpha-ketoglutarate-dioxygenase),"2,4-D / chlorophenoxy herbicides",Delftia acidovorans (Pseudomonas acidovorans) (Comamonas acidovorans),Purified (Activity),SUPPLEMENTED,Oxidoreductase,rdpA,,P83310,2004,10.1128/AEM.70.9.5357-5365.2004
+PDBP0217,Hydroxyatrazine ethylaminohydrolase,Atrazine,Pseudomonas sp. strain ADP,Purified (Activity),SUPPLEMENTED,Hydrolase,atzB,WP_011117160.1,P95442,1997,10.1128/aem.63.3.916-923.1997
+PDBP0218,"Alpha-ketoglutarate-dependent 2,4-dichlorophenoxyacetate dioxygenase (2,4-D dioxygenase) (EC 1.14.11.-)","2,4-D / chlorophenoxy herbicides",Burkholderia sp. (strain RASC),Purified (Activity),SUPPLEMENTED,Oxidoreductase,tfdA,,Q45423,1996,10.1128/aem.62.7.2464-2469.1996
+PDBP0219,Pyrethroid-hydrolyzing esterase,Pyrethroids,Klebsiella sp. ZD112,Purified (Kinetics),SUPPLEMENTED,Hydrolase,estP,,Q52NW7,2006,10.1021/jf052691u
+PDBP0220,Methyl parathion hydrolase,Methyl parathion / p-nitrophenol,Pseudomonas sp. strain WBC-3,Recombinant (Activity),SUPPLEMENTED,Hydrolase,mpd,,Q841S6,2005,10.1016/j.bbrc.2005.07.006
+PDBP0221,2-haloacid dehalogenase; cobalamin-associated dehalogenation,Lindane,Petrimonas sulfuriphila PET,Experimental evidence — 41.2% degraded (58.8% residual); γ-HCH/chlorobenzene measured chromatographically,CURATED,,2-haloacid dehalogenase and cobalamin-biosynthesis genes,,,2025,10.1016/j.watres.2024.122730
+PDBP0222,2-haloacid dehalogenase; cobalamin-associated dehalogenation,Lindane,Robertmurraya sp. CYTO,Experimental evidence — 54.4% degraded (45.6% residual); chromatographic confirmation,CURATED,,2-haloacid dehalogenase and cobalamin-biosynthesis genes,,,2025,10.1016/j.watres.2024.122730
+PDBP0223,2-haloacid dehalogenase; cobalamin-associated dehalogenation,Lindane,Hungatella sp. CloS1,Experimental evidence — 39.8% degraded (60.2% residual); chromatographic confirmation,CURATED,,2-haloacid dehalogenase and cobalamin-biosynthesis genes,,,2025,10.1016/j.watres.2024.122730
+PDBP0224,2-haloacid dehalogenase; cobalamin-associated dehalogenation,Lindane,Enterococcus avium PseS3,Experimental evidence — 30.7% degraded (69.3% residual); chromatographic confirmation,CURATED,,2-haloacid dehalogenase and cobalamin-biosynthesis genes,,,2025,10.1016/j.watres.2024.122730
+PDBP0225,DmmA; Rluc_anc; Rluc_anc_R7P; LinB comparator,Lindane,Sphingobium japonicum UT26 engineered derivatives,Experimental and enzymatic evidence — quantitative γ-HCH/metabolites by GC-ECD after 60 min; assimilation by plate assay/qPCR,CURATED,Haloalkane dehalogenase,dmmA; rluc_anc; rluc_anc_R7P; linA; linB; linC,,,2025,10.1093/bbb/zbaf022
+PDBP0226,Dechlorinase activity; identity unresolved,Lindane,Klebsiella sp. ASNY6,Experimental evidence — 100 ppm initial; quantitative GC kinetic decline over 8 d; γ-PCCH detected by GC-MS (RT 8.814 min); TLC confirmation,CURATED,Dechlorinase,,,,2026,10.21276/pt.2026.v3.i1.12
+PDBP0227,Reductive dechlorination activity; enzyme not isolated,Lindane,Anaerobic enrichment culture,Experimental evidence — removal rate increased 33.3±1.2 to 85.3±4.5 µM/d; MCB/benzene by headspace GC-FID; H2 by GC-TCD; 16S profiling,CURATED,,,,,2026,10.1016/j.jhazmat.2026.142242
+PDBP0228,LinA,Lindane,Sphingobium japonicum UT26 LinA expressed in Arabidopsis,Enzymatic evidence — >90% removed in 4 weeks; TCB and DCB products chemically detected,CURATED,Dehydrochlorinase,linA,,P51697,2026,10.1111/1751-7915.70409
+PDBP0229,C–P lyase,Glyphosate,Burkholderia cepacia TBr1,Experimental evidence — 67% degradation of 15 mg/mL within 7 d,CURATED,C–P lyase activity,,,,2026,10.48048/tis.2026.12865
+PDBP0230,C–P lyase,Glyphosate,Bacillus velezensis TBr12,Experimental evidence — 76% degradation of 15 mg/mL within 7 d,CURATED,C–P lyase activity,,,,2026,10.48048/tis.2026.12865
+PDBP0231,Glyphosate-specific C–P lyase,Glyphosate,Stenotrophomonas maltophilia GP-1,Enzymatic evidence — metabolites sarcosine/glycine by TLC and LC-MS/MS; C–P lyase activity 0.4 U,CURATED,C–P lyase,phn operon; phnJ; sox,,,2025,10.1007/s10532-025-10169-7
+PDBP0232,Nitrate reductase; nitrite reductase; catalase,Thiamethoxam,Anaerobic aquatic microbial community,"Experimental evidence — 85.92% removal at 200 mg/L nitrate; 7.45-fold control; electrochemistry, ETSA/NADH, enzyme assays and metatranscriptomics",CURATED,Reductases; catalase,Functional genes identified by metatranscriptomics,,,2025,10.1016/j.envres.2025.122141
+PDBP0233,Enzyme activities reported; names require full text,Thiamethoxam,Anaerobic microbial community,"Experimental evidence — nitrite produced 15.9-fold higher removal than control; electrochemical, enzymatic and microbial analyses",CURATED,Nitrogen-cycle enzymes,Functional genes profiled,,,2025,10.1016/j.jece.2025.119002
+PDBP0234,Intracellular enzymes and ROS implicated,Thiamethoxam,Tolypothrix tenuis,Experimental evidence — 95.7% degradation; LC-MS quantified residues and products,CURATED,,,,,2026,10.3390/w18030304
+PDBP0235,Phosphodiesterase; cytochrome P450; GST; hydrolases,Profenofos,Pseudomonas aeruginosa BRD1,Experimental evidence — 76% of 100 ppm after 96 h; HPLC and ESI-MS metabolites,CURATED,,bphD; glpD; estB_1; estB_2; pdeB; pdeN; pdeG; gstB_2; yfcF; gstB_3; cpg2; lap; pepN,,,2026,10.22207/jpam.20.2.62
+PDBP0236,Hydrolytic degradation enzymes,Endosulfan,Bacillus subtilis strain UAMC,Experimental evidence — 97.6% α-endosulfan and 69.45% β-endosulfan; metabolites instrumentally identified; no endosulfan sulfate,CURATED,Hydrolase implicated,,,,2026,10.1007/s10532-026-10312-y
+PDBP0237,Aca amidase,Acephate,Pandoraea pnomenusa ZQ05,Experimental and enzymatic evidence — 96.8% in water within 18 h; complete in soil within 15 h; chromatographic/multi-omics confirmation,CURATED,Amidase,aca,,,2026,10.1016/j.biortech.2025.133298
+PDBP0238,Km-Gst,Acetochlor,Klebsiella michiganensis ES15,"Experimental and genetic evidence — 79.23% within 4 d; gene knockout, expression and chemical analysis",CURATED,Glutathione S-transferase,gst,,,2025,10.1016/j.pestbp.2025.106530
+PDBP0239,Dehalogenase/formaldehyde and nitrogen-metabolism enzymes,Acetochlor,Rhizosphere microbiome enriched in Pseudomonas,Experimental/genetic evidence — biofilter degradation with seven intermediates by GC-MS,CURATED,Multiple pathway enzymes,dhaA; fdhA; mxaJ; K01455; norB; nemA,,,2026,10.1016/j.jhazmat.2025.140635
+PDBP0240,GmcF,Ethiprole,Pseudomonas putida NC1,Experimental and enzymatic evidence — 79.7% of 50 mg/L in 24 h; products/pathway instrumentally verified,CURATED,GMC-family oxidoreductase,gmcF,,,2025,10.1016/j.ibiod.2024.105985
+PDBP0241,OPH,Fenamiphos,Cronobacter muytjensii GH10,Experimental and enzymatic evidence — quantitative soil degradation time course; recombinant enzyme cleaved P–O–C bond; chromatography used,CURATED,Organophosphorus hydrolase,oph,,,2025,10.21608/ejchem.2025.395474.11922

@@ -1,0 +1,9 @@
+pesticide,decision,reason
+Fenamiphos,Not integrated in this batch,"The readable files in the Fenamiphos folder are fenamidone/fungicide residue papers, not fenamiphos pathway papers."
+Propamocarb,Not integrated in this batch,"The microbial carbamate paper reports propamocarb was resistant to attack by the tested microbial species, so no product arrow was imported."
+Propargite,Not integrated in this batch,"The Pseudomonas putida paper explicitly states that only propargite degradation was studied, not its metabolites."
+Pinoxaden,Not integrated in this batch,The Acinetobacter paper supports degradation and predicted genes but does not provide named transformation products suitable for a stepwise arrow.
+Fluxapyroxad,Not integrated in this batch,"The yeast and soil/water-sediment papers quantify dissipation/degradation, but the readable sources did not provide a microbial product pathway for import."
+Penthiopyrad,Not integrated in this batch,"The PAM evidence is mainly plant/field residue hydrolysis rather than a microbial pathway record, so it was left out of the microbial pathway layer."
+Acibenzolar-S-methyl,Not integrated in this batch,Readable papers were PGPR/residue/plant-quality studies without named microbial transformation products.
+Imazamox,Not integrated in this batch,The strongest named-product evidence in the local files was photodegradation or mixed sunlight/soil behavior rather than a clean microbial pathway record.

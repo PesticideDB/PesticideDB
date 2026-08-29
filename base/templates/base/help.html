@@ -1,0 +1,309 @@
+{% extends 'base.html' %}
+
+{% block title %}Help - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <h1 class="mb-4">Help</h1>
+
+    <div class="alert alert-info">
+        PesticideDB annotation tools are designed for candidate discovery. A DIAMOND or HMMER hit suggests similarity to a curated pesticide-related protein or enzyme family, but it is not proof of pesticide degradation activity without experimental evidence.
+    </div>
+
+    <h3>What PesticideDB Is</h3>
+    <p>
+        PesticideDB is a curated database and annotation platform for pesticide-degrading microorganisms, genes, proteins, and pathways. It currently summarizes {{ total_pesticides }} pesticides, including {{ pesticides_with_evidence }} pesticides with curated biodegradation evidence and {{ pesticides_no_evidence }} pesticides listed without validated microbial biodegradation evidence from the curated search set.
+    </p>
+    <p>
+        The platform is designed for two connected tasks: finding curated literature evidence and using validated protein references to screen new gene, protein, or genome sequences. Database records should always be interpreted with their DOI/reference, evidence type, organism name, culture type, and available gene/protein/pathway support.
+    </p>
+
+    <h3>How to Use the Database</h3>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Task</th>
+                <th>Where to go</th>
+                <th>What to check</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Find known pesticide degraders</td>
+                <td>Microorganisms</td>
+                <td>Pesticide, microorganism/strain, culture type, metabolite/product, DOI, and publication year.</td>
+            </tr>
+            <tr>
+                <td>Review protein or gene evidence</td>
+                <td>Proteins</td>
+                <td>Evidence type, enzyme class, gene name, accession, sequence availability, and structure availability.</td>
+            </tr>
+            <tr>
+                <td>Inspect degradation routes</td>
+                <td>Tools → Pathway Analysis</td>
+                <td>Substrate, product, gene/enzyme labels, pathway evidence notes, and DOI support for each step.</td>
+            </tr>
+            <tr>
+                <td>Screen new sequences</td>
+                <td>Tools → Annotate Gene or Annotate Genome</td>
+                <td>DIAMOND match, HMMER family support, identity, coverage, E-value, and whether evidence is experimental or candidate-level.</td>
+            </tr>
+            <tr>
+                <td>Reuse data in a manuscript</td>
+                <td>Citation/Download</td>
+                <td>Database version, download/access date, citation text, and the matching Excel or CSV export.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>With Evidence vs Without Evidence</h3>
+    <p>
+        <strong>With evidence</strong> means that at least one curated record links the pesticide to experimentally reported microbial degradation, transformation, gene/protein evidence, or pathway support. <strong>Without evidence</strong> means no validated microbial biodegradation evidence was identified during curation. It should be read as a current reporting gap, not as proof that the pesticide cannot be biodegraded.
+    </p>
+
+    <h3>Evidence Type Meaning</h3>
+    <p>
+        Evidence type describes the strongest support currently curated for a pesticide-associated gene, enzyme, protein, or microorganism. It helps users distinguish experimentally supported degradation from sequence-based candidate annotation.
+    </p>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Evidence type</th>
+                <th>Meaning</th>
+                <th>Confidence for activity</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Purified (Kinetics)</td>
+                <td>Purified enzyme was tested and kinetic parameters were reported.</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>Purified (Activity)</td>
+                <td>Purified enzyme activity against a pesticide or related substrate was experimentally measured.</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>Purified (Product ID)</td>
+                <td>Purified enzyme assay included product or metabolite identification.</td>
+                <td>High</td>
+            </tr>
+            <tr>
+                <td>Recombinant (Activity)</td>
+                <td>Gene/protein was expressed in a recombinant system and activity was tested.</td>
+                <td>High to medium</td>
+            </tr>
+            <tr>
+                <td>Genetic / Expression</td>
+                <td>Gene knockout, expression, or genetic evidence supports the role of a gene or enzyme in pesticide transformation.</td>
+                <td>Medium to high when linked to chemical or activity evidence</td>
+            </tr>
+            <tr>
+                <td>Whole-cell / Crude</td>
+                <td>Activity was observed in whole cells, crude extract, culture, or enrichment; the exact enzyme may need further confirmation.</td>
+                <td>Medium</td>
+            </tr>
+            <tr>
+                <td>Gene Only</td>
+                <td>A gene or accession is reported, but direct protein/enzyme activity may not be experimentally validated.</td>
+                <td>Low; candidate evidence</td>
+            </tr>
+            <tr>
+                <td>Structure Only</td>
+                <td>A structure or predicted model is available, but activity is not proven by structure alone.</td>
+                <td>Low unless supported by experimental evidence</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Protein Reference Tiers and Supplemental Data</h3>
+    <p>
+        PesticideDB separates experimentally supported protein references from broader discovery candidates so annotation sensitivity can be improved without presenting gene-only evidence as confirmed protein activity.
+    </p>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Dataset</th>
+                <th>Current size</th>
+                <th>How it is used</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Curated proteins</td>
+                <td>{{ curated_protein_count }}</td>
+                <td>Curated Protein section records and validated annotation references.</td>
+            </tr>
+            <tr>
+                <td>Supplemented validated proteins</td>
+                <td>{{ supplemented_protein_count }} unique proteins supported by {{ validated_supplemental_evidence_rows }} evidence rows</td>
+                <td>Included in the Protein section and validated DIAMOND reference because purified or recombinant protein evidence is available.</td>
+            </tr>
+            <tr>
+                <td>Discovery candidates</td>
+                <td>{{ discovery_candidate_count }}</td>
+                <td>Kept outside the default validated Protein reference and used only for exploratory follow-up.</td>
+            </tr>
+        </tbody>
+    </table>
+    <p>
+        The discovery dataset contains {{ gene_only_candidate_count }} Gene Only records, {{ gene_whole_cell_candidate_count }} Gene Only + whole-cell/Crude records, and {{ whole_cell_candidate_count }} Whole-cell/Crude records. These records can guide future research, but they should not be interpreted as direct proof of protein or enzyme activity.
+    </p>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Discovery evidence category</th>
+                <th>Records</th>
+                <th>Use in PesticideDB</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Gene Only</td>
+                <td>{{ gene_only_candidate_count }}</td>
+                <td>Downloadable discovery dataset; not used as a validated Protein record or default annotation reference.</td>
+            </tr>
+            <tr>
+                <td>Gene Only + whole-cell/ Crude</td>
+                <td>{{ gene_whole_cell_candidate_count }}</td>
+                <td>Supports a relationship between a reported gene and organism-level degradation, but direct protein activity is not established.</td>
+            </tr>
+            <tr>
+                <td>Whole-cell / Crude</td>
+                <td>{{ whole_cell_candidate_count }}</td>
+                <td>Supports degradation by an organism or preparation; the responsible protein is not assigned.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Annotate Genome Workflow</h3>
+    <ol>
+        <li>The uploaded FASTA is detected as protein or nucleotide sequence.</li>
+        <li>Protein FASTA is searched with DIAMOND <code>blastp</code>.</li>
+        <li>Nucleotide FASTA in Auto mode is translated with Prodigal and searched with DIAMOND <code>blastp</code>.</li>
+        <li>If Auto mode finds no translated-protein hits, it retries nucleotide input with DIAMOND <code>blastx</code>.</li>
+        <li>When protein query sequences are available, HMMER can add enzyme-family support.</li>
+    </ol>
+
+    <h3>Reproducibility</h3>
+    <p>
+        PesticideDB is designed so users and reviewers can understand how the database contents and annotation outputs were produced.
+        Database contents should be interpreted together with the curated data files, download/access date, and annotation settings.
+    </p>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Component</th>
+                <th>How to reproduce or verify it</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Curated biodegradation records</td>
+                <td>Review the downloadable biodegradation records CSV and the cited DOI/reference fields.</td>
+            </tr>
+            <tr>
+                <td>Protein records</td>
+                <td>Use the downloadable protein/gene workbook or protein records CSV. PesticideDB Protein IDs are stable internal identifiers.</td>
+            </tr>
+            <tr>
+                <td>Reference protein search database</td>
+                <td>Use the downloadable validated reference protein FASTA to rebuild or inspect the DIAMOND search database. It contains curated references plus unique validated supplemented sequences.</td>
+            </tr>
+            <tr>
+                <td>Annotation thresholds</td>
+                <td>Record the DIAMOND E-value, percent identity, query and subject coverage, HMMER E-value, and whether family agreement was required.</td>
+            </tr>
+            <tr>
+                <td>Protein structures</td>
+                <td>Predicted structures are stored locally as PDB files and summarized in the downloadable structure report CSV.</td>
+            </tr>
+            <tr>
+                <td>Downloaded datasets</td>
+                <td>Report the database version and access/download date when using PesticideDB data in a manuscript.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>About Data Quality</h3>
+    <p>
+        PesticideDB combines experimentally supported records with candidate gene/protein annotations. Users should consider the evidence type before interpreting a record as confirmed pesticide degradation.
+    </p>
+    <ul>
+        <li>Experimental records with purified enzyme, recombinant activity, product identification, or kinetic evidence provide stronger support than gene-only records.</li>
+        <li>Whole-cell or crude-extract evidence supports biodegradation by an organism or preparation, but the exact enzyme may require further validation.</li>
+        <li>Gene-only records and sequence-similarity annotations are useful for candidate discovery but should not be treated as proof of enzymatic activity.</li>
+        <li>Predicted protein structures help visualize possible folds, but a predicted structure alone does not confirm substrate specificity or pesticide degradation.</li>
+        <li>Some records may lack UniProt accessions, FASTA sequences, predicted structures, or complete metadata because public databases and source publications vary in detail.</li>
+        <li>Annotation-tool results depend on the current PesticideDB reference set and selected thresholds; broad thresholds increase sensitivity but may also increase false positives.</li>
+    </ul>
+
+    <h3>DIAMOND Thresholds</h3>
+    <p>
+        PesticideDB runs DIAMOND permissively and reports all detectable alignments to validated reference proteins. The values selected on the submission form are review criteria: they mark stronger candidates but do not remove weaker rows. This lets users inspect identity, similarity, coverage, E-value, and bit score before deciding which candidates to retain.
+    </p>
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Use case</th>
+                <th>E-value</th>
+                <th>Identity</th>
+                <th>Interpretation</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Broad discovery</td>
+                <td><code>1e-3</code></td>
+                <td><code>20-30%</code></td>
+                <td>Good for finding distant candidates; expect false positives.</td>
+            </tr>
+            <tr>
+                <td>Balanced default</td>
+                <td><code>1e-5</code> to <code>1e-6</code></td>
+                <td><code>30%</code></td>
+                <td>Recommended default for PesticideDB searches.</td>
+            </tr>
+            <tr>
+                <td>High confidence homologs</td>
+                <td><code>1e-20</code></td>
+                <td><code>50-70%</code></td>
+                <td>Stricter; may miss distant but biologically interesting candidates.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>HMMER Interpretation</h3>
+    <p>
+        HMMER searches profile HMMs built only from curated and validated supplemented protein sequences. Classes represented by fewer than two unique validated sequences are not made into profiles. HMMER can identify broader family relationships even when pairwise identity is low. A DIAMOND hit plus an agreeing HMMER family hit is stronger than DIAMOND alone, but family membership still does not guarantee the same substrate or activity.
+    </p>
+
+    <h3>All Significant Validated Matches</h3>
+    <p>
+        Annotate Gene and Annotate Genome compare each query against the validated DIAMOND protein reference and retain every detectable ranked alignment. The detailed result shows the highest-scoring match for each query, while the all-matches table and downloaded CSV retain the other detected matches. Percent identity counts exact residue matches. Percent similarity also counts conservative substitutions with a positive substitution-matrix score. Query coverage describes how much of the uploaded query is aligned, while subject coverage describes how much of the database reference is aligned.
+    </p>
+    <p>
+        Each result is labeled <em>Passes selected screening thresholds: Yes/No</em>. This means only that the alignment passes the user-selected identity, E-value, and query-coverage screen; it is not experimental validation of protein function. Only records with an available protein sequence can be searched; an accession displayed in a database record does not by itself provide DIAMOND with sequence data.
+    </p>
+
+    <h3>Calculating Annotation Thresholds</h3>
+    <p>
+        Thresholds should be estimated from an independently labeled benchmark, not from the proteins used to build the DIAMOND database or HMMER profiles. Include known pesticide-degrading proteins as positives and experimentally characterized, related non-degrading proteins as negatives. Split homologous sequences into clusters and keep entire clusters out of profile construction during testing so that close duplicates do not inflate accuracy.
+    </p>
+    <ol>
+        <li>Prepare benchmark labels using <code>PBDB_annotation/benchmark/benchmark_labels_template.csv</code>.</li>
+        <li>Run benchmark searches with very permissive cutoffs, then record percent identity, DIAMOND E-value, query coverage, subject coverage, HMMER E-value, and DIAMOND/HMMER family agreement for every query.</li>
+        <li>Run <code>python manage.py benchmark_annotation_thresholds your_benchmark.csv</code>.</li>
+        <li>Choose thresholds using sensitivity, specificity, precision, F1, and Matthews correlation coefficient (MCC), then confirm them on a second untouched test set.</li>
+    </ol>
+    <p>
+        Broad discovery settings should prioritize sensitivity, while high-confidence reporting should prioritize precision and specificity. Accuracy alone can be misleading when negatives greatly outnumber positives, so annotation performance should be reported with benchmark context rather than as a single standalone percentage.
+    </p>
+
+    <h3>PesticideDB Protein ID vs NCBI Accession</h3>
+    <p>
+        The PesticideDB Protein ID is the database's own stable identifier for collecting and displaying curated information about related pesticide-associated proteins. NCBI protein accessions are kept separately so users can retrieve sequences from NCBI without storing every FASTA sequence in PesticideDB.
+    </p>
+</div>
+{% endblock %}

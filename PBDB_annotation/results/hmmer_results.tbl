@@ -1,0 +1,15 @@
+#                                                                 --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name          accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+#  ------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+dehalogenase_aligned   -          ABE98170.1           -            9.9e-77  247.8   0.0   1.1e-76  247.6   0.0   1.0   1   0   0   1   1   1   1 -
+oxidoreductase_aligned -          ABE98170.1           -            5.6e-55  176.4   0.0   6.3e-55  176.3   0.0   1.0   1   0   0   1   1   1   1 -
+#
+# Program:         hmmscan
+# Version:         3.4 (Aug 2023)
+# Pipeline mode:   SCAN
+# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta
+# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm
+# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta 
+# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Date:            Sat Jun 13 03:52:42 2026
+# [ok]

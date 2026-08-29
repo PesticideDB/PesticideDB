@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}{{ compound.name }} - Compound - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <a href="{% url 'pathwayanalysis' %}" class="btn btn-outline-secondary btn-sm mb-3">Back to pathway analysis</a>
+
+  <h1>{{ compound.name }}</h1>
+  <p class="text-muted mb-4">{{ compound.get_role_display }}</p>
+
+  <div class="row">
+    <div class="col-lg-5 mb-4">
+      <section class="border rounded p-3 h-100">
+        <h3>Chemical Information</h3>
+        <dl class="row mb-0">
+          <dt class="col-sm-4">CAS</dt>
+          <dd class="col-sm-8">{{ compound.cas_number|default:"Not available" }}</dd>
+          <dt class="col-sm-4">PubChem CID</dt>
+          <dd class="col-sm-8">
+            {% if compound.pubchem_url %}
+              <a href="{{ compound.pubchem_url }}" target="_blank" rel="noopener">{{ compound.pubchem_cid }}</a>
+            {% else %}
+              Not available
+            {% endif %}
+          </dd>
+          <dt class="col-sm-4">InChIKey</dt>
+          <dd class="col-sm-8">{{ compound.inchikey|default:"Not available" }}</dd>
+          <dt class="col-sm-4">SMILES</dt>
+          <dd class="col-sm-8 text-break">{{ compound.smiles|default:"Not available" }}</dd>
+        </dl>
+      </section>
+    </div>
+    <div class="col-lg-7 mb-4">
+      <section class="border rounded p-3 h-100">
+        <h3>Structure</h3>
+        {% if compound.pubchem_structure_image_url %}
+          <div class="compound-structure">
+            <img src="{{ compound.pubchem_structure_image_url }}" alt="2D chemical structure for {{ compound.name }}">
+          </div>
+          <p class="text-muted small">
+            2D structure rendered from curated compound identifiers.
+            {% if compound.pubchem_sdf_url %}
+              <a href="{{ compound.pubchem_sdf_url }}" target="_blank" rel="noopener">SDF source</a>
+            {% endif %}
+            {% if compound.pubchem_url %}
+              <span aria-hidden="true"> · </span><a href="{{ compound.pubchem_url }}" target="_blank" rel="noopener">identifier record</a>
+            {% endif %}
+          </p>
+        {% elif compound.smiles %}
+          <div class="compound-structure-placeholder">
+            Structure drawing pending local rendering from curated SMILES.
+          </div>
+        {% else %}
+          <p class="text-muted">No SMILES has been curated yet, so a chemical structure cannot be rendered.</p>
+        {% endif %}
+        {% if compound.description %}<p>{{ compound.description }}</p>{% endif %}
+      </section>
+    </div>
+  </div>
+
+  <h3>Pathway Links</h3>
+  <div class="table-responsive">
+    <table class="table table-bordered table-sm">
+      <thead class="thead-dark">
+        <tr>
+          <th>Role</th>
+          <th>Pathway</th>
+          <th>Reaction</th>
+          <th>Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for step in substrate_steps %}
+          <tr>
+            <td>Substrate</td>
+            <td>{{ step.pathway.title }}</td>
+            <td><a href="{% url 'pathway_step_detail' step.id %}">{{ step.substrate }} → {{ step.product }}</a></td>
+            <td>{{ step.get_evidence_type_display }}</td>
+          </tr>
+        {% endfor %}
+        {% for step in product_steps %}
+          <tr>
+            <td>Product</td>
+            <td>{{ step.pathway.title }}</td>
+            <td><a href="{% url 'pathway_step_detail' step.id %}">{{ step.substrate }} → {{ step.product }}</a></td>
+            <td>{{ step.get_evidence_type_display }}</td>
+          </tr>
+        {% endfor %}
+        {% if not substrate_steps and not product_steps %}
+          <tr><td colspan="4">No pathway steps are linked to this compound yet.</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_head %}
+<style>
+  .compound-structure-placeholder {
+    display: flex;
+    min-height: 220px;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+    border: 1px dashed #adb5bd;
+    border-radius: 6px;
+    background: #f8fafc;
+    color: #5f666d;
+    text-align: center;
+  }
+  .compound-structure {
+    display: flex;
+    min-height: 420px;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e1e6eb;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .8);
+  }
+  .compound-structure img {
+    display: block;
+    width: min(100%, 700px);
+    max-height: 430px;
+    object-fit: contain;
+    filter: contrast(1.08) saturate(1.04);
+  }
+</style>
+{% endblock %}

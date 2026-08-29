@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<br><br><br>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <h2 class="text-center mb-4">Pesticide Classification</h2>
+
+            <p>
+                Our database contains information on <strong>{{ pesticide_count }} pesticides</strong>.
+            </p>
+
+            <p>
+                <strong>{{ pesticide_count }} pesticides</strong> are sourced from the
+                <em>FAO/WHO Codex Alimentarius Pesticide Database</em>.
+                These pesticides are listed by the Codex Alimentarius Commission
+                because they are subject to Codex Maximum Residue Limits (MRLs).
+                Codex MRLs are international standards established to ensure food safety,
+                protect consumer health, and support fair trade.
+            </p>
+
+            <p>
+                Pesticides included in the Codex list are those most widely used in agriculture
+                and therefore require consistent monitoring of their residues in food and feed.
+            </p>
+
+            <p>
+                An additional <strong>2 pesticides</strong> have been included because they are
+                widely studied in the scientific community. These compounds are not covered
+                in the Codex database, but their classification is crucial for biodegradation research.
+                By classifying them, we make their nature easier to understand, enabling researchers
+                to apply microorganisms, enzymes, or proteins for their degradation.
+            </p>
+
+            <hr>
+
+            <h3 class="text-center mt-4">Why Classification Matters</h3>
+
+            <p>
+                Classifying pesticides helps researchers:
+            </p>
+
+            <ul>
+                <li>Understand chemical and structural properties of pesticide compounds</li>
+                <li>Identify potential microbial or enzymatic degradation pathways</li>
+                <li>Compare biodegradation research across different pesticide classes</li>
+            </ul>
+
+            <p>
+                We do not claim that this is the only or the best classification method.
+                Instead, it represents a practical and appropriate approach designed
+                to make pesticide biodegradation research more accessible and applicable.
+            </p>
+
+            <hr>
+
+            <p class="mt-4">
+                👉 <strong>View our pesticide classification system:</strong>
+                <a href="https://huggingface.co/spaces/321df6541/Pesticide_Classifier"
+                     class="text-primary ml-1"
+                    target="_blank"
+                    rel="noopener noreferrer">
+                     Pesticide Classification Tool
+                </a>
+            </p>
+
+
+
+        </div>
+    </div>
+</div>
+
+<br><br><br>
+
+{% endblock %}

@@ -1,0 +1,1244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Evidence Summary - PesticideDB{% endblock %}
+
+{% block content %}
+<div class="galaxy-page">
+  <section class="galaxy-toolbar">
+    <div>
+      <p class="galaxy-kicker">Database overview</p>
+      <h1>Evidence Summary</h1>
+    </div>
+    <form id="galaxy-form" class="galaxy-controls">
+      <label for="pesticide-search">Pesticide</label>
+      <input id="pesticide-search" name="pesticide_search" type="search" list="pesticide-options" placeholder="Search pesticide" autocomplete="off" value="{{ selected_pesticide }}">
+      <datalist id="pesticide-options">
+        {% for pesticide in pesticide_names %}
+          <option value="{{ pesticide }}"></option>
+        {% endfor %}
+      </datalist>
+      <select id="pesticide-select" name="pesticide" aria-hidden="true" tabindex="-1">
+        {% for pesticide in pesticide_names %}
+          <option value="{{ pesticide }}" {% if pesticide == selected_pesticide %}selected{% endif %}>{{ pesticide }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit">Open</button>
+    </form>
+  </section>
+
+  <section class="galaxy-shell">
+    <div id="galaxy-stage" class="galaxy-stage">
+      <div id="galaxy-loading" class="galaxy-loading">Loading evidence sphere...</div>
+      <canvas id="sphere-canvas" class="sphere-canvas"></canvas>
+      <div class="galaxy-zoom-controls" aria-label="Evidence galaxy zoom controls">
+        <button type="button" id="galaxy-zoom-out" aria-label="Zoom out">-</button>
+        <span id="galaxy-zoom-level">100%</span>
+        <button type="button" id="galaxy-zoom-in" aria-label="Zoom in">+</button>
+        <button type="button" id="galaxy-zoom-reset" aria-label="Reset zoom">Reset</button>
+      </div>
+      <div id="sphere-caption" class="sphere-caption"></div>
+    </div>
+
+    <aside class="galaxy-panel">
+      <div class="galaxy-summary" id="galaxy-summary"></div>
+      <div class="galaxy-story" id="galaxy-story"></div>
+      <div class="galaxy-detail" id="galaxy-detail">
+        <h2>Select a dot</h2>
+        <p>Large dots summarize curated evidence. Click one to see the next layer.</p>
+      </div>
+      <div class="galaxy-list" id="galaxy-list"></div>
+    </aside>
+  </section>
+</div>
+
+<style>
+  .galaxy-page {
+    width: min(1900px, calc(100vw - 2.5rem));
+    max-width: none;
+    margin: 0 auto;
+    padding: 1.25rem 0 2.4rem;
+  }
+
+  .galaxy-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .galaxy-kicker {
+    margin: 0 0 .2rem;
+    color: #64748b;
+    font-size: .86rem;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+  }
+
+  .galaxy-toolbar h1 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 2rem;
+    font-weight: 900;
+  }
+
+  .galaxy-controls {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .galaxy-controls label {
+    margin: 0;
+    color: #334155;
+    font-weight: 800;
+  }
+
+  .galaxy-controls input {
+    width: min(28rem, 38vw);
+    padding: .52rem .64rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    background: white;
+    font-weight: 700;
+  }
+
+  .galaxy-controls select {
+    display: none;
+  }
+
+  .galaxy-controls button {
+    padding: .55rem 1rem;
+    border: 0;
+    border-radius: 7px;
+    background: #0f766e;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .galaxy-shell {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 420px;
+    height: clamp(760px, calc(100vh - 160px), 980px);
+    min-height: 760px;
+    border: 1px solid #d7e0ea;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 22px 52px rgba(15, 23, 42, .2);
+  }
+
+  .galaxy-stage {
+    position: relative;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 48%, rgba(59, 130, 246, .12), transparent 38%),
+      radial-gradient(circle at 24% 16%, rgba(20, 184, 166, .13), transparent 34%),
+      radial-gradient(circle at 78% 78%, rgba(251, 191, 36, .12), transparent 30%),
+      linear-gradient(145deg, #ffffff 0%, #f8fbff 52%, #f5f8fc 100%);
+  }
+
+  .galaxy-loading {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0f172a;
+    font-weight: 900;
+    background: rgba(255, 255, 255, .86);
+  }
+
+  .sphere-canvas {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    width: 100%;
+    height: 100%;
+    cursor: grab;
+    touch-action: none;
+  }
+
+  .sphere-canvas:active {
+    cursor: grabbing;
+  }
+
+  .sphere-caption {
+    position: absolute;
+    left: 50%;
+    bottom: .28rem;
+    z-index: 8;
+    display: flex;
+    gap: .45rem;
+    align-items: center;
+    justify-content: center;
+    max-width: calc(100% - 1.25rem);
+    padding: .42rem .7rem;
+    border: 1px solid rgba(148, 163, 184, .34);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .9);
+    color: #1f2937;
+    font-size: .78rem;
+    font-weight: 800;
+    white-space: nowrap;
+    transform: translateX(-50%);
+    backdrop-filter: blur(10px);
+  }
+
+  .sphere-caption button {
+    border: 0;
+    border-radius: 999px;
+    background: rgba(20, 184, 166, .14);
+    color: #0f766e;
+    cursor: pointer;
+    font: inherit;
+    padding: .2rem .48rem;
+  }
+
+  .galaxy-zoom-controls {
+    position: absolute;
+    left: 1.15rem;
+    top: 1.15rem;
+    z-index: 9;
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .5rem;
+    border: 1px solid rgba(71, 85, 105, .22);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .94);
+    color: #0f172a;
+    font-size: .86rem;
+    font-weight: 900;
+    box-shadow: 0 12px 28px rgba(15, 23, 42, .16);
+    backdrop-filter: blur(10px);
+  }
+
+  .galaxy-zoom-controls button {
+    min-width: 2.05rem;
+    height: 2.05rem;
+    border: 0;
+    border-radius: 999px;
+    background: #e0f2fe;
+    color: #1e3a8a;
+    cursor: pointer;
+    font: inherit;
+  }
+
+  .galaxy-zoom-controls button:last-child {
+    min-width: auto;
+    padding: 0 .7rem;
+    background: #ccfbf1;
+    color: #0f766e;
+  }
+
+  .galaxy-panel {
+    display: flex;
+    flex-direction: column;
+    gap: .8rem;
+    padding: 1rem;
+    background: #ffffff;
+    border-left: 1px solid #dbe3ee;
+    color: #111827;
+    overflow-y: auto;
+  }
+
+  .galaxy-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .45rem;
+  }
+
+  .galaxy-stat,
+  .galaxy-detail,
+  .galaxy-list-item,
+  .galaxy-story {
+    border: 1px solid rgba(148, 163, 184, .2);
+    border-radius: 7px;
+  }
+
+  .galaxy-stat {
+    padding: .55rem;
+    background: #f8fafc;
+  }
+
+  .galaxy-stat strong {
+    display: block;
+    color: #0f172a;
+    font-size: 1.24rem;
+  }
+
+  .galaxy-stat span,
+  .galaxy-list-item span {
+    color: #64748b;
+    font-size: .75rem;
+  }
+
+  .galaxy-story {
+    padding: .72rem;
+    border-color: #99f6e4;
+    background: #ecfdf5;
+    color: #134e4a;
+    font-size: .84rem;
+    line-height: 1.42;
+  }
+
+  .galaxy-story strong {
+    color: #0f766e;
+  }
+
+  .galaxy-detail {
+    min-height: 160px;
+    padding: .85rem;
+    background: #ffffff;
+    border-color: #cbd5e1;
+  }
+
+  .galaxy-detail h2 {
+    margin: 0 0 .45rem;
+    color: #0f172a;
+    font-size: 1.05rem;
+  }
+
+  .galaxy-detail p {
+    margin: 0 0 .44rem;
+    color: #334155;
+    font-size: .86rem;
+  }
+
+  .galaxy-detail a {
+    color: #0369a1;
+    font-weight: 800;
+  }
+
+  .galaxy-list {
+    display: grid;
+    gap: .42rem;
+  }
+
+  .galaxy-list-item {
+    width: 100%;
+    padding: .5rem .58rem;
+    background: #f8fafc;
+    color: #111827;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .galaxy-list-item strong {
+    display: block;
+    font-size: .82rem;
+  }
+
+  .galaxy-list-note {
+    padding: .35rem .1rem .08rem;
+    color: #0369a1;
+    font-size: .72rem;
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .galaxy-list-item[data-support-id] {
+    border-color: #d8b4fe;
+    background: #faf5ff;
+  }
+
+  .research-fortune,
+  #research-fortune-card {
+    display: none !important;
+  }
+
+  @media (max-width: 920px) {
+    .galaxy-page {
+      width: min(100% - 1rem, 100%);
+      padding-inline: .5rem;
+    }
+
+    .galaxy-toolbar {
+      align-items: stretch;
+      flex-direction: column;
+    }
+
+    .galaxy-controls,
+    .galaxy-controls input {
+      width: 100%;
+    }
+
+    .galaxy-shell {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .galaxy-stage {
+      height: 560px;
+      min-height: 560px;
+    }
+
+    .galaxy-panel {
+      border-left: 0;
+      border-top: 1px solid #dbe3ee;
+    }
+  }
+</style>
+
+<script>
+  (() => {
+    const loadingElement = document.getElementById("galaxy-loading");
+    const canvas = document.getElementById("sphere-canvas");
+    const ctx = canvas.getContext("2d");
+    const summaryElement = document.getElementById("galaxy-summary");
+    const storyElement = document.getElementById("galaxy-story");
+    const detailElement = document.getElementById("galaxy-detail");
+    const listElement = document.getElementById("galaxy-list");
+    const captionElement = document.getElementById("sphere-caption");
+    const zoomLevelElement = document.getElementById("galaxy-zoom-level");
+    const zoomInButton = document.getElementById("galaxy-zoom-in");
+    const zoomOutButton = document.getElementById("galaxy-zoom-out");
+    const zoomResetButton = document.getElementById("galaxy-zoom-reset");
+    const form = document.getElementById("galaxy-form");
+    const select = document.getElementById("pesticide-select");
+    const searchInput = document.getElementById("pesticide-search");
+    const pesticideOptions = document.getElementById("pesticide-options");
+    let currentData = { nodes: [], links: [], summary: {} };
+    let selectedMicrobe = null;
+    let particles = [];
+    let coreParticle = null;
+    let focusEdges = [];
+    let pesticideCatalog = [];
+    let catalogSummary = {};
+    let selectedPesticideName = select.value;
+    let layer = "pesticide-selector";
+    let rotation = { x: -0.18, y: 0.32 };
+    let pointer = { x: 0, y: 0, down: false, moved: false };
+    let hoverParticle = null;
+    let animationFrame = null;
+    let zoomScale = 1;
+    const visibleLimit = 12;
+    const shellPoints = spherePoints(360, .002);
+
+    const colors = {
+      pesticide: "#f7c948",
+      noEvidence: "#94a3b8",
+      microorganism: "#34d399",
+      reference: "#60a5fa",
+      gene: "#c084fc",
+      protein: "#f472b6",
+      enzyme: "#f472b6",
+      pathway: "#fb923c",
+      metabolite: "#fb923c",
+    };
+
+    function escapeHtml(value) {
+      return String(value === null || value === undefined ? "" : value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    function nodeId(endpoint) {
+      return typeof endpoint === "object" ? endpoint.id : endpoint;
+    }
+
+    function shortLabel(value, maxLength) {
+      const text = String(value || "");
+      return text.length > maxLength ? `${text.slice(0, maxLength - 1)}...` : text;
+    }
+
+    function byId() {
+      return new Map(currentData.nodes.map(node => [node.id, node]));
+    }
+
+    function connectedNodes(node, kinds = null) {
+      const nodeMap = byId();
+      const linked = [];
+      currentData.links.forEach(link => {
+        const source = nodeId(link.source);
+        const target = nodeId(link.target);
+        if (source !== node.id && target !== node.id) return;
+        const other = nodeMap.get(source === node.id ? target : source);
+        if (other && (!kinds || kinds.includes(other.kind))) linked.push(other);
+      });
+      return uniqueById(linked);
+    }
+
+    function uniqueById(nodes) {
+      return Array.from(new Map(nodes.map(node => [node.id, node])).values());
+    }
+
+    function pesticideNode() {
+      return currentData.nodes.find(node => node.kind === "pesticide");
+    }
+
+    function supportForFocus(microbe, reference) {
+      const supportKinds = ["gene", "protein", "enzyme"];
+      const directReference = connectedNodes(reference, supportKinds);
+      const directMicrobe = connectedNodes(microbe, supportKinds);
+      const pesticide = pesticideNode();
+      const pesticideSupport = pesticide ? connectedNodes(pesticide, supportKinds) : [];
+      const pooled = uniqueById([...directReference, ...directMicrobe, ...pesticideSupport]);
+      return balancedSupport(pooled).slice(0, visibleLimit);
+    }
+
+    function supportPreviewForMicrobe(microbe) {
+      const supportKinds = ["gene", "protein", "enzyme"];
+      const references = connectedNodes(microbe, ["reference"]);
+      const directMicrobe = connectedNodes(microbe, supportKinds);
+      const referenceSupport = references.flatMap(reference => connectedNodes(reference, supportKinds));
+      const pesticide = pesticideNode();
+      const pesticideSupport = pesticide ? connectedNodes(pesticide, supportKinds) : [];
+      return balancedSupport(uniqueById([...directMicrobe, ...referenceSupport, ...pesticideSupport])).slice(0, visibleLimit);
+    }
+
+    function compactSupportForMicrobe(microbe) {
+      const preview = supportPreviewForMicrobe(microbe);
+      const gene = preview.find(node => node.kind === "gene");
+      const protein = preview.find(node => node.kind === "protein" || node.kind === "enzyme");
+      return uniqueById([gene, protein, ...preview].filter(Boolean)).slice(0, 2);
+    }
+
+    function sharedReferenceCount(microbe, supportNode) {
+      const references = connectedNodes(microbe, ["reference"]);
+      return references.filter(reference => (
+        connectedNodes(reference, ["gene", "protein", "enzyme"]).some(node => node.id === supportNode.id)
+      )).length;
+    }
+
+    function pathwayContextForFocus(microbe, reference) {
+      const pathwayKinds = ["pathway", "metabolite"];
+      const pesticide = pesticideNode();
+      return uniqueById([
+        ...connectedNodes(reference, pathwayKinds),
+        ...connectedNodes(microbe, pathwayKinds),
+        ...(pesticide ? connectedNodes(pesticide, pathwayKinds) : []),
+      ]);
+    }
+
+    function balancedSupport(nodes) {
+      const buckets = {
+        gene: nodes.filter(node => node.kind === "gene"),
+        protein: nodes.filter(node => node.kind === "protein" || node.kind === "enzyme"),
+      };
+      const selected = [];
+      const take = (bucket, count) => {
+        bucket.slice(0, count).forEach(node => {
+          if (!selected.some(item => item.id === node.id)) selected.push(node);
+        });
+      };
+      take(buckets.gene, 6);
+      take(buckets.protein, 6);
+      nodes.forEach(node => {
+        if (
+          selected.length < visibleLimit &&
+          (node.kind === "gene" || node.kind === "protein" || node.kind === "enzyme") &&
+          !selected.some(item => item.id === node.id)
+        ) selected.push(node);
+      });
+      return selected;
+    }
+
+    function renderSummary(summary) {
+      const items = [
+        ["Records", summary.evidence_records],
+        ["References", summary.references],
+        ["Microbes", summary.microorganisms],
+        ["Genes", summary.genes],
+        ["Proteins", summary.proteins_or_enzymes],
+        ["Pathway", summary.pathway_nodes],
+      ];
+      summaryElement.innerHTML = items.map(([label, value]) => `
+        <div class="galaxy-stat"><strong>${escapeHtml(value || 0)}</strong><span>${escapeHtml(label)}</span></div>
+      `).join("");
+      storyElement.innerHTML = `
+        Start at the <strong>${escapeHtml(summary.pesticide || select.value)}</strong> sphere.
+        Enter microorganisms, then focus on a strain to see DOI evidence plus linked gene and protein support.
+      `;
+    }
+
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+      canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    }
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function setZoom(nextZoom) {
+      zoomScale = clamp(nextZoom, .45, 3.6);
+      zoomLevelElement.textContent = `${Math.round(zoomScale * 100)}%`;
+    }
+
+    function spherePoints(count, jitter = 0) {
+      return Array.from({ length: count }, (_, index) => {
+        const y = 1 - (index / Math.max(1, count - 1)) * 2;
+        const radius = Math.sqrt(Math.max(0, 1 - y * y));
+        const theta = index * Math.PI * (3 - Math.sqrt(5));
+        return {
+          x: Math.cos(theta) * radius + Math.sin(index * 12.9898) * jitter,
+          y: y + Math.cos(index * 78.233) * jitter,
+          z: Math.sin(theta) * radius + Math.sin(index * 37.719) * jitter,
+        };
+      });
+    }
+
+    function makeParticle(node, point, options = {}) {
+      return {
+        node,
+        x: point.x,
+        y: point.y,
+        z: point.z,
+        radius: options.radius || 6,
+        color: options.color || colors[node.kind] || "#94a3b8",
+        label: options.label || node.label,
+        kind: options.kind || node.kind,
+        action: options.action || null,
+        noLabel: options.noLabel || false,
+        shape: options.shape || "circle",
+      };
+    }
+
+    function rectMetrics(particle, projected, isHovered = false) {
+      const scale = projected.scale * (isHovered ? 1.08 : 1);
+      const text = shortLabel(particle.label, 34);
+      const width = clamp(text.length * 7.2 + 28, 110, 250) * scale;
+      const height = 34 * scale;
+      return { width, height, text, scale };
+    }
+
+    function roundedRectPath(x, y, width, height, radius) {
+      const right = x + width;
+      const bottom = y + height;
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(right - radius, y);
+      ctx.quadraticCurveTo(right, y, right, y + radius);
+      ctx.lineTo(right, bottom - radius);
+      ctx.quadraticCurveTo(right, bottom, right - radius, bottom);
+      ctx.lineTo(x + radius, bottom);
+      ctx.quadraticCurveTo(x, bottom, x, bottom - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+    }
+
+    function project(particle) {
+      const cosY = Math.cos(rotation.y);
+      const sinY = Math.sin(rotation.y);
+      const cosX = Math.cos(rotation.x);
+      const sinX = Math.sin(rotation.x);
+      const x1 = particle.x * cosY - particle.z * sinY;
+      const z1 = particle.x * sinY + particle.z * cosY;
+      const y1 = particle.y * cosX - z1 * sinX;
+      const z2 = particle.y * sinX + z1 * cosX;
+      const rect = canvas.getBoundingClientRect();
+      const sphereRadius = Math.min(rect.width, rect.height) * (layer === "pesticide-selector" ? .33 : .34) * zoomScale;
+      const perspective = 2.08 / (2.58 - z2);
+      return {
+        x: rect.width / 2 + x1 * sphereRadius * perspective,
+        y: rect.height / 2 + y1 * sphereRadius * perspective,
+        z: z2,
+        scale: perspective,
+      };
+    }
+
+    function drawParticle(particle, projected, isCore = false) {
+      const isHovered = particle === hoverParticle;
+      if (particle.shape === "rect") {
+        drawRectParticle(particle, projected, isCore, isHovered);
+        return;
+      }
+      const radius = particle.radius * projected.scale * (isHovered && !isCore ? 1.85 : 1);
+      const gradient = ctx.createRadialGradient(
+        projected.x - radius * .35,
+        projected.y - radius * .4,
+        radius * .08,
+        projected.x,
+        projected.y,
+        radius
+      );
+      gradient.addColorStop(0, "rgba(255,255,255,.96)");
+      gradient.addColorStop(.18, particle.color);
+      gradient.addColorStop(1, "rgba(71,85,105,.22)");
+      ctx.globalAlpha = isCore ? 1 : Math.max(.2, Math.min(1, .5 + projected.z * .34));
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(projected.x, projected.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = isCore || isHovered ? 30 : 16;
+      ctx.strokeStyle = "rgba(15,23,42,.22)";
+      ctx.lineWidth = 1.2;
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      if ((!particle.noLabel && radius > 22) || particle === hoverParticle) {
+        ctx.globalAlpha = 1;
+        ctx.fillStyle = isCore ? "#1f1300" : "#111827";
+        ctx.strokeStyle = "rgba(255,255,255,.9)";
+        ctx.lineWidth = isCore ? 2.4 : 4;
+        ctx.font = `900 ${Math.max(12, Math.min(24, radius * .25))}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        wrapText(shortLabel(particle.label, isCore ? 28 : 24), projected.x, projected.y, radius * 1.55, Math.max(13, radius * .25));
+      }
+    }
+
+    function drawRectParticle(particle, projected, isCore = false, isHovered = false) {
+      const metrics = rectMetrics(particle, projected, isHovered);
+      const width = metrics.width;
+      const height = metrics.height;
+      const x = projected.x - width / 2;
+      const y = projected.y - height / 2;
+      const depthAlpha = isCore ? 1 : Math.max(.34, Math.min(1, .62 + projected.z * .24));
+      const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+      gradient.addColorStop(0, "rgba(255,255,255,.98)");
+      gradient.addColorStop(.48, particle.color);
+      gradient.addColorStop(1, "rgba(219,234,254,.92)");
+
+      ctx.save();
+      ctx.globalAlpha = depthAlpha;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = isCore || isHovered ? 24 : 13;
+      ctx.fillStyle = gradient;
+      roundedRectPath(x, y, width, height, Math.min(11, height / 2));
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = isHovered ? "rgba(15,23,42,.42)" : "rgba(71,85,105,.2)";
+      ctx.lineWidth = isHovered ? 1.8 : 1.1;
+      ctx.stroke();
+
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = "#0f172a";
+      ctx.strokeStyle = "rgba(255,255,255,.9)";
+      ctx.lineWidth = 3.4;
+      ctx.font = `900 ${Math.max(10, Math.min(14, height * .38))}px Arial`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.strokeText(metrics.text, projected.x, projected.y);
+      ctx.fillText(metrics.text, projected.x, projected.y);
+      ctx.restore();
+    }
+
+    function drawCatalogBoundary() {
+      if (layer !== "pesticide-selector") return;
+      const rect = canvas.getBoundingClientRect();
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const radius = Math.min(rect.width, rect.height) * .39 * zoomScale;
+      ctx.save();
+      ctx.globalAlpha = .44;
+      ctx.strokeStyle = "rgba(71,85,105,.36)";
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.globalAlpha = .18;
+      ctx.strokeStyle = "rgba(15,23,42,.18)";
+      ctx.lineWidth = .8;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius * 1.006, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function wrapText(text, x, y, maxWidth, lineHeight) {
+      const words = text.split(/\s+/);
+      const lines = [];
+      let line = "";
+      words.forEach(word => {
+        const test = line ? `${line} ${word}` : word;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = word;
+        } else {
+          line = test;
+        }
+      });
+      if (line) lines.push(line);
+      const start = y - ((lines.length - 1) * lineHeight) / 2;
+      lines.slice(0, 3).forEach((entry, index) => {
+        ctx.strokeText(entry, x, start + index * lineHeight);
+        ctx.fillText(entry, x, start + index * lineHeight);
+      });
+    }
+
+    function drawEdges(projectedCore, projectedParticles) {
+      if (!focusEdges.length || !projectedCore) return;
+      ctx.save();
+      focusEdges.forEach(edge => {
+        const sourceNode = edge.source || coreParticle?.node;
+        const targetNode = edge.target || edge.node;
+        const source = sourceNode ? projectedParticles.get(sourceNode.id) : projectedCore;
+        const target = targetNode ? projectedParticles.get(targetNode.id) : null;
+        if (!source || !target) return;
+        const pulse = (edge.alpha || .55) + Math.sin(Date.now() / 420) * (edge.pulse || .22);
+        ctx.globalAlpha = Math.max(.12, Math.min(.9, pulse));
+        ctx.strokeStyle = edge.color;
+        ctx.lineWidth = edge.width || 2.2;
+        ctx.shadowColor = edge.color;
+        ctx.shadowBlur = edge.glow || 11;
+        ctx.beginPath();
+        ctx.moveTo(source.x, source.y);
+        ctx.lineTo(target.x, target.y);
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+
+    function drawScene() {
+      resizeCanvas();
+      const rect = canvas.getBoundingClientRect();
+      if (!pointer.down) {
+        rotation.y += layer === "pesticide-selector" ? .001 : .0007;
+        rotation.x += Math.sin(Date.now() / 2400) * .00008;
+      }
+      ctx.clearRect(0, 0, rect.width, rect.height);
+      ctx.globalAlpha = 1;
+
+      const cx = rect.width / 2;
+      const cy = rect.height / 2;
+      const haloRadius = Math.min(rect.width, rect.height) * .37 * zoomScale;
+      const halo = ctx.createRadialGradient(cx, cy, haloRadius * .18, cx, cy, haloRadius * 1.25);
+      halo.addColorStop(0, "rgba(20,184,166,.13)");
+      halo.addColorStop(.52, layer === "pesticide-selector" ? "rgba(59,130,246,.075)" : "rgba(59,130,246,.1)");
+      halo.addColorStop(.53, layer === "pesticide-selector" ? "rgba(148,163,184,.08)" : "rgba(148,163,184,.12)");
+      halo.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = halo;
+      ctx.beginPath();
+      ctx.arc(cx, cy, haloRadius * 1.35, 0, Math.PI * 2);
+      ctx.fill();
+
+      const all = [...particles];
+      if (coreParticle) all.push(coreParticle);
+      const projected = new Map();
+      all.forEach(particle => projected.set(particle.node.id, project(particle)));
+      const ordered = particles.slice().sort((a, b) => projected.get(a.node.id).z - projected.get(b.node.id).z);
+      drawCatalogBoundary();
+      drawEdges(coreParticle ? projected.get(coreParticle.node.id) : null, projected);
+      ordered.forEach(particle => drawParticle(particle, projected.get(particle.node.id)));
+      if (coreParticle) drawParticle(coreParticle, projected.get(coreParticle.node.id), true);
+      animationFrame = requestAnimationFrame(drawScene);
+    }
+
+    function drawParticleShell(color) {
+      const rect = canvas.getBoundingClientRect();
+      const particle = { radius: Math.min(rect.width, rect.height) * .33, color };
+      shellPoints.forEach((point, index) => {
+        const projected = project({ ...particle, ...point, node: { id: `shell-${index}` } });
+        if (projected.z < -.4) return;
+        const alpha = Math.max(.08, Math.min(.48, .2 + projected.z * .18));
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = color;
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 5;
+        ctx.beginPath();
+        ctx.arc(projected.x, projected.y, 1.1 + projected.scale * .8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.shadowBlur = 0;
+      ctx.globalAlpha = 1;
+    }
+
+    function setScene(newLayer, core, visible, options = {}) {
+      layer = newLayer;
+      coreParticle = core;
+      particles = visible;
+      focusEdges = options.edges || [];
+      hoverParticle = null;
+      captionElement.innerHTML = options.caption || "";
+      if (!animationFrame) drawScene();
+    }
+
+    function ensurePesticideOption(name) {
+      if (!name) return;
+      const existing = Array.from(select.options).some(option => option.value === name);
+      if (!existing) {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        select.appendChild(option);
+      }
+      select.value = name;
+      searchInput.value = name;
+      selectedPesticideName = name;
+    }
+
+    function pesticideParticleNode(item, index) {
+      return {
+        id: `pesticide-choice-${index}`,
+        label: item.label,
+        kind: "pesticide",
+        layer: item.has_evidence ? "with evidence" : "no evidence yet",
+        detail: item.has_evidence
+          ? `${item.evidence_records} evidence record${item.evidence_records === 1 ? "" : "s"} | ${item.microorganisms} microorganism${item.microorganisms === 1 ? "" : "s"}`
+          : "No experimental biodegradation evidence currently curated",
+        hasEvidence: item.has_evidence,
+        evidenceRecords: item.evidence_records,
+        microorganisms: item.microorganisms,
+        references: item.references,
+      };
+    }
+
+    function renderPesticideSelector() {
+      selectedMicrobe = null;
+      const points = spherePoints(Math.max(1, pesticideCatalog.length), .018);
+      const dots = pesticideCatalog.map((item, index) => {
+        const node = pesticideParticleNode(item, index);
+        const sizeBoost = item.has_evidence ? Math.min(7, Math.sqrt(item.evidence_records || 1)) : 0;
+        return makeParticle(node, points[index], {
+          radius: 5.5 + sizeBoost,
+          color: item.has_evidence ? colors.pesticide : colors.noEvidence,
+          label: item.label,
+          noLabel: true,
+          action: pesticideNode => loadSphere(pesticideNode.label, true),
+        });
+      });
+      setScene("pesticide-selector", null, dots, {
+        caption: "Hover pesticide dots to identify them; click a dot to enter evidence",
+      });
+      detailElement.innerHTML = `
+        <h2>Pesticide Dots</h2>
+        <p><strong>Pesticide selector sphere</strong> · first layer</p>
+        <p>Each small dot represents a pesticide. Yellow dots have curated evidence; gray dots are currently listed without experimental evidence.</p>
+      `;
+      summaryElement.innerHTML = `
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.total || 0)}</strong><span>Pesticides</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.with_evidence || 0)}</strong><span>With evidence</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(catalogSummary.without_evidence || 0)}</strong><span>No evidence</span></div>
+        <div class="galaxy-stat"><strong>${escapeHtml(pesticideCatalog.length || 0)}</strong><span>Visible dots</span></div>
+      `;
+      storyElement.innerHTML = `
+        Hover any pesticide dot to make it glow and show its name. Click a dot to load its microorganism evidence layer.
+      `;
+      listElement.innerHTML = pesticideCatalog.slice(0, 18).map(item => `
+        <button type="button" class="galaxy-list-item" data-pesticide="${escapeHtml(item.label)}"><strong>${escapeHtml(item.label)}</strong><span>${item.has_evidence ? `${escapeHtml(item.evidence_records)} records · ${escapeHtml(item.microorganisms)} microbes` : "No experimental evidence curated"}</span></button>
+      `).join("");
+      listElement.querySelectorAll(".galaxy-list-item[data-pesticide]").forEach(item => {
+        item.addEventListener("click", () => loadSphere(item.dataset.pesticide, true));
+      });
+    }
+
+    function renderMicrobeLayer() {
+      const microbeNodes = currentData.nodes.filter(node => node.kind === "microorganism");
+      const microbes = microbeNodes.slice(0, visibleLimit);
+      const points = spherePoints(microbes.length, .025);
+      const core = makeParticle({ id: "microbe-core", label: "Microorganisms", kind: "microorganism" }, { x: 0, y: 0, z: 0 }, {
+        radius: 82,
+        color: colors.microorganism,
+        action: renderPesticideSelector,
+      });
+      const dots = microbes.map((node, index) => makeParticle(node, points[index], {
+        radius: Math.max(30, Math.min(52, 30 + (node.size || 5) * 1.5)),
+        color: colors.microorganism,
+        action: renderReferenceLayer,
+      }));
+      const supportParticles = [];
+      const supportEdges = [];
+      const usedSupportIds = new Set();
+      microbes.forEach((microbe, microbeIndex) => {
+        const nearbySupport = compactSupportForMicrobe(microbe);
+        nearbySupport.forEach((supportNode, supportIndex) => {
+          const edgeKey = `${microbe.id}:${supportNode.id}`;
+          const point = points[microbeIndex] || { x: 0, y: 0, z: 0 };
+          const angle = (microbeIndex * 1.9) + (supportIndex * 2.25);
+          const supportPoint = {
+            x: point.x * .72 + Math.cos(angle) * .16,
+            y: point.y * .72 + Math.sin(angle) * .16,
+            z: point.z * .72 + Math.sin(angle * .7) * .18,
+          };
+          if (!usedSupportIds.has(supportNode.id)) {
+            supportParticles.push(makeParticle(supportNode, supportPoint, {
+              radius: supportNode.kind === "gene" ? 22 : 24,
+              color: colors[supportNode.kind] || colors.protein,
+              label: supportNode.label,
+              action: renderNodeDetail,
+            }));
+            usedSupportIds.add(supportNode.id);
+          }
+          const targetParticle = supportParticles.find(particle => particle.node.id === supportNode.id);
+          if (targetParticle && !supportEdges.some(edge => edge.key === edgeKey)) {
+            supportEdges.push({
+              key: edgeKey,
+              source: microbe,
+              target: supportNode,
+              color: sharedReferenceCount(microbe, supportNode) ? "#93c5fd" : "rgba(147,197,253,.62)",
+              width: 1.05,
+              alpha: .32,
+              pulse: .09,
+              glow: 8,
+            });
+          }
+        });
+      });
+      setScene("microbes", core, dots, {
+        edges: supportEdges,
+        caption: `<button type="button" id="back-pesticide">Pesticides</button><span>Microbes with gene/protein support inside ${escapeHtml(currentData.summary?.pesticide || select.value)}</span>`,
+      });
+      particles = [...dots, ...supportParticles];
+      document.getElementById("back-pesticide").addEventListener("click", renderPesticideSelector);
+      detailElement.innerHTML = `
+        <h2>Microorganisms</h2>
+        <p><strong>${escapeHtml(currentData.summary?.microorganisms || microbeNodes.length)}</strong> records are linked to ${escapeHtml(currentData.summary?.pesticide || select.value)}.</p>
+        <p>Green nodes are microorganisms. Purple and pink nodes are linked genes and proteins/enzymes. Thin blue edges show DOI-backed evidence connections.</p>
+      `;
+      listElement.innerHTML = microbes.map(node => `
+        <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Microorganism")} · ${escapeHtml(supportPreviewForMicrobe(node).length)} gene/protein links</span></button>
+      `).join("");
+      listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
+          if (node) renderReferenceLayer(node);
+        });
+      });
+    }
+
+    function renderReferenceLayer(microbe) {
+      selectedMicrobe = microbe;
+      const references = connectedNodes(microbe, ["reference"]).slice(0, visibleLimit);
+      const preview = supportPreviewForMicrobe(microbe).slice(0, 8);
+      const points = spherePoints(Math.max(1, references.length), .01);
+      const core = makeParticle(microbe, { x: 0, y: 0, z: 0 }, {
+        radius: 92,
+        color: colors.microorganism,
+        label: microbe.label,
+        action: renderMicrobeLayer,
+      });
+      const dots = references.map((node, index) => makeParticle(node, points[index], {
+        radius: 34,
+        color: colors.reference,
+        shape: "rect",
+        action: reference => renderSupportLayer(microbe, reference),
+      }));
+      setScene("references", core, dots, {
+        edges: dots.map(dot => ({ node: dot.node, color: "#93c5fd" })),
+        caption: `<button type="button" id="back-microbes">Microbes</button><span>DOI evidence for ${escapeHtml(shortLabel(microbe.label, 26))}</span>`,
+      });
+      document.getElementById("back-microbes").addEventListener("click", renderMicrobeLayer);
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(microbe.label)}</h2>
+        <p><strong>Focused microorganism</strong> · DOI evidence layer</p>
+        <p>${escapeHtml(references.length)} DOI/reference node${references.length === 1 ? "" : "s"} are linked here. ${escapeHtml(preview.length)} gene/protein support item${preview.length === 1 ? "" : "s"} are available in the preview below.</p>
+      `;
+      listElement.innerHTML = [
+        preview.length ? `<div class="galaxy-list-note">Gene/protein preview</div>` : "",
+        ...preview.map(node => `
+          <button type="button" class="galaxy-list-item" data-support-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "support")}</span></button>
+        `),
+        references.length ? `<div class="galaxy-list-note">DOI evidence</div>` : "",
+        ...references.map(node => `
+          <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.detail || "Reference")} · open focused support</span></button>
+        `),
+      ].join("");
+      listElement.querySelectorAll(".galaxy-list-item[data-node-id]").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
+          if (node) renderSupportLayer(microbe, node);
+        });
+      });
+      listElement.querySelectorAll(".galaxy-list-item[data-support-id]").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.supportId);
+          if (node) renderNodeDetail(node);
+        });
+      });
+    }
+
+    function renderSupportLayer(microbe, reference) {
+      const support = supportForFocus(microbe, reference);
+      const pathwayContext = pathwayContextForFocus(microbe, reference);
+      const points = spherePoints(Math.max(1, support.length), .012);
+      const core = makeParticle(reference, { x: 0, y: 0, z: 0 }, {
+        radius: 92,
+        color: colors.reference,
+        label: reference.label,
+        shape: "rect",
+        action: () => renderReferenceLayer(microbe),
+      });
+      const dots = support.map((node, index) => makeParticle(node, points[index], {
+        radius: 32,
+        color: colors[node.kind] || "#94a3b8",
+        action: renderNodeDetail,
+      }));
+      setScene("support", core, dots, {
+        edges: dots.map(dot => ({ node: dot.node, color: dot.color })),
+        caption: `<button type="button" id="back-doi">DOI layer</button><span>Gene and protein support</span>`,
+      });
+      document.getElementById("back-doi").addEventListener("click", () => renderReferenceLayer(microbe));
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(reference.label)}</h2>
+        <p><strong>Focused DOI</strong> · support layer</p>
+        <p>Genes and proteins/enzymes are shown as sphere particles. Pathway/products stay as compact context below.</p>
+      `;
+      listElement.innerHTML = [
+        ...support.map(node => `
+          <button type="button" class="galaxy-list-item" data-node-id="${escapeHtml(node.id)}"><strong>${escapeHtml(node.label)}</strong><span>${escapeHtml(node.kind)} · ${escapeHtml(node.detail || node.layer || "")}</span></button>
+        `),
+        pathwayContext.length ? `<div class="galaxy-list-item"><strong>Pathway context</strong><span>${escapeHtml(pathwayContext.slice(0, 6).map(node => node.label).join("; "))}</span></div>` : "",
+      ].join("");
+      listElement.querySelectorAll(".galaxy-list-item").forEach(item => {
+        item.addEventListener("click", () => {
+          const node = currentData.nodes.find(entry => entry.id === item.dataset.nodeId);
+          if (node) renderNodeDetail(node);
+        });
+      });
+    }
+
+    function renderNodeDetail(node) {
+      const links = currentData.links
+        .filter(link => nodeId(link.source) === node.id || nodeId(link.target) === node.id)
+        .slice(0, 6);
+      const nodeMap = byId();
+      detailElement.innerHTML = `
+        <h2>${escapeHtml(node.label)}</h2>
+        <p><strong>${escapeHtml(node.kind)}</strong> · ${escapeHtml(node.layer || "evidence")}</p>
+        <p>${escapeHtml(node.detail || "")}</p>
+        ${node.url ? `<a href="${escapeHtml(node.url)}" target="_blank" rel="noopener noreferrer">Open linked record</a>` : ""}
+      `;
+      listElement.innerHTML = links.map(link => {
+        const otherId = nodeId(link.source) === node.id ? nodeId(link.target) : nodeId(link.source);
+        const other = nodeMap.get(otherId);
+        return `<div class="galaxy-list-item"><strong>${escapeHtml(link.label)}</strong><span>${escapeHtml(other ? other.label : otherId)}</span></div>`;
+      }).join("");
+    }
+
+    async function loadSphere(pesticideName = select.value, enterMicrobes = false) {
+      loadingElement.style.display = "flex";
+      ensurePesticideOption(pesticideName);
+      const response = await fetch(`{% url 'evidence_galaxy_data' %}?pesticide=${encodeURIComponent(pesticideName)}`);
+      currentData = await response.json();
+      loadingElement.style.display = "none";
+      renderSummary(currentData.summary || {});
+      if (enterMicrobes) {
+        renderMicrobeLayer();
+      } else {
+        renderPesticideSelector();
+      }
+    }
+
+    async function loadPesticideCatalog() {
+      loadingElement.style.display = "flex";
+      const response = await fetch(`{% url 'evidence_galaxy_pesticides' %}`);
+      const payload = await response.json();
+      pesticideCatalog = payload.pesticides || [];
+      catalogSummary = payload.summary || {};
+      pesticideOptions.innerHTML = pesticideCatalog.map(item => `<option value="${escapeHtml(item.label)}"></option>`).join("");
+      selectedPesticideName = select.value || pesticideCatalog[0]?.label || "";
+      loadingElement.style.display = "none";
+      renderPesticideSelector();
+    }
+
+    function canvasPoint(event) {
+      const rect = canvas.getBoundingClientRect();
+      return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+    }
+
+    function pickParticle(point) {
+      const candidates = [coreParticle, ...particles].filter(Boolean);
+      let best = null;
+      let bestDistance = Infinity;
+      candidates.forEach(particle => {
+        const projected = project(particle);
+        if (particle.shape === "rect") {
+          const metrics = rectMetrics(particle, projected, false);
+          const halfWidth = metrics.width / 2;
+          const halfHeight = metrics.height / 2;
+          const inside = (
+            point.x >= projected.x - halfWidth &&
+            point.x <= projected.x + halfWidth &&
+            point.y >= projected.y - halfHeight &&
+            point.y <= projected.y + halfHeight
+          );
+          const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
+          if (inside && distance < bestDistance) {
+            best = particle;
+            bestDistance = distance;
+          }
+        } else {
+          const radius = particle.radius * projected.scale;
+          const distance = Math.hypot(projected.x - point.x, projected.y - point.y);
+          if (distance < radius * 1.18 && distance < bestDistance) {
+            best = particle;
+            bestDistance = distance;
+          }
+        }
+      });
+      return best;
+    }
+
+    function backFromEmptySpace() {
+      if (layer === "support" && selectedMicrobe) {
+        renderReferenceLayer(selectedMicrobe);
+      } else if (layer === "references") {
+        renderMicrobeLayer();
+      } else if (layer === "microbes") {
+        renderPesticideSelector();
+      }
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      pointer = { ...canvasPoint(event), down: true, moved: false };
+      canvas.setPointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      const point = canvasPoint(event);
+      if (pointer.down) {
+        const dx = point.x - pointer.x;
+        const dy = point.y - pointer.y;
+        if (Math.abs(dx) + Math.abs(dy) > 2) pointer.moved = true;
+        rotation.y += dx * .006;
+        rotation.x += dy * .004;
+        pointer.x = point.x;
+        pointer.y = point.y;
+      } else {
+        hoverParticle = pickParticle(point);
+        canvas.style.cursor = hoverParticle ? "pointer" : "grab";
+      }
+    });
+
+    canvas.addEventListener("pointerup", event => {
+      const point = canvasPoint(event);
+      const target = pickParticle(point);
+      if (!pointer.moved && target?.action) {
+        target.action(target.node);
+      } else if (!pointer.moved && !target) {
+        backFromEmptySpace();
+      }
+      pointer.down = false;
+    });
+
+    canvas.addEventListener("wheel", event => {
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? -.08 : .08;
+      setZoom(zoomScale + delta);
+    }, { passive: false });
+
+    zoomInButton.addEventListener("click", () => setZoom(zoomScale + .24));
+    zoomOutButton.addEventListener("click", () => setZoom(zoomScale - .24));
+    zoomResetButton.addEventListener("click", () => setZoom(1));
+
+    window.addEventListener("resize", resizeCanvas);
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const requested = searchInput.value.trim();
+      if (requested) loadSphere(requested, true);
+    });
+    setZoom(1);
+    drawScene();
+    loadPesticideCatalog();
+  })();
+</script>
+{% endblock %}

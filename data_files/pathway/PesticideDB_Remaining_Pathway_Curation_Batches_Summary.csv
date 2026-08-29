@@ -1,0 +1,5 @@
+curation_batch,batch_focus,pesticide_count,doi_rows,readable_or_candidate,redownload_needed,folder_missing
+batch_16,Highest priority: database-rich records and papers closest to pathway extraction,0,0,0,0,0
+batch_17,Second priority: strong database/source leads requiring full-text replacement,0,0,0,0,0
+batch_18,Third priority: broader DOI/source acquisition and screening,0,0,0,0,0
+batch_19,"Final priority: lowest-evidence records, missing folders, or papers needing replacement",0,0,0,0,0

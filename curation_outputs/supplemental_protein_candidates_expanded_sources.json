@@ -1,0 +1,125 @@
+{
+  "sources": [
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzA AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzA+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzB AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzB+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzC AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzC+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzD AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzD+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzE AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzE+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine",
+      "query": "gene:atzF AND atrazine",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AatzF+AND+atrazine&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Atrazine / simazine",
+      "query": "gene:trzN AND (atrazine OR simazine)",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AtrzN+AND+%28atrazine+OR+simazine%29&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Parathion / organophosphates",
+      "query": "gene:opd AND parathion",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3Aopd+AND+parathion&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Methyl parathion",
+      "query": "gene:mpd AND methyl parathion",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3Ampd+AND+methyl+parathion&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Chlorpyrifos",
+      "query": "gene:mpd AND chlorpyrifos",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3Ampd+AND+chlorpyrifos&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Chlorpyrifos",
+      "query": "gene:ophc2 AND chlorpyrifos",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3Aophc2+AND+chlorpyrifos&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Organophosphates",
+      "query": "organophosphorus hydrolase pesticide",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=organophosphorus+hydrolase+pesticide&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Carbaryl",
+      "query": "carbaryl hydrolase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=carbaryl+hydrolase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Carbofuran",
+      "query": "carbofuran hydrolase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=carbofuran+hydrolase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Pyrethroids",
+      "query": "gene:pytH pyrethroid hydrolase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3ApytH+pyrethroid+hydrolase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Pyrethroids",
+      "query": "gene:estP pyrethroid hydrolase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=gene%3AestP+pyrethroid+hydrolase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Glyphosate",
+      "query": "glyphosate oxidoreductase gox",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=glyphosate+oxidoreductase+gox&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Glyphosate",
+      "query": "glyphosate C-P lyase phnJ",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=glyphosate+C-P+lyase+phnJ&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "Dicamba",
+      "query": "dicamba monooxygenase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=dicamba+monooxygenase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    },
+    {
+      "pesticide": "2,4-D / chlorophenoxy herbicides",
+      "query": "2,4-dichlorophenoxyacetate dioxygenase",
+      "url": "https://rest.uniprot.org/uniprotkb/search?query=2%2C4-dichlorophenoxyacetate+dioxygenase&format=tsv&fields=accession%2Creviewed%2Cprotein_name%2Cgene_names%2Corganism_name%2Cxref_refseq%2Clit_pubmed_id%2Cec&size=25",
+      "status": 200
+    }
+  ],
+  "row_count": 194
+}

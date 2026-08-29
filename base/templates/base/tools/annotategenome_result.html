@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% load doi_links %}
+
+{% block title %}Annotate Genome - Results{% endblock %}
+
+{% block content %}
+
+<br><br><br>
+
+<div class="container">
+
+    <div class="container bg-secondary text-white rounded shadow-lg p-4 text-center">
+        <h3>Annotate Genome Result</h3>
+        <p>
+            Job number: <strong>{{ job.job_id }}</strong>
+        </p>
+        <p>
+            Status: <strong>{{ job.status }}</strong>
+        </p>
+    </div>
+
+    <br>
+
+    {% if error %}
+        <div class="alert alert-danger">
+            <strong>Error:</strong> {{ error }}
+        </div>
+    {% endif %}
+
+    {% if nohit %}
+        <div class="alert alert-warning text-center shadow-sm">
+            <h4>No hit found</h4>
+            <p>{{ message }}</p>
+        </div>
+    {% endif %}
+
+    {% if results %}
+
+        <div class="alert alert-success text-center shadow-sm">
+            <h4>Your job completed successfully</h4>
+            <p>
+                Found a best validated match for <strong>{{ results|length }}</strong> query protein(s).
+            </p>
+
+            <a href="{% url 'annotategenome_download' job.job_id %}" class="btn btn-primary">
+                Download best matches CSV
+            </a>
+            {% if all_matches_available %}
+              <a href="{% url 'annotategenome_all_matches_download' job.job_id %}" class="btn btn-outline-primary ml-2">
+                  Download all validated matches CSV
+              </a>
+            {% endif %}
+        </div>
+
+        <div class="alert alert-warning shadow-sm">
+            <strong>Disclaimer:</strong>
+            Genome annotation identifies candidate pesticide-degradation genes or proteins.
+            A hit is not experimental proof that the uploaded organism degrades the pesticide.
+        </div>
+
+        <div class="alert alert-info shadow-sm">
+            <strong>Result interpretation:</strong>
+            all detectable validated-reference alignments are reported. The selected identity,
+            E-value, and query-coverage values mark preferred results but do not hide other hits.
+            Identity counts exact residue matches; similarity includes conservative substitutions.
+        </div>
+
+        <br>
+
+        {% if pesticide_hits %}
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">Table 1: Hits per Pesticide</h4>
+
+            <table class="table table-hover table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Pesticide</th>
+                        <th>Number of Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pesticide_hits %}
+                    <tr>
+                        <td>{{ p.pesticide|default:"-" }}</td>
+                        <td>{{ p.hit_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if hmmer_hits %}
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">HMMER Family Summary</h4>
+
+            <table class="table table-hover table-bordered text-center">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>HMMER Family</th>
+                        <th>Number of Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for h in hmmer_hits %}
+                    <tr>
+                        <td>{{ h.hmmer_family|default:"-" }}</td>
+                        <td>{{ h.hit_count }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">
+                Table 2: Best Match for Each Query
+            </h4>
+
+            <div class="row align-items-end mb-3">
+                <div class="col-md-2"><label>Minimum identity</label><select id="genome-min-identity" class="form-control"><option value="0" selected>0%</option><option value="20">20%</option><option value="40">40%</option><option value="60">60%</option><option value="80">80%</option></select></div>
+                <div class="col-md-2"><label>Minimum similarity</label><select id="genome-min-similarity" class="form-control"><option value="0" selected>0%</option><option value="20">20%</option><option value="40">40%</option><option value="60">60%</option><option value="80">80%</option></select></div>
+                <div class="col-md-2"><label>Minimum query coverage</label><select id="genome-min-coverage" class="form-control"><option value="0" selected>0%</option><option value="20">20%</option><option value="40">40%</option><option value="60">60%</option><option value="80">80%</option></select></div>
+                <div class="col-md-3"><label>Sort by</label><select id="genome-sort" class="form-control"><option value="bitscore">Bit score: high to low</option><option value="identity">Identity: high to low</option><option value="similarity">Similarity: high to low</option><option value="coverage">Query coverage: high to low</option></select></div>
+                <div class="col-md-2"><label>Show</label><select id="genome-limit" class="form-control"><option value="10">10 hits</option><option value="20">20 hits</option><option value="50">50 hits</option><option value="100">100 hits</option><option value="0">All hits</option></select></div>
+                <div class="col-md-1"><button id="genome-reset-filters" type="button" class="btn btn-outline-secondary">Reset</button></div>
+            </div>
+            <p id="genome-filter-summary" class="text-muted"></p>
+
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered text-center table-sm annotation-results-table">
+                    <thead class="thead-dark">
+                        <tr>
+                            <th>Query Sequence</th>
+                            <th>PesticideDB Protein ID</th>
+                            <th>NCBI Protein Accession</th>
+                            <th>Reported Protein</th>
+                            <th>Percent Identity</th>
+                            <th>Percent Similarity</th>
+                            <th>Alignment Length</th>
+                            <th>Query Coverage</th>
+                            <th>Subject Coverage</th>
+                            <th>E-value</th>
+                            <th>Bit Score</th>
+                            <th>Passes Screening Thresholds</th>
+                            <th>Enzyme Class</th>
+                            <th>Gene Name</th>
+                            <th>Microorganism</th>
+                            <th>Pesticide</th>
+                            <th>Pathway Association</th>
+                            <th>Evidence Type</th>
+                            <th>Family Coverage in PesticideDB</th>
+                            <th>HMMER Family</th>
+                            <th>HMMER E-value</th>
+                            <th>Confidence</th>
+                            <th>Year</th>
+                            <th>DOI</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                    {% for r in results %}
+                    <tr class="annotation-hit"
+                        data-identity="{{ r.identity|default:0 }}"
+                        data-similarity="{{ r.similarity|default:0 }}"
+                        data-coverage="{{ r.query_coverage|default:0 }}"
+                        data-bitscore="{{ r.bitscore|default:0 }}">
+                        <td class="text-left text-break">{{ r.query|default:"-" }}</td>
+
+                        <td>
+                            {% if r.protein_detail_id and r.protein_detail_id != "-" %}
+                                <a href="{% url 'protein_detail' r.protein_detail_id %}">
+                                    {{ r.pesticidedb_protein_id }}
+                                </a>
+                            {% elif r.pbdb_protein_id and r.pbdb_protein_id != "-" %}
+                                <a href="{% url 'protein_detail' r.pbdb_protein_id %}">
+                                    {{ r.pbdb_protein_id }}
+                                </a>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+
+                        <td class="text-nowrap">{{ r.ncbi_protein_accession|default:"-" }}</td>
+                        <td class="text-left">{{ r.reported_protein_name|default:"-" }}</td>
+                        <td>{{ r.identity|default:"-" }}</td>
+                        <td>{{ r.similarity|default:"-" }}</td>
+                        <td>{{ r.alignment_length|default:"-" }}</td>
+                        <td>{{ r.query_coverage|default:"-" }}%</td>
+                        <td>{{ r.subject_coverage|default:"-" }}%</td>
+                        <td>{{ r.diamond_evalue|default:"-" }}</td>
+                        <td>{{ r.bitscore|default:"-" }}</td>
+                        <td>
+                            {% if r.passes_screening_thresholds == "Yes" %}
+                                <span class="badge badge-success">YES</span>
+                            {% else %}
+                                <span class="badge badge-secondary">NO</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-left">{{ r.enzyme_class|default:"-" }}</td>
+                        <td>{{ r.gene_name|default:"-" }}</td>
+                        <td class="text-left">{{ r.microorganism|default:"-" }}</td>
+                        <td>
+                            {% if r.pesticide and r.pesticide != "-" %}
+                              <a href="{% url 'pathwayanalysis' %}?pesticide={{ r.pesticide|urlencode }}">{{ r.pesticide }}</a>
+                            {% else %}-{% endif %}
+                        </td>
+                        <td>
+                            {% if r.has_pathway %}
+                                <a class="badge badge-info" href="{% url 'pathwayanalysis' %}?pesticide={{ r.pesticide|urlencode }}">
+                                    Curated pathway available
+                                </a>
+                            {% elif r.pesticide and r.pesticide != "-" %}
+                                <span class="badge badge-light border">No curated pathway yet</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td class="text-left">{{ r.evidence_type|default:"-" }}</td>
+                        <td>{{ r.family_confidence|default:"-" }}</td>
+                        <td>{{ r.hmmer_family|default:"-" }}</td>
+                        <td>{{ r.hmmer_evalue|default:"-" }}</td>
+                        <td>
+                            {% if r.interpretation_confidence == "HIGH" %}
+                                <span class="badge badge-success">HIGH</span>
+                            {% elif r.interpretation_confidence == "MEDIUM" %}
+                                <span class="badge badge-primary">MEDIUM</span>
+                            {% elif r.interpretation_confidence == "CONFLICT" %}
+                                <span class="badge badge-danger">CONFLICT</span>
+                            {% elif r.interpretation_confidence == "LOW" %}
+                                <span class="badge badge-warning">LOW</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                        <td>{{ r.year|default:"-" }}</td>
+                        <td class="text-left">
+                            {% if r.doi %}
+                                {% with doi_url=r.doi|doi_url doi_text=r.doi|doi_text %}
+                                    {% if doi_url %}
+                                        <a target="_blank" rel="noopener" href="{{ doi_url }}">{{ doi_text|default:r.doi }}</a>
+                                    {% else %}
+                                        {{ r.doi }}
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="container bg-light rounded shadow-lg p-4 mb-4">
+            <h4 class="text-center">How to Interpret Genome Annotation Results</h4>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Recommended Interpretation</h5>
+                    <p>
+                        The table shows the closest PesticideDB protein hit from DIAMOND and the broader enzyme-family
+                        support from HMMER. Treat each row as a candidate annotation, not proof of pesticide degradation.
+                    </p>
+                    <p>
+                        A result is strongest when percent identity is high, alignment length is substantial,
+                        DIAMOND E-value is low, and the DIAMOND enzyme class agrees with the HMMER family.
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    <h5>General Warnings</h5>
+                    <p>
+                        Low identity hits, short alignments, pseudo genes, or disagreement between DIAMOND and HMMER
+                        should be manually checked before functional naming.
+                    </p>
+                    <p class="mb-0">
+                        The downloaded CSV includes extra interpretation columns such as original query product,
+                        pseudo flag, interpretation confidence, warnings, and final interpretation for detailed review.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<br><br><br>
+
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    .annotation-results-table {
+        font-size: 0.88rem;
+    }
+    .annotation-results-table th,
+    .annotation-results-table td {
+        vertical-align: middle;
+        padding: 0.55rem;
+    }
+    .annotation-results-table th {
+        white-space: nowrap;
+    }
+</style>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const body = document.querySelector(".annotation-results-table tbody");
+    if (!body) return;
+    const hits = Array.from(body.querySelectorAll(".annotation-hit"));
+    const controls = {
+        identity: document.getElementById("genome-min-identity"),
+        similarity: document.getElementById("genome-min-similarity"),
+        coverage: document.getElementById("genome-min-coverage"),
+        sort: document.getElementById("genome-sort"),
+        limit: document.getElementById("genome-limit")
+    };
+    const number = (hit, key) => Number(hit.dataset[key]) || 0;
+    function applyFilters() {
+        const filtered = hits.filter(hit =>
+            number(hit, "identity") >= Number(controls.identity.value) &&
+            number(hit, "similarity") >= Number(controls.similarity.value) &&
+            number(hit, "coverage") >= Number(controls.coverage.value)
+        );
+        const sortKey = controls.sort.value;
+        filtered.sort((a, b) => number(b, sortKey) - number(a, sortKey));
+        hits.forEach(hit => hit.style.display = "none");
+        const limit = Number(controls.limit.value);
+        (limit ? filtered.slice(0, limit) : filtered).forEach(hit => {
+            hit.style.display = "";
+            body.appendChild(hit);
+        });
+        document.getElementById("genome-filter-summary").textContent =
+            `Showing ${limit ? Math.min(limit, filtered.length) : filtered.length} of ${filtered.length} matching best hits (${hits.length} total).`;
+    }
+    Object.values(controls).forEach(control => control.addEventListener("change", applyFilters));
+    document.getElementById("genome-reset-filters").addEventListener("click", function () {
+        controls.identity.value = "0";
+        controls.similarity.value = "0";
+        controls.coverage.value = "0";
+        controls.sort.value = "bitscore";
+        controls.limit.value = "10";
+        applyFilters();
+    });
+    applyFilters();
+});
+</script>
+{% endblock %}
