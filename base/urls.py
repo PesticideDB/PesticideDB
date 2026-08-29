@@ -16,6 +16,8 @@ urlpatterns = [
 
     path('proteins/', views.proteins, name='proteins'),
     path('proteins/<str:pesticidedb_protein_id>/', views.protein_detail, name='protein_detail'),
+    path('proteins/<str:pesticidedb_protein_id>/structure/pdb/', views.protein_pdb_file, name='protein_pdb_file'),
+    path('proteins/<str:pesticidedb_protein_id>/structure/preview/', views.protein_structure_preview, name='protein_structure_preview'),
     path('proteins/<str:pesticidedb_protein_id>/fasta/', views.protein_fasta_download, name='protein_fasta_download'),
     path("proteins/<str:pesticidedb_protein_id>/fetch-fasta/", views.fetch_ncbi_fasta, name="fetch_ncbi_fasta"),
 

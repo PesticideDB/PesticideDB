@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.db.models import Count, Q
 from django.http import HttpResponse, FileResponse, Http404, JsonResponse
 from django.conf import settings
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 import csv
@@ -40,6 +41,7 @@ from base.utils import (
     curated_pathway_pesticide_names,
     database_summary,
     microorganism_count,
+    microorganism_record_count,
     pesticide_counts,
 )
 
@@ -78,6 +80,45 @@ def categorize_protein_evidence_type(value):
     if "whole-cell" in lower or "whole cell" in lower or "crude" in lower or "experimental evidence" in lower or "experimental and enzymatic" in lower:
         return "Whole-cell / Crude"
     return "Whole-cell / Crude"
+
+
+def categorize_biodegradation_evidence(record):
+    evidence_text = " ".join(
+        str(value or "")
+        for value in [
+            record.evidence_by_microbe,
+            record.evidence_of_enzyme,
+            record.evidence_level,
+            record.assay_type,
+            record.gene,
+            record.enzyme,
+        ]
+    )
+    lower = evidence_text.casefold()
+    gene_only_terms = [
+        "genomic evidence",
+        "genome evidence",
+        "gene only",
+        "sequence homology",
+        "homology prediction",
+        "metagenomic",
+    ]
+    direct_experimental_terms = [
+        "experimental evidence",
+        "enzymatic evidence",
+        "enzyme assay",
+        "purified",
+        "recombinant",
+        "kinetic",
+        "knockout",
+        "expression",
+    ]
+    if any(term in lower for term in gene_only_terms) and not any(
+        term in lower for term in direct_experimental_terms
+    ):
+        return "Gene Only"
+    return categorize_protein_evidence_type(evidence_text)
+
 
 def home(request):
     counts = pesticide_counts()
@@ -303,7 +344,6 @@ def microorganisms(request):
         filters['pesticide__iexact'] = pesticide
         is_search = True
     if evidence:
-        filters['evidence_by_microbe__icontains'] = evidence
         is_search = True
     if gene:
         filters['gene__icontains'] = gene
@@ -325,8 +365,13 @@ def microorganisms(request):
         results = queryset.none()
         is_search = True
     else:
-        if filters:
+        if filters or evidence:
             results = queryset.filter(**filters).order_by('microorganism', 'pesticide')
+            if evidence:
+                results = [
+                    record for record in results
+                    if categorize_biodegradation_evidence(record) == evidence
+                ]
             is_search = True
         else:
             results = queryset.order_by('microorganism', 'pesticide')[:100]
@@ -343,11 +388,7 @@ def microorganisms(request):
 
     pesticides_list = canonical_pesticide_names()
 
-    evidence_list = (
-        base_qs.values_list("evidence_by_microbe", flat=True)
-        .exclude(evidence_by_microbe__isnull=True).exclude(evidence_by_microbe="")
-        .distinct().order_by("evidence_by_microbe")
-    )
+    evidence_list = EVIDENCE_TYPE_CATEGORIES
 
     gene_list = (
         base_qs.values_list("gene", flat=True)
@@ -379,10 +420,12 @@ def microorganisms(request):
         .distinct().order_by("culture_type")
     )
 
+    total_count = len(results) if isinstance(results, list) else results.count()
+
     context = {
         'results': results,
         'is_search': is_search,
-        'total_count': results.count() if hasattr(results, 'count') else len(results),
+        'total_count': total_count,
         'no_evidence_message': no_evidence_message,
 
         'microorganisms_list': microorganisms_list,
@@ -586,19 +629,17 @@ def protein_detail(request, pesticidedb_protein_id):
 
     display_id = p.pesticidedb_protein_id or p.pbdb_protein_id or pesticidedb_protein_id
 
-    pdb_rel = f"protein_structures/pdb/{display_id}.pdb"
-
-    pdb_abs = os.path.join(settings.MEDIA_ROOT, pdb_rel)
+    pdb_abs = protein_structure_pdb_path(display_id)
 
     structure_image_url = None
     for image_ext in ("png", "svg"):
-        img_rel = f"protein_structures/images/{display_id}.{image_ext}"
-        img_abs = os.path.join(settings.MEDIA_ROOT, img_rel)
+        img_abs = protein_structure_preview_path(display_id, image_ext)
         if os.path.exists(img_abs):
-            structure_image_url = settings.MEDIA_URL + img_rel
+            structure_image_url = reverse("protein_structure_preview", args=[display_id])
             break
 
-    pdb_download_url = settings.MEDIA_URL + pdb_rel if os.path.exists(pdb_abs) else None
+    pdb_structure_url = reverse("protein_pdb_file", args=[display_id]) if os.path.exists(pdb_abs) else None
+    pdb_download_url = f"{pdb_structure_url}?download=1" if pdb_structure_url else None
     uniprot_accession = (p.uniprot_accession or "").strip()
     uniprot_url = (
         f"https://www.uniprot.org/uniprotkb/{uniprot_accession}/entry"
@@ -614,6 +655,7 @@ def protein_detail(request, pesticidedb_protein_id):
     context = {
         "p": p,
         "structure_image_url": structure_image_url,
+        "pdb_structure_url": pdb_structure_url,
         "pdb_download_url": pdb_download_url,
         "uniprot_url": uniprot_url,
         "structure_summary": structure_summary,
@@ -622,6 +664,61 @@ def protein_detail(request, pesticidedb_protein_id):
     }
 
     return render(request, "base/protein_detail.html", context)
+
+
+def protein_structure_pdb_path(display_id):
+    return os.path.join(
+        settings.MEDIA_ROOT,
+        "protein_structures",
+        "pdb",
+        f"{display_id}.pdb",
+    )
+
+
+def protein_structure_preview_path(display_id, image_ext):
+    return os.path.join(
+        settings.MEDIA_ROOT,
+        "protein_structures",
+        "images",
+        f"{display_id}.{image_ext}",
+    )
+
+
+def protein_pdb_file(request, pesticidedb_protein_id):
+    p = get_object_or_404(
+        ProteinRecord,
+        Q(pesticidedb_protein_id=pesticidedb_protein_id) |
+        Q(pbdb_protein_id=pesticidedb_protein_id)
+    )
+    display_id = p.pesticidedb_protein_id or p.pbdb_protein_id or pesticidedb_protein_id
+    pdb_path = protein_structure_pdb_path(display_id)
+    if not os.path.exists(pdb_path):
+        raise Http404("Protein structure file not found.")
+    return FileResponse(
+        open(pdb_path, "rb"),
+        as_attachment=request.GET.get("download") == "1",
+        filename=f"{display_id}.pdb",
+        content_type="chemical/x-pdb",
+    )
+
+
+def protein_structure_preview(request, pesticidedb_protein_id):
+    p = get_object_or_404(
+        ProteinRecord,
+        Q(pesticidedb_protein_id=pesticidedb_protein_id) |
+        Q(pbdb_protein_id=pesticidedb_protein_id)
+    )
+    display_id = p.pesticidedb_protein_id or p.pbdb_protein_id or pesticidedb_protein_id
+    for image_ext, content_type in (("png", "image/png"), ("svg", "image/svg+xml")):
+        image_path = protein_structure_preview_path(display_id, image_ext)
+        if os.path.exists(image_path):
+            return FileResponse(
+                open(image_path, "rb"),
+                as_attachment=False,
+                filename=f"{display_id}.{image_ext}",
+                content_type=content_type,
+            )
+    raise Http404("Protein structure preview not found.")
 
 
 def parse_pdb_structure_summary(pdb_path):
@@ -870,6 +967,7 @@ def statistics(request):
         "pesticides_no_evidence": counts["no_evidence"],
         "pesticide_count": counts["total"],
         "total_microorganisms": microorganism_count(),
+        "microorganism_record_count": microorganism_record_count(),
         "total_proteins": total_proteins,
         **summary,
         "publications_by_year": publications_by_year,

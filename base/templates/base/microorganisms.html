@@ -42,10 +42,10 @@
                 </div>
 
                 <div class="row p-1">
-                    <div class="col-3 align-self-center">Evidence</div>
+                    <div class="col-3 align-self-center">Evidence type</div>
                     <div class="col-9 align-self-center">
                         <select class="form-control" id="evidence_field" name="evidence">
-                            <option value="">--- Select Evidence ---</option>
+                            <option value="">--- Select Evidence Type ---</option>
                             {% for evidence in evidence_list %}
                             <option value="{{ evidence }}"
                                     {% if selected_evidence == evidence %}selected{% endif %}>

@@ -123,10 +123,10 @@
       <div class="row">
         {# Interactive Structure Viewer #}
         <div class="col-md-7">
-          {% if pdb_download_url %}
+          {% if pdb_structure_url %}
             <div id="protein-structure-viewer"
                  class="border rounded bg-light"
-                 data-pdb-url="{{ pdb_download_url }}"
+                 data-pdb-url="{{ pdb_structure_url }}"
                  style="height: 460px; width: 100%; position: relative;">
               {% if structure_image_url %}
                 <img src="{{ structure_image_url }}"
@@ -315,7 +315,7 @@
 
 {% block extra_scripts %}
   {{ block.super }}
-  {% if pdb_download_url %}
+  {% if pdb_structure_url %}
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const viewerElement = document.getElementById("protein-structure-viewer");

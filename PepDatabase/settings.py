@@ -26,36 +26,39 @@ def env_bool(name, default=False):
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ.get(
-    'DJANGO_SECRET_KEY',
-    'django-insecure-h60d_8u(pe*cig@t_^-=&iyzva=h8^rwvw67%cm80m2@fo0mrq'
-)
-
 PUBLIC_DEMO = env_bool('DJANGO_PUBLIC_DEMO', False)
-if PUBLIC_DEMO and SECRET_KEY.startswith('django-insecure-'):
-    raise ImproperlyConfigured(
-        'DJANGO_PUBLIC_DEMO=True requires a real DJANGO_SECRET_KEY. '
-        'Use scripts/run_public_demo.sh or set DJANGO_SECRET_KEY yourself.'
-    )
 
 # SECURITY WARNING: don't run with debug turned on in production or public tunnels.
-DEBUG = env_bool('DJANGO_DEBUG', True) and not PUBLIC_DEMO
+DEBUG = env_bool('DJANGO_DEBUG', False) and not PUBLIC_DEMO
+
+# SECURITY WARNING: keep the secret key used in production secret.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
+if not SECRET_KEY:
+    if DEBUG:
+        SECRET_KEY = 'django-insecure-h60d_8u(pe*cig@t_^-=&iyzva=h8^rwvw67%cm80m2@fo0mrq'
+    else:
+        raise ImproperlyConfigured(
+            'DJANGO_SECRET_KEY is required when DJANGO_DEBUG=False. '
+            'Generate one with: python -c '
+            '"from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"'
+        )
 
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '').split(',')
     if host.strip()
 ]
-if DEBUG and not ALLOWED_HOSTS:
-    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'testserver', '.devtunnels.ms']
+if not ALLOWED_HOSTS:
+    ALLOWED_HOSTS = ['localhost', '127.0.0.1', '[::1]', 'testserver']
+if env_bool('DJANGO_ALLOW_DEVTUNNELS', False):
+    ALLOWED_HOSTS.append('.devtunnels.ms')
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get('DJANGO_CSRF_TRUSTED_ORIGINS', '').split(',')
     if origin.strip()
 ]
-if DEBUG and not CSRF_TRUSTED_ORIGINS:
+if env_bool('DJANGO_ALLOW_DEVTUNNELS', False) and not CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS = ['https://*.devtunnels.ms']
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
@@ -64,12 +67,18 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 
 # Set these to True only behind a correctly configured HTTPS proxy/tunnel.
-SESSION_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', PUBLIC_DEMO)
-CSRF_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', PUBLIC_DEMO)
+SESSION_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', not DEBUG)
+CSRF_COOKIE_SECURE = env_bool('DJANGO_SECURE_COOKIES', not DEBUG)
+SECURE_SSL_REDIRECT = env_bool('DJANGO_SECURE_SSL_REDIRECT', not DEBUG)
+SECURE_HSTS_SECONDS = int(os.environ.get('DJANGO_SECURE_HSTS_SECONDS', 31536000 if not DEBUG else 0))
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool('DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS', not DEBUG)
+SECURE_HSTS_PRELOAD = env_bool('DJANGO_SECURE_HSTS_PRELOAD', False)
+if env_bool('DJANGO_TRUST_PROXY_SSL_HEADER', not DEBUG):
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 DJANGO_ENABLE_ADMIN = env_bool('DJANGO_ENABLE_ADMIN', not PUBLIC_DEMO)
 DJANGO_ADMIN_URL = os.environ.get('DJANGO_ADMIN_URL', 'admin/')
-DJANGO_SERVE_MEDIA = DEBUG and env_bool('DJANGO_SERVE_MEDIA', True)
+DJANGO_SERVE_MEDIA = DEBUG and env_bool('DJANGO_SERVE_MEDIA', False)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get('DJANGO_DATA_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024))
 FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get('DJANGO_FILE_UPLOAD_MAX_MEMORY_SIZE', 10 * 1024 * 1024))
@@ -144,6 +153,7 @@ def database_from_url(database_url):
         'PASSWORD': unquote(parsed.password or ''),
         'HOST': parsed.hostname,
         'PORT': str(parsed.port or ''),
+        'CONN_MAX_AGE': int(os.environ.get('DATABASE_CONN_MAX_AGE', 60)),
         'OPTIONS': {'sslmode': os.environ.get('DATABASE_SSLMODE', 'require')},
     }
 

@@ -72,16 +72,17 @@
 </div>
 
 <div class="row">
-    <div class="col-md-3 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ total_microorganisms }}</h1>
                 <h5>Microorganisms</h5>
+                <small class="text-muted">Distinct microorganism labels across {{ microorganism_record_count }} reported microorganism records</small>
             </div>
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ structure_count }}</h1>
@@ -91,22 +92,12 @@
         </div>
     </div>
 
-    <div class="col-md-3 mb-4">
+    <div class="col-md-4 mb-4">
         <div class="card text-center">
             <div class="card-body">
                 <h1 class="display-4 text-primary">{{ curated_publication_count }}</h1>
                 <h5>Curated Publications</h5>
                 <small class="text-muted">Distinct publication labels in biodegradation records</small>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3 mb-4">
-        <div class="card text-center">
-            <div class="card-body">
-                <h1 class="display-4 text-primary">{{ reference_count }}</h1>
-                <h5>Reference Identifiers</h5>
-                <small class="text-muted">Unique DOI/reference identifiers across datasets</small>
             </div>
         </div>
     </div>
@@ -144,7 +135,8 @@
          class="img-fluid border rounded statistics-figure"
          alt="Isolation environments">
     <p class="text-muted mt-2 mb-0">
-      This analysis summarizes the environments from which pesticide-degrading microorganisms were isolated. The updated figure summarizes 833 reported microorganism records with pesticide-degrading capabilities. The category ‘Others’ includes isolates for which the source environment was not clearly specified, accounting for 11 records.
+      This analysis summarizes the environments from which pesticide-degrading microorganisms were isolated. The figure is record-level, so repeated microorganism labels may appear more than once when they are reported for different pesticides, publications, or curated records. This differs from the distinct microorganism-label count shown in the statistics summary above.
+    </p>
   </div>
 </div>
 
@@ -234,7 +226,7 @@
          class="img-fluid border rounded statistics-figure"
          alt="Genus-pesticide heatmap">
     <p class="text-muted mt-2 mb-0">
-      Genus-pesticide heatmap showing how curated biodegradation reports connect the 30 most represented microbial genera with the 30 most represented pesticides in PesticideDB. Each cell counts distinct reported microorganism labels for a genus-pesticide pair; darker colors indicate more records. This view helps identify well-supported degrader-pesticide relationships, broad-spectrum candidate genera, and pesticides with sparse microbial coverage. Blank cells indicate that no association was identified in the curated literature, not confirmed biological absence.
+      Genus-pesticide heatmap showing how curated biodegradation reports connect the 30 most represented microbial genera with selected highly represented pesticides in PesticideDB. Each cell counts distinct reported microorganism labels for a genus-pesticide pair; darker colors indicate more records. This view helps identify well-supported degrader-pesticide relationships, broad-spectrum candidate genera, and pesticides with sparse microbial coverage. Blank cells indicate that no association was identified in the curated literature, not confirmed biological absence.
     </p>
   </div>
 </div>

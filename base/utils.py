@@ -164,6 +164,19 @@ def microorganism_count():
     )
 
 
+def microorganism_record_count():
+    """
+    Count reported microorganism records, including repeated microorganism labels.
+    """
+    return (
+        Pesticide.objects
+        .exclude(microorganism="")
+        .exclude(microorganism__isnull=True)
+        .exclude(microorganism__iexact="not specified")
+        .count()
+    )
+
+
 def structure_file_count():
     structure_dir = settings.MEDIA_ROOT / "protein_structures" / "pdb"
     if not structure_dir.exists():

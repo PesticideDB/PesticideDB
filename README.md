@@ -8,6 +8,7 @@ PesticideDB is a Django database for curated microbial pesticide biodegradation 
 python -m venv env
 source env/bin/activate
 pip install -r requirements.txt
+export DJANGO_DEBUG=True
 python manage.py migrate
 python manage.py runserver
 ```
@@ -39,11 +40,36 @@ The app reads these optional environment variables:
 - `DJANGO_CSRF_TRUSTED_ORIGINS`
 - `DJANGO_ENABLE_ADMIN`
 - `DJANGO_SERVE_MEDIA`
+- `DJANGO_ALLOW_DEVTUNNELS`
+- `DATABASE_URL`
+- `DATABASE_SSLMODE`
+- `DATABASE_CONN_MAX_AGE`
 - `PBDB_ANNOTATION_DIR`
 
 Annotation jobs write per-job intermediate and downloadable files under `MEDIA_ROOT`, which prevents simultaneous jobs from overwriting each other.
 
 For broad candidate discovery, the annotation forms default to DIAMOND `1e-3` and 25 percent identity. Users can tighten these thresholds for higher-confidence homologs.
+
+## Private Testing
+
+For private multi-user testing, use PostgreSQL instead of SQLite and keep Django in non-debug mode:
+
+```bash
+export DJANGO_SECRET_KEY=<long-random-secret>
+export DJANGO_DEBUG=False
+export DJANGO_ALLOWED_HOSTS=<your-private-testing-domain>
+export DJANGO_CSRF_TRUSTED_ORIGINS=https://<your-private-testing-domain>
+export DJANGO_SECURE_COOKIES=True
+export DJANGO_SECURE_SSL_REDIRECT=True
+export DJANGO_SECURE_HSTS_SECONDS=31536000
+export DJANGO_TRUST_PROXY_SSL_HEADER=True
+export DJANGO_ENABLE_ADMIN=False
+export DJANGO_SERVE_MEDIA=False
+export DATABASE_URL=postgres://USER:PASSWORD@HOST:5432/DBNAME
+python manage.py migrate
+```
+
+SQLite remains available only when `DATABASE_URL` is not set, which is useful for local development but not recommended for several testers using the site at the same time.
 
 ## Temporary Public Demo
 

@@ -121,6 +121,38 @@ class PageSmokeTests(TestCase):
             )
             self.assertEqual(response.status_code, 200, asset_name)
 
+    def test_protein_structure_routes_serve_local_files_without_media_urlconf(self):
+        with TemporaryDirectory() as tmp:
+            media_root = Path(tmp)
+            pdb_dir = media_root / "protein_structures" / "pdb"
+            image_dir = media_root / "protein_structures" / "images"
+            pdb_dir.mkdir(parents=True)
+            image_dir.mkdir(parents=True)
+            (pdb_dir / "TEST0001.pdb").write_text(
+                "ATOM      1  CA  ALA A   1      11.104  13.207   2.100  1.00 96.20           C\n"
+            )
+            (image_dir / "TEST0001.svg").write_text(
+                "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>"
+            )
+            ProteinRecord.objects.create(
+                pesticidedb_protein_id="TEST0001",
+                reported_protein_name="Example enzyme",
+            )
+
+            with override_settings(MEDIA_ROOT=media_root, DJANGO_SERVE_MEDIA=False):
+                detail_response = self.client.get(reverse("protein_detail", args=["TEST0001"]))
+                pdb_response = self.client.get(reverse("protein_pdb_file", args=["TEST0001"]))
+                preview_response = self.client.get(
+                    reverse("protein_structure_preview", args=["TEST0001"])
+                )
+
+            self.assertEqual(detail_response.status_code, 200)
+            self.assertContains(detail_response, "/proteins/TEST0001/structure/pdb/")
+            self.assertNotContains(detail_response, "/media/protein_structures/pdb/TEST0001.pdb")
+            self.assertEqual(pdb_response.status_code, 200)
+            self.assertIn(b"ATOM", b"".join(pdb_response.streaming_content))
+            self.assertEqual(preview_response.status_code, 200)
+
     def test_all_match_csv_downloads_are_separate(self):
         with TemporaryDirectory() as tmp:
             media_root = Path(tmp)
