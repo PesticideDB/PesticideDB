@@ -46,6 +46,16 @@
                 </article>
             </div>
 
+            <section class="contact-repository" aria-labelledby="repository-heading">
+                <div>
+                    <span class="contact-label">Project Repository</span>
+                    <h2 id="repository-heading">PesticideDB on GitHub</h2>
+                </div>
+                <a class="repository-link" href="https://github.com/PesticideDB/PesticideDB" target="_blank" rel="noopener">
+                    https://github.com/PesticideDB/PesticideDB
+                </a>
+            </section>
+
             <section class="contact-console mt-5">
                 <div class="contact-console-copy">
                     <span class="contact-label">Inbox Roulette</span>
@@ -124,6 +134,7 @@
         gap: 1rem;
     }
     .contact-card,
+    .contact-repository,
     .contact-console {
         border: 1px solid #d7dde5;
         border-radius: 8px;
@@ -172,6 +183,23 @@
     .contact-actions .btn-link {
         padding-left: .15rem;
         padding-right: .15rem;
+    }
+    .contact-repository {
+        display: grid;
+        gap: .55rem;
+        margin-top: 1rem;
+        padding: 1.1rem 1.3rem;
+    }
+    .contact-repository h2 {
+        margin: .2rem 0 0;
+        font-size: 1.05rem;
+        line-height: 1.25;
+        font-weight: 750;
+        letter-spacing: 0;
+    }
+    .repository-link {
+        overflow-wrap: anywhere;
+        font-weight: 650;
     }
     .contact-console {
         display: grid;
