@@ -45,6 +45,7 @@ The web annotation tools call external command-line programs:
 - `prodigal` for nucleotide FASTA translation before `blastp`
 
 Make sure these commands are installed and available on `PATH` for the Django process.
+On Render, run `bash scripts/install_render_bio_tools.sh` at the beginning of the Build Command.
 
 The annotation assets are read from `PBDB_annotation/` by default. To place them elsewhere, set:
 

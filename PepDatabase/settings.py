@@ -18,6 +18,10 @@ from django.core.exceptions import ImproperlyConfigured
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+LOCAL_BIN_DIR = BASE_DIR / 'bin'
+if LOCAL_BIN_DIR.exists():
+    os.environ['PATH'] = f"{LOCAL_BIN_DIR}{os.pathsep}{os.environ.get('PATH', '')}"
+
 
 def env_bool(name, default=False):
     return os.environ.get(name, str(default)).lower() in {"1", "true", "yes", "on"}
