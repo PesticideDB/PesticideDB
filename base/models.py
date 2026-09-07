@@ -40,7 +40,7 @@ class Pesticide(models.Model):
 
     degradation_time_days = models.CharField(max_length=100, blank=True, null=True)
     degradation_percent = models.CharField(max_length=100, blank=True, null=True)
-    metabolite_or_product = models.CharField(max_length=255, blank=True, null=True)
+    metabolite_or_product = models.TextField(blank=True, null=True)
 
     publication_year = models.IntegerField(blank=True, null=True)
     reference = models.TextField(blank=True, null=True)
