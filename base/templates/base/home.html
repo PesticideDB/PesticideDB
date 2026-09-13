@@ -31,7 +31,7 @@
             <img src="{% static 'images/background03.jpeg' %}" class="d-block w-100" alt="Database Statistics">
             <div class="carousel-caption">
                 <h3>Database Statistics</h3>
-                <p>v{{ database_version }}: {{ microorganisms_count }} microorganisms, {{ proteins_count }} proteins, and {{ structure_count }} structures.</p>
+                <p>{{ microorganisms_count }} microorganisms, {{ proteins_count }} proteins, and {{ structure_count }} structures.</p>
             </div>
         </div>
     </div>
@@ -91,10 +91,6 @@
                 <span>References</span>
                 <strong>{{ reference_count }}</strong>
             </a>
-            <div class="home-metric-card">
-                <span>Database version</span>
-                <strong class="home-metric-date">v{{ database_version }}</strong>
-            </div>
         </div>
     </div>
 </section>
