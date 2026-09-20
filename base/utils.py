@@ -200,7 +200,7 @@ def curated_publication_count():
     )
 
 
-def reference_count():
+def broad_reference_identifier_count():
     references = set()
 
     for value in (
@@ -236,6 +236,10 @@ def reference_count():
         references.add(value.strip().lower())
 
     return len({reference for reference in references if reference and reference != "nan"})
+
+
+def reference_count():
+    return curated_publication_count()
 
 
 def pathway_summary():
