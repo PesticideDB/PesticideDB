@@ -7,7 +7,7 @@ env/
 .env
 
 # Database
-db.sqlite3
+# db.sqlite3 is intentionally tracked: it is the sanitized public snapshot (see README)
 
 # macOS junk
 .DS_Store
@@ -22,3 +22,9 @@ tmp/
 staticfiles/
 media/annotation_jobs/
 media/genome_jobs/
+
+# Third-party full-text papers are not redistributed (see curation_outputs/THIRD_PARTY_NOTICE.md)
+curation_outputs/**/downloaded_open_access_pdfs/
+curation_outputs/node_modules
+*.pdf
+*.zip

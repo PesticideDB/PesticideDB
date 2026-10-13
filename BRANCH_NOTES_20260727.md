@@ -16,7 +16,7 @@ This branch preserves the current PesticideDB progress, including:
 
 Intentionally not committed:
 
-- Local SQLite database file (`db.sqlite3`).
+- Local development SQLite database. The tracked `db.sqlite3` is the sanitized public snapshot (no user accounts or sessions).
 - Virtual environment (`env/`).
 - Temporary files (`tmp/`) and local backup folders (`backups/`).
 

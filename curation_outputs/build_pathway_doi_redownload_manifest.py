@@ -7,7 +7,7 @@ import pandas as pd
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "pathway_doi_redownload_manifest_20260708"
 SOURCE_PRIORITY = PROJECT_ROOT / "PesticideDB_Pathway_Source_Acquisition_Priority.csv"

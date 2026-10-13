@@ -7,7 +7,7 @@ import pandas as pd
 from pypdf import PdfReader
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OA_CHECK = PROJECT_ROOT / "PesticideDB_Priority1_Open_Access_Check.csv"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "priority1_oa_pathway_screening_20260708"
 

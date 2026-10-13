@@ -5,7 +5,7 @@ from collections import Counter
 from pathlib import Path
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "remaining_pathway_curation_batches_20260710"
 MISSING = PROJECT_ROOT / "PesticideDB_Missing_Stepwise_Pathway_Information.csv"
 SOURCE_PRIORITY = PROJECT_ROOT / "PesticideDB_Pathway_Source_Acquisition_Priority.csv"

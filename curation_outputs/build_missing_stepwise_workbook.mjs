@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { Workbook, SpreadsheetFile } from "@oai/artifact-tool";
 
-const root = "/Users/nana/Desktop/PepDB/PepDatabase";
+const root = "";
 const outDir = path.join(root, "curation_outputs", "missing_stepwise_pathway_information_20260707");
 const jsonPath = path.join(outDir, "missing_stepwise_pathway_information.json");
 const outputPath = path.join(outDir, "PesticideDB_Missing_Stepwise_Pathway_Information.xlsx");

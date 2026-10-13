@@ -10,10 +10,10 @@ import pandas as pd
 from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 QUEUE_FILE = PROJECT_ROOT / "curation_outputs" / "evidence_pesticide_pdf_inventory_20260707" / "evidence_pesticide_readable_pdf_queue.csv"
 EVIDENCE_FILE = PROJECT_ROOT / "pesticide_data.xlsx"
-PDFTOTEXT = "/Users/nana/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/poppler/bin/pdftotext"
+PDFTOTEXT = "pdftotext"
 TODAY = "20260707"
 
 BIODEGRADATION_TERMS = [

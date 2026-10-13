@@ -6,7 +6,7 @@ import pandas as pd
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 BATCHES = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27]
 MASTER_CSV = PROJECT_ROOT / "PesticideDB_Stepwise_Pathway_Master.csv"
 MASTER_XLSX = PROJECT_ROOT / "PesticideDB_Stepwise_Pathway_Master.xlsx"

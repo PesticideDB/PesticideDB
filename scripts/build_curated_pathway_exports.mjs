@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { FileBlob, SpreadsheetFile, Workbook } from "@oai/artifact-tool";
 
-const root = "/Users/nana/Desktop/PepDB/PepDatabase";
+const root = process.cwd(); // run from the repository root
 const sourcePath = path.join(root, "data_files", "core", "pesticide_data.xlsx");
 const outputDir = path.join(
   root,

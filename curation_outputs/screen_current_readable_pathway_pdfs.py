@@ -7,7 +7,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
 QUEUE = PROJECT_ROOT / "curation_outputs" / "pathway_next_acquisition_queue_20260708" / "pesticidedb_pathway_next_acquisition_queue.csv"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "readable_pathway_screening_batch12_20260708"

@@ -23,7 +23,17 @@ PesticideDB was developed to support research on microbial pesticide biodegradat
 - `PBDB_annotation/`: Reference FASTA files, DIAMOND databases, HMMER profiles, and annotation helper scripts.
 - `static/`: Website styling, images, JavaScript assets, and database summary figures.
 - `media/protein_structures/`: Local predicted protein structure files and preview images.
-- `curation_outputs/`: Supporting curated pathway, taxonomy, evidence, and supplemental protein data exports.
+- `curation_outputs/`: Working outputs from literature curation (pathway, taxonomy, evidence, and supplemental protein exports) and the scripts that generated them. Not needed to run the website; see the note below.
+- `scripts/`: Deployment helpers and curation export scripts.
+- `db.sqlite3`: Sanitized public snapshot of the database (no user accounts or sessions), so the site can run locally without PostgreSQL.
+- `LICENSE`, `DATA_LICENSE.md`, `CITATION.cff`: Licensing and citation information.
+
+### Where to find the released data
+
+- Core curated tables: `data_files/core/`, `data_files/protein/`, and `data_files/pathway/`.
+- The same data are available from the **Downloads** page of the website.
+- `curation_outputs/` documents how the curated pathway and evidence tables were built. It is provenance material, not the release data.
+
 
 ## Setup
 
@@ -112,3 +122,17 @@ scripts/run_public_demo.sh abc-8000.app.github.dev 8000
 ```
 
 Stop the server when the demo is finished. If you need admin access, do it locally in a separate private session rather than through a public tunnel.
+
+## License
+
+- **Code** (Django application, scripts, annotation helpers): MIT License, see `LICENSE`.
+- **Curated data**: CC BY 4.0, see `DATA_LICENSE.md`.
+- **Third-party material**: full texts of the source articles are not redistributed. See `curation_outputs/THIRD_PARTY_NOTICE.md`.
+
+## Citation
+
+Please cite the PesticideDB article and the archived version of this repository (Zenodo DOI to be added after the release). Machine-readable citation information is in `CITATION.cff`.
+
+## Contact
+
+Prof. Tae-Jin Oh (corresponding author), SunMoon University, tjoh3782@sunmoon.ac.kr

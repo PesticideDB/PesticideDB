@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { SpreadsheetFile, Workbook } from "@oai/artifact-tool";
 
-const root = "/Users/nana/Desktop/PepDB/PepDatabase";
+const root = process.cwd(); // run from the repository root
 const outputDir = path.join(
   root,
   "curation_outputs",

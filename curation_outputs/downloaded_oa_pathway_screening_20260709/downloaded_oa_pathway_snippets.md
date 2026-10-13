@@ -1,6 +1,6 @@
 
 # Paraquat | 10.3389/fmicb.2020.02003
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Paraquat/Paraquat_10.3389_fmicb.2020.02003.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Paraquat/Paraquat_10.3389_fmicb.2020.02003.pdf
 
 pages=12 extracted_chars=47526 snippets=12
 
@@ -30,7 +30,7 @@ pages=12 extracted_chars=47526 snippets=12
 
 
 # Pinoxaden | 10.21203/rs.3.rs-1375498/v1
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pinoxaden/Pinoxaden_10.21203_rs.3.rs-1375498_v1.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pinoxaden/Pinoxaden_10.21203_rs.3.rs-1375498_v1.pdf
 
 pages=19 extracted_chars=39475 snippets=14
 
@@ -64,7 +64,7 @@ pages=19 extracted_chars=39475 snippets=14
 
 
 # Fenvalerate | 10.1139/cjm-2019-0183
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1139_cjm-2019-0183.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1139_cjm-2019-0183.pdf
 
 pages=34 extracted_chars=26765 snippets=14
 
@@ -98,7 +98,7 @@ pages=34 extracted_chars=26765 snippets=14
 
 
 # Fenvalerate | 10.1186/s13568-020-01128-x
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1186_s13568-020-01128-x.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1186_s13568-020-01128-x.pdf
 
 pages=15 extracted_chars=56789 snippets=14
 
@@ -132,7 +132,7 @@ pages=15 extracted_chars=56789 snippets=14
 
 
 # Fenvalerate | 10.1186/s13568-022-01392-z
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1186_s13568-022-01392-z.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.1186_s13568-022-01392-z.pdf
 
 pages=14 extracted_chars=51114 snippets=14
 
@@ -166,7 +166,7 @@ pages=14 extracted_chars=51114 snippets=14
 
 
 # Fenvalerate | 10.4014/jmb.2110.10048
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.4014_jmb.2110.10048.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fenvalerate/Fenvalerate_10.4014_jmb.2110.10048.pdf
 
 pages=11 extracted_chars=49457 snippets=10
 
@@ -192,13 +192,13 @@ pages=11 extracted_chars=49457 snippets=10
 
 
 # Phorate | 10.1002/jobm.202100332
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Phorate/Phorate_10.1002_jobm.202100332.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Phorate/Phorate_10.1002_jobm.202100332.pdf
 
 pages=18 extracted_chars=41966 snippets=0
 
 
 # Thiacloprid | 10.3389/fmicb.2022.906026
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Thiacloprid/Thiacloprid_10.3389_fmicb.2022.906026.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Thiacloprid/Thiacloprid_10.3389_fmicb.2022.906026.pdf
 
 pages=12 extracted_chars=55153 snippets=12
 
@@ -228,7 +228,7 @@ pages=12 extracted_chars=55153 snippets=12
 
 
 # Deltamethrin | 10.1186/s13568-020-01043-1
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Deltamethrin/Deltamethrin_10.1186_s13568-020-01043-1.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Deltamethrin/Deltamethrin_10.1186_s13568-020-01043-1.pdf
 
 pages=11 extracted_chars=40725 snippets=11
 
@@ -256,7 +256,7 @@ pages=11 extracted_chars=40725 snippets=11
 
 
 # Tebuconazole | 10.1007/s11356-023-25669-3
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Tebuconazole/Tebuconazole_10.1007_s11356-023-25669-3.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Tebuconazole/Tebuconazole_10.1007_s11356-023-25669-3.pdf
 
 pages=15 extracted_chars=66258 snippets=14
 
@@ -290,7 +290,7 @@ pages=15 extracted_chars=66258 snippets=14
 
 
 # Difenoconazole | 10.4014/jmb.2308.08037
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Difenoconazole/Difenoconazole_10.4014_jmb.2308.08037.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Difenoconazole/Difenoconazole_10.4014_jmb.2308.08037.pdf
 
 pages=9 extracted_chars=45030 snippets=9
 
@@ -314,7 +314,7 @@ pages=9 extracted_chars=45030 snippets=9
 
 
 # Prochloraz | 10.1371/journal.pone.0220975
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Prochloraz/Prochloraz_10.1371_journal.pone.0220975.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Prochloraz/Prochloraz_10.1371_journal.pone.0220975.pdf
 
 pages=13 extracted_chars=31264 snippets=12
 
@@ -344,7 +344,7 @@ pages=13 extracted_chars=31264 snippets=12
 
 
 # Flubendiamide | 10.1007/s13205-015-0347-9
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Flubendiamide/Flubendiamide_10.1007_s13205-015-0347-9.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Flubendiamide/Flubendiamide_10.1007_s13205-015-0347-9.pdf
 
 pages=6 extracted_chars=24382 snippets=6
 
@@ -362,7 +362,7 @@ pages=6 extracted_chars=24382 snippets=6
 
 
 # Flubendiamide | 10.1007/s13213-019-01536-w
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Flubendiamide/Flubendiamide_10.1007_s13213-019-01536-w.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Flubendiamide/Flubendiamide_10.1007_s13213-019-01536-w.pdf
 
 pages=13 extracted_chars=54748 snippets=13
 
@@ -394,7 +394,7 @@ pages=13 extracted_chars=54748 snippets=13
 
 
 # Propiconazole | 10.1007/s13205-016-0429-3
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Propiconazole/Propiconazole_10.1007_s13205-016-0429-3.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Propiconazole/Propiconazole_10.1007_s13205-016-0429-3.pdf
 
 pages=10 extracted_chars=36186 snippets=10
 
@@ -420,7 +420,7 @@ pages=10 extracted_chars=36186 snippets=10
 
 
 # Propiconazole | 10.1186/s12866-020-01885-6
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Propiconazole/Propiconazole_10.1186_s12866-020-01885-6.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Propiconazole/Propiconazole_10.1186_s12866-020-01885-6.pdf
 
 pages=14 extracted_chars=55564 snippets=12
 
@@ -450,7 +450,7 @@ pages=14 extracted_chars=55564 snippets=12
 
 
 # Imazethapyr | 10.1007/s00284-023-03533-4
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Imazethapyr/Imazethapyr_10.1007_s00284-023-03533-4.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Imazethapyr/Imazethapyr_10.1007_s00284-023-03533-4.pdf
 
 pages=9 extracted_chars=40743 snippets=9
 
@@ -474,7 +474,7 @@ pages=9 extracted_chars=40743 snippets=9
 
 
 # Bentazone | 10.1016/j.jhazmat.2020.124476
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Bentazone/Bentazone_10.1016_j.jhazmat.2020.124476.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Bentazone/Bentazone_10.1016_j.jhazmat.2020.124476.pdf
 
 pages=60 extracted_chars=22870 snippets=14
 
@@ -508,7 +508,7 @@ pages=60 extracted_chars=22870 snippets=14
 
 
 # Pyrimethanil | 10.1007/s10532-025-10144-2
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pyrimethanil/Pyrimethanil_10.1007_s10532-025-10144-2.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pyrimethanil/Pyrimethanil_10.1007_s10532-025-10144-2.pdf
 
 pages=18 extracted_chars=62152 snippets=12
 
@@ -538,7 +538,7 @@ pages=18 extracted_chars=62152 snippets=12
 
 
 # Fluxapyroxad | 10.1038/s41598-020-78177-6
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fluxapyroxad/Fluxapyroxad_10.1038_s41598-020-78177-6.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Fluxapyroxad/Fluxapyroxad_10.1038_s41598-020-78177-6.pdf
 
 pages=9 extracted_chars=37684 snippets=9
 
@@ -562,7 +562,7 @@ pages=9 extracted_chars=37684 snippets=9
 
 
 # Fenhexamid | 10.1007/s10532-025-10144-2
-PDF: /Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pyrimethanil/Pyrimethanil_10.1007_s10532-025-10144-2.pdf
+PDF: curation_outputs/pathway_open_access_all_remaining_20260709/downloaded_open_access_pdfs/Pyrimethanil/Pyrimethanil_10.1007_s10532-025-10144-2.pdf
 
 pages=18 extracted_chars=62152 snippets=11
 

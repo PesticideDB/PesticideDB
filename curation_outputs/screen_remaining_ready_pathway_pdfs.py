@@ -7,7 +7,7 @@ from pathlib import Path
 from pypdf import PdfReader
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "remaining_ready_pathway_screening_20260707"
 MISSING = PROJECT_ROOT / "PesticideDB_Missing_Stepwise_Pathway_Information.csv"

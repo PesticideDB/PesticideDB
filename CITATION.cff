@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use PesticideDB, please cite the article and the archived version of this repository."
+title: "PesticideDB: a curated database and analysis platform for the microbial degradation of pesticides"
+version: 1.0.0
+date-released: 2026-10-13
+license: MIT
+authors:
+  - family-names: Gurung
+    given-names: Saru
+  - family-names: Kim
+    given-names: Min-Su
+  - family-names: Han
+    given-names: So-Ra
+  - family-names: Oh
+    given-names: Tae-Jin
+    email: tjoh3782@sunmoon.ac.kr
+    orcid: "https://orcid.org/0000-0002-8407-5039"
+repository-code: "https://github.com/PesticideDB/PesticideDB"
+url: "https://pesticidedb.onrender.com"
+# After the Zenodo release add:  doi: 10.5281/zenodo.XXXXXXX

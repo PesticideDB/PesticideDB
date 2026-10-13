@@ -73,7 +73,7 @@ def find_pdf(folder: str, token: str) -> Path | None:
 
 
 def main() -> None:
-    out_dir = Path("/Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/high_value_pathway_snippets_20260707")
+    out_dir = Path("curation_outputs/high_value_pathway_snippets_20260707")
     out_dir.mkdir(parents=True, exist_ok=True)
     report = []
     for folder, token in TARGETS:

@@ -7,7 +7,7 @@ import pandas as pd
 import pdfplumber
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 CHECK_FILE = PROJECT_ROOT / "curation_outputs" / "pathway_open_access_all_remaining_20260709" / "pesticidedb_all_remaining_open_access_check.csv"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "downloaded_oa_pathway_screening_20260709"
 

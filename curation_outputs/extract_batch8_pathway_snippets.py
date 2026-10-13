@@ -51,7 +51,7 @@ def compact(text: str) -> str:
 
 
 def main() -> None:
-    out_dir = Path("/Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/batch8_pathway_snippets_20260708")
+    out_dir = Path("curation_outputs/batch8_pathway_snippets_20260708")
     out_dir.mkdir(parents=True, exist_ok=True)
     report = []
     for pdf in PDFS:

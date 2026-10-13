@@ -5,7 +5,7 @@ from pathlib import Path
 
 
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "pdf_readability_audit_20260707"
 
 

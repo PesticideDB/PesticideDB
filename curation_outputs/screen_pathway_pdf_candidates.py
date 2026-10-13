@@ -29,7 +29,7 @@ CANDIDATES = {
 }
 
 ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
-OUT = Path("/Users/nana/Desktop/PepDB/PepDatabase/curation_outputs/pathway_batch4_screening_20260707")
+OUT = Path("curation_outputs/pathway_batch4_screening_20260707")
 TERMS = re.compile(
     r"metabolite|product|by-product|degradat|pathway|LC-MS|LC/MS|GC-MS|HPLC|carbendazim|MBC|"
     r"pinoxaden|imazamox|mandipropamid|thiophanate",

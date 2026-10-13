@@ -11,7 +11,7 @@ from urllib.request import Request, urlopen
 import pandas as pd
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
 MANIFEST = PROJECT_ROOT / "PesticideDB_Pathway_DOI_Redownload_Manifest.csv"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "pathway_open_access_check_20260708"

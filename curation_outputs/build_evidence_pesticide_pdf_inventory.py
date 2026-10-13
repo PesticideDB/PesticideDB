@@ -8,7 +8,7 @@ import pandas as pd
 
 
 USB_ROOT = Path("/Volumes/WENTBROKE/Pesticide degradation database/pesticidepdf")
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 EVIDENCE_FILE = PROJECT_ROOT / "pesticide_data.xlsx"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "evidence_pesticide_pdf_inventory_20260707"
 

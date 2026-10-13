@@ -8,10 +8,10 @@ import pandas as pd
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 
 
-PROJECT_ROOT = Path("/Users/nana/Desktop/PepDB/PepDatabase")
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = PROJECT_ROOT / "curation_outputs" / "evidence_pesticide_readable_curation_manifest_20260707" / "readable_folder_curation_manifest.csv"
 OUT_DIR = PROJECT_ROOT / "curation_outputs" / "consolidated_pathway_review_queue_20260707"
-PDFTOTEXT = "/Users/nana/.cache/codex-runtimes/codex-primary-runtime/dependencies/native/poppler/poppler/bin/pdftotext"
+PDFTOTEXT = "pdftotext"
 
 DEGRADATION_TERMS = [
     "biodegradation",

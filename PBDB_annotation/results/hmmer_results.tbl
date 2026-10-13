@@ -7,9 +7,9 @@ oxidoreductase_aligned -          ABE98170.1           -            5.6e-55  176
 # Program:         hmmscan
 # Version:         3.4 (Aug 2023)
 # Pipeline mode:   SCAN
-# Query file:      /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta
-# Target file:     /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm
-# Option settings: hmmscan --tblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_results.tbl --domtblout /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/results/hmmer_domains.tbl /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/hmmer_db/pbdb_profiles.hmm /Users/nana/Desktop/PepDB/PepDatabase/PBDB_annotation/data/MS2493772_query.fasta 
-# Current dir:     /Users/nana/Desktop/PepDB/PepDatabase
+# Query file:      PBDB_annotation/data/MS2493772_query.fasta
+# Target file:     PBDB_annotation/hmmer_db/pbdb_profiles.hmm
+# Option settings: hmmscan --tblout PBDB_annotation/results/hmmer_results.tbl --domtblout PBDB_annotation/results/hmmer_domains.tbl PBDB_annotation/hmmer_db/pbdb_profiles.hmm PBDB_annotation/data/MS2493772_query.fasta 
+# Current dir:     
 # Date:            Sat Jun 13 03:52:42 2026
 # [ok]
